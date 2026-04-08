@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DONOR
+  ADMIN
+  VOLUNTEER
+}
+
+enum CampaignStatus {
+  OPEN
+  CLOSED
+}
+
+enum DonationType {
+  MONEY
+  GOODS
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ShipmentStatus {
+  CREATED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+}
+
+model User {
+  id           String            @id @default(cuid())
+  name         String
+  email        String            @unique
+  passwordHash String
+  role         Role              @default(DONOR)
+  fcmToken     String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  campaigns    Campaign[]
+  donations    Donation[]
+  verifications Donation[]       @relation("DonationVerifiedBy")
+  assignedShipments AidShipment[] @relation("ShipmentAssignedVolunteer")
+  createdShipments  AidShipment[] @relation("ShipmentCreatedBy")
+  trackingEvents TrackingEvent[]
+  notifications NotificationLog[]
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  title            String
+  description      String
+  disasterType     String
+  location         String
+  targetAmount     Int
+  collectedAmount  Int            @default(0)
+  distributedAmount Int           @default(0)
+  status           CampaignStatus @default(OPEN)
+  startDate        DateTime       @default(now())
+  endDate          DateTime?
+  createdById      String
+  createdBy        User           @relation(fields: [createdById], references: [id])
+  donations        Donation[]
+  shipments        AidShipment[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Donation {
+  id                String             @id @default(cuid())
+  donorId           String
+  donor             User               @relation(fields: [donorId], references: [id])
+  campaignId        String
+  campaign          Campaign           @relation(fields: [campaignId], references: [id])
+  type              DonationType
+  amount            Int?
+  itemName          String?
+  quantity          Int?
+  transferProofUrl  String?
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationNote  String?
+  verifiedById      String?
+  verifiedBy        User?              @relation("DonationVerifiedBy", fields: [verifiedById], references: [id])
+  inventoryItems    InventoryItem[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model InventoryItem {
+  id               String         @id @default(cuid())
+  name             String
+  quantity         Int
+  unit             String         @default("pcs")
+  warehouse        String         @default("Gudang Pusat")
+  sourceDonationId String?
+  sourceDonation   Donation?      @relation(fields: [sourceDonationId], references: [id])
+  shipments        AidShipment[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model AidShipment {
+  id                  String         @id @default(cuid())
+  trackingCode        String         @unique
+  campaignId          String
+  campaign            Campaign       @relation(fields: [campaignId], references: [id])
+  itemId              String
+  item                InventoryItem  @relation(fields: [itemId], references: [id])
+  quantity            Int
+  fromWarehouse       String
+  destinationLocation String
+  assignedVolunteerId String?
+  assignedVolunteer   User?          @relation("ShipmentAssignedVolunteer", fields: [assignedVolunteerId], references: [id])
+  status              ShipmentStatus @default(CREATED)
+  createdById         String
+  createdBy           User           @relation("ShipmentCreatedBy", fields: [createdById], references: [id])
+  trackingEvents      TrackingEvent[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model TrackingEvent {
+  id          String         @id @default(cuid())
+  shipmentId  String
+  shipment    AidShipment    @relation(fields: [shipmentId], references: [id])
+  status      ShipmentStatus
+  note        String?
+  latitude    Decimal?
+  longitude   Decimal?
+  photoUrl    String?
+  createdById String
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  createdAt   DateTime       @default(now())
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  channel   String
+  title     String
+  body      String
+  status    String
+  payload   Json?
+  createdAt DateTime @default(now())
+}

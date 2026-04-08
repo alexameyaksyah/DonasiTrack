@@ -1,0 +1,24 @@
+{
+  "name": "donasi-track",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:api": "npm --workspace @donasi-track/api run dev",
+    "dev:web": "npm --workspace web run dev",
+    "dev:mobile": "cd apps/mobile && flutter run",
+    "build:api": "npm --workspace @donasi-track/api run build",
+    "build:web": "npm --workspace web run build",
+    "build:mobile": "cd apps/mobile && flutter build web",
+    "build": "npm run build:api && npm run build:web"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
