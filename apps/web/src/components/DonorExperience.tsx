@@ -16,18 +16,27 @@ type Campaign = {
 
 const CACHE_KEY = "donasi-track-campaigns";
 
-export function DonorExperience() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [token, setToken] = useState("");
+type DonorExperienceProps = {
+  authToken: string;
+};
+
+export function DonorExperience({ authToken }: DonorExperienceProps) {
+  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    try {
+      const cache = localStorage.getItem(CACHE_KEY);
+      return cache ? (JSON.parse(cache) as Campaign[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [message, setMessage] = useState("");
   const [trackingCode, setTrackingCode] = useState("");
 
   useEffect(() => {
-    const cache = localStorage.getItem(CACHE_KEY);
-    if (cache) {
-      setCampaigns(JSON.parse(cache));
-    }
-
     fetch(`${API_URL}/campaigns`)
       .then((res) => res.json())
       .then((data: Campaign[]) => {
@@ -56,7 +65,7 @@ export function DonorExperience() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...authHeaders(token),
+          ...authHeaders(authToken),
         },
         body: JSON.stringify(body),
       });
@@ -96,7 +105,6 @@ export function DonorExperience() {
       <div className="card">
         <h3>Form Donasi</h3>
         <form className="form" onSubmit={onDonation} style={{ marginTop: 8 }}>
-          <input placeholder="JWT Donatur" value={token} onChange={(event) => setToken(event.target.value)} required />
           <input name="campaignId" placeholder="Campaign ID" required />
           <select name="type" defaultValue="MONEY">
             <option value="MONEY">Uang</option>

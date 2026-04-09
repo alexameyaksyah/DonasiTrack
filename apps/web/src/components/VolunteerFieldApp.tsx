@@ -23,8 +23,11 @@ type QueueItem = {
 
 const QUEUE_KEY = "volunteer-tracking-queue";
 
-export function VolunteerFieldApp() {
-  const [token, setToken] = useState("");
+type VolunteerFieldAppProps = {
+  authToken: string;
+};
+
+export function VolunteerFieldApp({ authToken }: VolunteerFieldAppProps) {
   const [shipmentId, setShipmentId] = useState("");
   const [status, setStatus] = useState<ShipmentStatus>(SHIPMENT_STATUS.PICKED_UP);
   const [note, setNote] = useState("");
@@ -92,7 +95,7 @@ export function VolunteerFieldApp() {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(token),
+        ...authHeaders(authToken),
       },
       body: JSON.stringify(body),
     });
@@ -154,7 +157,6 @@ export function VolunteerFieldApp() {
       <div className="card">
         <h3>Update Status Lapangan</h3>
         <form className="form" onSubmit={onSubmit} style={{ marginTop: 8 }}>
-          <input placeholder="JWT Relawan" value={token} onChange={(event) => setToken(event.target.value)} required />
           <input placeholder="Shipment ID (dari QR)" value={shipmentId} onChange={(event) => setShipmentId(event.target.value)} required />
           <select value={status} onChange={(event) => setStatus(event.target.value as ShipmentStatus)}>
             <option value={SHIPMENT_STATUS.PICKED_UP}>PICKED_UP</option>
