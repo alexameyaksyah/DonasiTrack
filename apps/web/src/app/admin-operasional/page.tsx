@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { AdminOperationalFieldApp } from "../../components/AdminOperationalFieldApp";
-import { API_URL } from "../../lib/api";
 
 type AuthUser = {
   id: string;
@@ -11,76 +11,43 @@ type AuthUser = {
   role: "DONOR" | "ADMIN";
 };
 
-const ADMIN_OPS_TOKEN_KEY = "donasi-track-admin-ops-token";
-const ADMIN_OPS_USER_KEY = "donasi-track-admin-ops-user";
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+const SESSION_USER_KEY = "donasi-track-session-user";
 
-export default function AdminOperationalPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem(ADMIN_OPS_TOKEN_KEY);
-    const storedUser = localStorage.getItem(ADMIN_OPS_USER_KEY);
-
-    if (storedToken && storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser) as AuthUser;
-        if (parsed.role === "ADMIN") {
-          setToken(storedToken);
-          setUser(parsed);
-        }
-      } catch {
-        localStorage.removeItem(ADMIN_OPS_TOKEN_KEY);
-        localStorage.removeItem(ADMIN_OPS_USER_KEY);
-      }
-    }
-  }, []);
-
-  async function onLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = (await response.json()) as { message?: string; token?: string; user?: AuthUser };
-      if (!response.ok || !data.token || !data.user) {
-        setMessage(data.message || "Login gagal");
-        return;
-      }
-
-      if (data.user.role !== "ADMIN") {
-        setMessage("Akun ini bukan Admin. Untuk berdonasi gunakan halaman donatur.");
-        return;
-      }
-
-      localStorage.setItem(ADMIN_OPS_TOKEN_KEY, data.token);
-      localStorage.setItem(ADMIN_OPS_USER_KEY, JSON.stringify(data.user));
-      setToken(data.token);
-      setUser(data.user);
-      setPassword("");
-      setMessage(`Login berhasil sebagai ${data.user.name}`);
-    } catch {
-      setMessage("Gagal terhubung ke server API");
-    } finally {
-      setLoading(false);
-    }
+function readAdminSession(): { token: string; user: AuthUser | null; message: string } {
+  if (typeof window === "undefined") {
+    return { token: "", user: null, message: "" };
   }
 
+  const storedToken = localStorage.getItem(SESSION_TOKEN_KEY) || "";
+  const storedUser = localStorage.getItem(SESSION_USER_KEY);
+
+  if (!storedToken || !storedUser) {
+    return { token: "", user: null, message: "Silakan login terlebih dulu dari halaman autentikasi." };
+  }
+
+  try {
+    const parsed = JSON.parse(storedUser) as AuthUser;
+    if (parsed.role !== "ADMIN") {
+      return { token: "", user: null, message: "Akun ini bukan ADMIN." };
+    }
+
+    return { token: storedToken, user: parsed, message: "" };
+  } catch {
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
+    return { token: "", user: null, message: "Silakan login terlebih dulu dari halaman autentikasi." };
+  }
+}
+
+export default function AdminOperationalPage() {
+  const [session, setSession] = useState(readAdminSession);
+  const [message, setMessage] = useState(session.message);
+
   function onLogout() {
-    localStorage.removeItem(ADMIN_OPS_TOKEN_KEY);
-    localStorage.removeItem(ADMIN_OPS_USER_KEY);
-    setToken("");
-    setUser(null);
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
+    setSession({ token: "", user: null, message: "" });
     setMessage("Sesi admin operasional telah keluar");
   }
 
@@ -88,46 +55,30 @@ export default function AdminOperationalPage() {
     <main className="container section">
       <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Operasional Admin</h1>
       <p className="muted" style={{ marginBottom: 10 }}>
-        Login dengan email admin untuk scan QR, update status bantuan, geolocation, dan sinkronisasi offline.
+        Scan QR, update status bantuan, geolocation, dan sinkronisasi offline.
       </p>
 
-      {!token || !user ? (
+      {!session.token || !session.user ? (
         <section className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
-          <h3>Login Admin Operasional</h3>
-          <p className="muted">Akun donatur tidak dapat mengakses halaman ini.</p>
-          <form className="form" style={{ marginTop: 8 }} onSubmit={onLogin}>
-            <input
-              type="email"
-              placeholder="Email admin"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-            <button className="btn brand" type="submit" disabled={loading}>
-              {loading ? "Memproses..." : "Login Admin"}
-            </button>
-          </form>
+          <h3>Akses Admin Operasional</h3>
+          <p className="muted">{message || "Sesi tidak ditemukan."}</p>
+          <Link href="/auth" className="btn brand" style={{ marginTop: 8 }}>
+            Ke Halaman Login / Daftar
+          </Link>
           {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
         </section>
       ) : (
         <>
           <div className="panel" style={{ marginBottom: 12 }}>
-            <strong>{user.name}</strong>
+            <strong>{session.user.name}</strong>
             <p className="muted">
-              {user.email} ({user.role})
+              {session.user.email} ({session.user.role})
             </p>
             <button className="btn" style={{ marginTop: 8 }} onClick={onLogout}>
               Logout
             </button>
           </div>
-          <AdminOperationalFieldApp authToken={token} />
+          <AdminOperationalFieldApp authToken={session.token} />
           {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
         </>
       )}

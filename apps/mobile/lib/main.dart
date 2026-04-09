@@ -40,9 +40,33 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          return HomeShell(session: session);
+
+          return AnimatedBuilder(
+            animation: session,
+            builder: (context, _) {
+              if (!session.isAuthenticated) {
+                return AuthStandalonePage(session: session);
+              }
+
+              return HomeShell(session: session);
+            },
+          );
         },
       ),
+    );
+  }
+}
+
+class AuthStandalonePage extends StatelessWidget {
+  const AuthStandalonePage({super.key, required this.session});
+
+  final AppSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login / Daftar')),
+      body: AuthPage(session: session),
     );
   }
 }
@@ -227,7 +251,6 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = <Widget>[
-      AuthPage(session: widget.session),
       DonorPage(session: widget.session),
       AdminOperationalPage(session: widget.session),
       TrackingPage(session: widget.session),
@@ -253,7 +276,6 @@ class _HomeShellState extends State<HomeShell> {
             selectedIndex: index,
             onDestinationSelected: (int value) => setState(() => index = value),
             destinations: const <NavigationDestination>[
-              NavigationDestination(icon: Icon(Icons.login), label: 'Auth'),
               NavigationDestination(
                 icon: Icon(Icons.favorite),
                 label: 'Donatur',

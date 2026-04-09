@@ -74,7 +74,7 @@ npm --workspace @donasi-track/api run prisma:generate
 npm --workspace @donasi-track/api run prisma:migrate
 ```
 
-Alternatif cepat untuk setup schema + seed demo:
+Alternatif cepat untuk reset data (tanpa akun dummy):
 
 ```bash
 npm --workspace @donasi-track/api run db:setup
@@ -118,12 +118,22 @@ npm run build:web
 npm run build:mobile
 ```
 
-## Login Donatur dan Admin (Web)
+## Halaman Login/Daftar Pertama Kali
 
-- Halaman `http://localhost:3000/donatur` hanya menerima akun dengan role `DONOR`.
-- Halaman `http://localhost:3000/admin-operasional` digunakan sebagai area operasional admin dan hanya menerima role `ADMIN`.
+- Saat pertama buka web, root (`/`) otomatis diarahkan ke `http://localhost:3000/auth`.
+- Halaman `http://localhost:3000/auth` menyediakan login dan daftar akun.
+- Registrasi publik selalu membuat role awal `DONOR`.
+- Jika ingin menjadikan akun `ADMIN`, ubah role dari Prisma Studio.
+- Halaman `http://localhost:3000/donatur` untuk user role `DONOR`.
+- Halaman `http://localhost:3000/admin-operasional` untuk user role `ADMIN`.
 - URL lama `http://localhost:3000/relawan` otomatis diarahkan ke `/admin-operasional`.
-- Masing-masing halaman menyimpan sesi login terpisah di browser, jadi donatur dan admin tidak saling menimpa token.
+
+## Halaman Login/Daftar Pertama Kali (Mobile)
+
+- Saat app mobile dibuka pertama kali, yang tampil adalah halaman Login/Daftar.
+- Setelah login berhasil, user masuk ke halaman utama aplikasi.
+- Registrasi publik selalu membuat role awal `DONOR`.
+- Role `ADMIN` ditetapkan manual via Prisma Studio.
 
 ## Ubah Role User Dari Dashboard Admin
 
@@ -156,11 +166,10 @@ npm run studio
 - Frontend: `http://localhost:3000`
 - Upload Proof API: `http://localhost:4000/api/uploads/proof`
 
-## Akun Demo Seed
+## Akun Dummy
 
-- Admin: `admin@donasitrack.local` / `Password123!`
-- Donatur: `donor@donasitrack.local` / `Password123!`
-- Tracking code demo: `DNT-DEMO-0001`, `DNT-DEMO-0002`
+- Tidak ada akun dummy bawaan.
+- Semua akun dibuat lewat halaman daftar (`/auth`) atau langsung dari Prisma Studio.
 
 ## Catatan Implementasi Lapangan
 
