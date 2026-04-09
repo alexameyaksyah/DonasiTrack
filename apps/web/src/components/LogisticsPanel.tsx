@@ -3,12 +3,25 @@
 import { FormEvent, useState } from "react";
 import { API_URL, authHeaders } from "../lib/api";
 
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+
 export function LogisticsPanel() {
-  const [token, setToken] = useState("");
+  const [token] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return localStorage.getItem(SESSION_TOKEN_KEY) || "";
+  });
   const [message, setMessage] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!token) {
+      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
 
     const body = {
@@ -41,8 +54,8 @@ export function LogisticsPanel() {
   return (
     <div className="panel">
       <h3>Alokasi Gudang ke Admin Operasional</h3>
+      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
       <form className="form" onSubmit={onSubmit} style={{ marginTop: 8 }}>
-        <input placeholder="JWT Admin" value={token} onChange={(event) => setToken(event.target.value)} />
         <input name="campaignId" placeholder="Campaign ID" required />
         <input name="itemId" placeholder="Inventory Item ID" required />
         <input name="quantity" type="number" placeholder="Jumlah" required />

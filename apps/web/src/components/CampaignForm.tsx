@@ -3,8 +3,16 @@
 import { FormEvent, useState } from "react";
 import { API_URL, authHeaders } from "../lib/api";
 
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+
 export function CampaignForm() {
-  const [token, setToken] = useState("");
+  const [token] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return localStorage.getItem(SESSION_TOKEN_KEY) || "";
+  });
   const [message, setMessage] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -41,8 +49,8 @@ export function CampaignForm() {
   return (
     <div className="panel">
       <h3 style={{ marginBottom: 8 }}>Buat Kampanye</h3>
+      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
       <form className="form" onSubmit={onSubmit}>
-        <input placeholder="JWT Admin" value={token} onChange={(event) => setToken(event.target.value)} />
         <input name="title" placeholder="Judul kampanye" required />
         <textarea name="description" placeholder="Deskripsi" required rows={3} />
         <input name="disasterType" placeholder="Jenis bencana" required />

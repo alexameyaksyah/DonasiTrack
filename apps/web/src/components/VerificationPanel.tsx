@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { API_URL, authHeaders } from "../lib/api";
 
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+
 type PendingDonation = {
   id: string;
   type: "MONEY" | "GOODS";
@@ -14,11 +16,22 @@ type PendingDonation = {
 };
 
 export function VerificationPanel() {
-  const [token, setToken] = useState("");
+  const [token] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return localStorage.getItem(SESSION_TOKEN_KEY) || "";
+  });
   const [items, setItems] = useState<PendingDonation[]>([]);
   const [message, setMessage] = useState("");
 
   async function loadPending() {
+    if (!token) {
+      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
     const response = await fetch(`${API_URL}/admin/verifications/pending`, {
       headers: authHeaders(token),
     });
@@ -34,6 +47,11 @@ export function VerificationPanel() {
   }
 
   async function updateStatus(id: string, status: "VERIFIED" | "REJECTED") {
+    if (!token) {
+      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
     const response = await fetch(`${API_URL}/admin/verifications/${id}`, {
       method: "PATCH",
       headers: {
@@ -55,8 +73,8 @@ export function VerificationPanel() {
   return (
     <div className="panel">
       <h3>Validasi Bukti Donasi</h3>
+      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
       <div className="form" style={{ marginTop: 8 }}>
-        <input placeholder="JWT Admin" value={token} onChange={(event) => setToken(event.target.value)} />
         <button className="btn" onClick={loadPending} type="button">
           Muat Pending
         </button>

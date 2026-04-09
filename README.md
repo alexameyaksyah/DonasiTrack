@@ -123,7 +123,7 @@ npm run build:mobile
 - Saat pertama buka web, root (`/`) otomatis diarahkan ke `http://localhost:3000/auth`.
 - Halaman `http://localhost:3000/auth` menyediakan login dan daftar akun.
 - Registrasi publik selalu membuat role awal `DONOR`.
-- Jika ingin menjadikan akun `ADMIN`, ubah role dari Prisma Studio.
+- Jika ingin menjadikan akun `ADMIN`, role hanya diubah lewat Prisma Studio.
 - Halaman `http://localhost:3000/donatur` untuk user role `DONOR`.
 - Halaman `http://localhost:3000/admin-operasional` untuk user role `ADMIN`.
 - URL lama `http://localhost:3000/relawan` otomatis diarahkan ke `/admin-operasional`.
@@ -135,18 +135,7 @@ npm run build:mobile
 - Registrasi publik selalu membuat role awal `DONOR`.
 - Role `ADMIN` ditetapkan manual via Prisma Studio.
 
-## Ubah Role User Dari Dashboard Admin
-
-1. Buka halaman `http://localhost:3000/admin/pengguna`.
-2. Masukkan JWT Admin.
-3. Muat daftar user lalu ubah role user menjadi `DONOR` atau `ADMIN`.
-
-Endpoint terkait:
-
-- `GET /api/admin/users`
-- `PATCH /api/admin/users/:id/role`
-
-## Integrasi Prisma Studio (Opsional)
+## Integrasi Prisma Studio (Wajib untuk Ubah Role)
 
 1. Jalankan Prisma Studio dari root monorepo:
 

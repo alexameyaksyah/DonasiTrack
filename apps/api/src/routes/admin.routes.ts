@@ -10,65 +10,9 @@ const verificationSchema = z.object({
   note: z.string().min(3).optional(),
 });
 
-const updateUserRoleSchema = z.object({
-  role: z.nativeEnum(Role),
-});
-
 export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireRole(Role.ADMIN));
-
-adminRouter.get("/users", async (_req, res, next) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return res.json(users);
-  } catch (error) {
-    return next(error);
-  }
-});
-
-adminRouter.patch("/users/:id/role", async (req, res, next) => {
-  try {
-    const body = updateUserRoleSchema.parse(req.body);
-    const userId = String(req.params.id);
-
-    if (req.user!.id === userId && body.role !== Role.ADMIN) {
-      return res.status(400).json({ message: "Admin tidak dapat menurunkan role akun sendiri" });
-    }
-
-    const exists = await prisma.user.findUnique({ where: { id: userId } });
-    if (!exists) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { role: body.role },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        updatedAt: true,
-      },
-    });
-
-    return res.json({ message: "Role user berhasil diperbarui", user: updated });
-  } catch (error) {
-    return next(error);
-  }
-});
 
 adminRouter.get("/verifications/pending", async (_req, res, next) => {
   try {
