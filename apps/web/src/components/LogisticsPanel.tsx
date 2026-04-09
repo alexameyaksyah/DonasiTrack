@@ -17,7 +17,7 @@ export function LogisticsPanel() {
       quantity: Number(formData.get("quantity")),
       fromWarehouse: String(formData.get("fromWarehouse")),
       destinationLocation: String(formData.get("destinationLocation")),
-      assignedVolunteerId: String(formData.get("assignedVolunteerId")) || undefined,
+      assignedAdminId: String(formData.get("assignedAdminId")) || undefined,
     };
 
     const response = await fetch(`${API_URL}/logistics`, {
@@ -40,7 +40,7 @@ export function LogisticsPanel() {
 
   return (
     <div className="panel">
-      <h3>Alokasi Gudang ke Relawan/Kurir</h3>
+      <h3>Alokasi Gudang ke Admin Operasional</h3>
       <form className="form" onSubmit={onSubmit} style={{ marginTop: 8 }}>
         <input placeholder="JWT Admin" value={token} onChange={(event) => setToken(event.target.value)} />
         <input name="campaignId" placeholder="Campaign ID" required />
@@ -48,7 +48,7 @@ export function LogisticsPanel() {
         <input name="quantity" type="number" placeholder="Jumlah" required />
         <input name="fromWarehouse" placeholder="Gudang asal" defaultValue="Gudang Pusat" required />
         <input name="destinationLocation" placeholder="Lokasi tujuan" required />
-        <input name="assignedVolunteerId" placeholder="Volunteer ID (opsional)" />
+        <input name="assignedAdminId" placeholder="Admin ID penanggung jawab (opsional)" />
         <button className="btn brand" type="submit">
           Buat Pengiriman
         </button>

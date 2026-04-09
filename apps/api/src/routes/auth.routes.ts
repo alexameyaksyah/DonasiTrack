@@ -1,6 +1,5 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import { Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../db";
 import { signToken } from "../utils/jwt";
@@ -9,7 +8,6 @@ const registerSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.nativeEnum(Role).optional(),
 });
 
 const loginSchema = z.object({
@@ -34,7 +32,7 @@ authRouter.post("/register", async (req, res, next) => {
         name: body.name,
         email: body.email,
         passwordHash: await bcrypt.hash(body.password, 10),
-        role: body.role || Role.DONOR,
+        role: "DONOR",
       },
     });
 

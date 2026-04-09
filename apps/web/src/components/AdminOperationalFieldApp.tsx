@@ -21,13 +21,13 @@ type QueueItem = {
   photoUrl?: string;
 };
 
-const QUEUE_KEY = "volunteer-tracking-queue";
+const QUEUE_KEY = "admin-operational-tracking-queue";
 
-type VolunteerFieldAppProps = {
+type AdminOperationalFieldAppProps = {
   authToken: string;
 };
 
-export function VolunteerFieldApp({ authToken }: VolunteerFieldAppProps) {
+export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldAppProps) {
   const [shipmentId, setShipmentId] = useState("");
   const [status, setStatus] = useState<ShipmentStatus>(SHIPMENT_STATUS.PICKED_UP);
   const [note, setNote] = useState("");
@@ -149,7 +149,7 @@ export function VolunteerFieldApp({ authToken }: VolunteerFieldAppProps) {
   return (
     <div className="grid">
       <div className="card">
-        <h3>Pemindai QR Relawan</h3>
+        <h3>Pemindai QR Admin Operasional</h3>
         <p className="muted">Scan QR untuk mengambil ID pengiriman saat serah terima bantuan.</p>
         <div id={qrElementId} style={{ marginTop: 10 }} />
       </div>

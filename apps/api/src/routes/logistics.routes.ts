@@ -11,7 +11,7 @@ const createShipmentSchema = z.object({
   quantity: z.number().int().positive(),
   fromWarehouse: z.string().min(2),
   destinationLocation: z.string().min(2),
-  assignedVolunteerId: z.string().cuid().optional(),
+  assignedAdminId: z.string().cuid().optional(),
 });
 
 const updateStatusSchema = z.object({
@@ -55,7 +55,7 @@ logisticsRouter.post("/", requireRole(Role.ADMIN), async (req, res, next) => {
           quantity: body.quantity,
           fromWarehouse: body.fromWarehouse,
           destinationLocation: body.destinationLocation,
-          assignedVolunteerId: body.assignedVolunteerId,
+          assignedOperatorId: body.assignedAdminId,
           createdById: req.user!.id,
         },
       });
@@ -72,13 +72,13 @@ logisticsRouter.post("/", requireRole(Role.ADMIN), async (req, res, next) => {
       return created;
     });
 
-    if (shipment.assignedVolunteerId) {
-      const volunteer = await prisma.user.findUnique({ where: { id: shipment.assignedVolunteerId } });
+    if (shipment.assignedOperatorId) {
+      const assignedAdmin = await prisma.user.findUnique({ where: { id: shipment.assignedOperatorId } });
       await sendNotification({
-        userId: volunteer?.id,
-        token: volunteer?.fcmToken || undefined,
-        title: "Tugas Logistik Baru",
-        body: `Anda mendapat pengiriman baru dengan kode ${shipment.trackingCode}`,
+        userId: assignedAdmin?.id,
+        token: assignedAdmin?.fcmToken || undefined,
+        title: "Tugas Operasional Logistik",
+        body: `Anda mendapat pengiriman operasional dengan kode ${shipment.trackingCode}`,
         payload: { shipmentId: shipment.id },
       });
     }
@@ -89,21 +89,14 @@ logisticsRouter.post("/", requireRole(Role.ADMIN), async (req, res, next) => {
   }
 });
 
-logisticsRouter.patch("/:id/status", async (req, res, next) => {
+logisticsRouter.patch("/:id/status", requireRole(Role.ADMIN), async (req, res, next) => {
   try {
+    const shipmentId = String(req.params.id);
     const body = updateStatusSchema.parse(req.body);
-    const shipment = await prisma.aidShipment.findUnique({ where: { id: req.params.id } });
+    const shipment = await prisma.aidShipment.findUnique({ where: { id: shipmentId } });
 
     if (!shipment) {
       return res.status(404).json({ message: "Shipment not found" });
-    }
-
-    if (
-      req.user!.role === Role.VOLUNTEER &&
-      shipment.assignedVolunteerId &&
-      shipment.assignedVolunteerId !== req.user!.id
-    ) {
-      return res.status(403).json({ message: "Bukan tugas relawan ini" });
     }
 
     await prisma.$transaction(async (tx) => {
@@ -131,10 +124,10 @@ logisticsRouter.patch("/:id/status", async (req, res, next) => {
   }
 });
 
-logisticsRouter.get("/mine", requireRole(Role.VOLUNTEER), async (req, res, next) => {
+logisticsRouter.get("/mine", requireRole(Role.ADMIN), async (req, res, next) => {
   try {
     const shipments = await prisma.aidShipment.findMany({
-      where: { assignedVolunteerId: req.user!.id },
+      where: { assignedOperatorId: req.user!.id },
       include: { campaign: true, item: true },
       orderBy: { createdAt: "desc" },
     });
@@ -146,12 +139,13 @@ logisticsRouter.get("/mine", requireRole(Role.VOLUNTEER), async (req, res, next)
 
 logisticsRouter.get("/:id", async (req, res, next) => {
   try {
+    const shipmentId = String(req.params.id);
     const shipment = await prisma.aidShipment.findUnique({
-      where: { id: req.params.id },
+      where: { id: shipmentId },
       include: {
         campaign: true,
         item: true,
-        assignedVolunteer: true,
+        assignedOperator: true,
         trackingEvents: { orderBy: { createdAt: "asc" } },
       },
     });

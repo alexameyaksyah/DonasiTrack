@@ -9,7 +9,6 @@ datasource db {
 enum Role {
   DONOR
   ADMIN
-  VOLUNTEER
 }
 
 enum CampaignStatus {
@@ -48,7 +47,7 @@ model User {
   campaigns    Campaign[]
   donations    Donation[]
   verifications Donation[]       @relation("DonationVerifiedBy")
-  assignedShipments AidShipment[] @relation("ShipmentAssignedVolunteer")
+  assignedOperationalShipments AidShipment[] @relation("ShipmentAssignedOperator")
   createdShipments  AidShipment[] @relation("ShipmentCreatedBy")
   trackingEvents TrackingEvent[]
   notifications NotificationLog[]
@@ -117,8 +116,8 @@ model AidShipment {
   quantity            Int
   fromWarehouse       String
   destinationLocation String
-  assignedVolunteerId String?
-  assignedVolunteer   User?          @relation("ShipmentAssignedVolunteer", fields: [assignedVolunteerId], references: [id])
+  assignedOperatorId   String?        @map("assignedVolunteerId")
+  assignedOperator     User?          @relation("ShipmentAssignedOperator", fields: [assignedOperatorId], references: [id])
   status              ShipmentStatus @default(CREATED)
   createdById         String
   createdBy           User           @relation("ShipmentCreatedBy", fields: [createdById], references: [id])

@@ -25,7 +25,7 @@ export const swaggerSpec = swaggerJsdoc({
     paths: {
       "/auth/register": {
         post: {
-          summary: "Registrasi pengguna (donatur/admin/relawan)",
+          summary: "Registrasi pengguna donatur",
         },
       },
       "/auth/login": {
@@ -58,6 +58,18 @@ export const swaggerSpec = swaggerJsdoc({
           security: [{ bearerAuth: [] }],
         },
       },
+      "/admin/users": {
+        get: {
+          summary: "Daftar user untuk manajemen role (admin)",
+          security: [{ bearerAuth: [] }],
+        },
+      },
+      "/admin/users/{id}/role": {
+        patch: {
+          summary: "Ubah role user menjadi DONOR atau ADMIN (admin)",
+          security: [{ bearerAuth: [] }],
+        },
+      },
       "/admin/verifications/{id}": {
         patch: {
           summary: "Validasi atau tolak bukti donasi (admin)",
@@ -72,7 +84,7 @@ export const swaggerSpec = swaggerJsdoc({
       },
       "/logistics": {
         post: {
-          summary: "Alokasi barang dari gudang ke relawan/kurir (admin)",
+          summary: "Alokasi barang dari gudang oleh admin operasional",
           security: [{ bearerAuth: [] }],
         },
       },

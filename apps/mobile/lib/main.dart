@@ -144,11 +144,10 @@ class ApiClient {
     required String name,
     required String email,
     required String password,
-    required String role,
   }) async {
     final Response<dynamic> response = await dio.post(
       '/auth/register',
-      data: {'name': name, 'email': email, 'password': password, 'role': role},
+      data: {'name': name, 'email': email, 'password': password},
     );
     return Map<String, dynamic>.from(response.data as Map);
   }
@@ -230,7 +229,7 @@ class _HomeShellState extends State<HomeShell> {
     final List<Widget> pages = <Widget>[
       AuthPage(session: widget.session),
       DonorPage(session: widget.session),
-      VolunteerPage(session: widget.session),
+      AdminOperationalPage(session: widget.session),
       TrackingPage(session: widget.session),
     ];
 
@@ -256,12 +255,12 @@ class _HomeShellState extends State<HomeShell> {
             destinations: const <NavigationDestination>[
               NavigationDestination(icon: Icon(Icons.login), label: 'Auth'),
               NavigationDestination(
-                icon: Icon(Icons.volunteer_activism),
+                icon: Icon(Icons.favorite),
                 label: 'Donatur',
               ),
               NavigationDestination(
-                icon: Icon(Icons.qr_code_scanner),
-                label: 'Relawan',
+                icon: Icon(Icons.admin_panel_settings),
+                label: 'Operasional',
               ),
               NavigationDestination(
                 icon: Icon(Icons.timeline),
@@ -291,7 +290,6 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController registerEmail = TextEditingController();
   final TextEditingController registerPassword = TextEditingController();
   final TextEditingController apiBase = TextEditingController();
-  String registerRole = 'DONOR';
   bool loading = false;
   String message = '';
 
@@ -360,7 +358,6 @@ class _AuthPageState extends State<AuthPage> {
         name: registerName.text.trim(),
         email: registerEmail.text.trim(),
         password: registerPassword.text.trim(),
-        role: registerRole,
       );
 
       final Map<String, dynamic> user = Map<String, dynamic>.from(
@@ -436,17 +433,8 @@ class _AuthPageState extends State<AuthPage> {
             decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
           ),
-          DropdownButtonFormField<String>(
-            initialValue: registerRole,
-            items: const <DropdownMenuItem<String>>[
-              DropdownMenuItem(value: 'DONOR', child: Text('DONOR')),
-              DropdownMenuItem(value: 'VOLUNTEER', child: Text('VOLUNTEER')),
-              DropdownMenuItem(value: 'ADMIN', child: Text('ADMIN')),
-            ],
-            onChanged: (String? value) =>
-                setState(() => registerRole = value ?? 'DONOR'),
-            decoration: const InputDecoration(labelText: 'Role'),
-          ),
+          const SizedBox(height: 8),
+          const Text('Role: DONOR', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: loading ? null : _doRegister,
@@ -685,16 +673,16 @@ class _DonorPageState extends State<DonorPage> {
   }
 }
 
-class VolunteerPage extends StatefulWidget {
-  const VolunteerPage({super.key, required this.session});
+class AdminOperationalPage extends StatefulWidget {
+  const AdminOperationalPage({super.key, required this.session});
 
   final AppSession session;
 
   @override
-  State<VolunteerPage> createState() => _VolunteerPageState();
+  State<AdminOperationalPage> createState() => _AdminOperationalPageState();
 }
 
-class _VolunteerPageState extends State<VolunteerPage> {
+class _AdminOperationalPageState extends State<AdminOperationalPage> {
   static const String trackingQueueKey = 'tracking_queue';
 
   final TextEditingController shipmentInput = TextEditingController();
@@ -787,7 +775,12 @@ class _VolunteerPageState extends State<VolunteerPage> {
 
   Future<void> _submitTracking() async {
     if (!widget.session.isAuthenticated) {
-      setState(() => message = 'Login sebagai VOLUNTEER dulu.');
+      setState(() => message = 'Login sebagai ADMIN dulu.');
+      return;
+    }
+
+    if (widget.session.role != 'ADMIN') {
+      setState(() => message = 'Fitur operasional hanya untuk ADMIN.');
       return;
     }
 
@@ -869,7 +862,7 @@ class _VolunteerPageState extends State<VolunteerPage> {
       padding: const EdgeInsets.all(16),
       children: <Widget>[
         const Text(
-          'Relawan Lapangan',
+          'Operasional Admin',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         TextField(

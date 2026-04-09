@@ -15,6 +15,9 @@ export function AdminNav() {
       <Link href="/admin/logistik" className="nav-chip">
         Manajemen Logistik
       </Link>
+      <Link href="/admin/pengguna" className="nav-chip">
+        Manajemen Pengguna
+      </Link>
     </div>
   );
 }

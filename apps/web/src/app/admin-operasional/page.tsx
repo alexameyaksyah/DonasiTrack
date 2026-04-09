@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { DonorExperience } from "../../components/DonorExperience";
+import { AdminOperationalFieldApp } from "../../components/AdminOperationalFieldApp";
 import { API_URL } from "../../lib/api";
 
 type AuthUser = {
@@ -11,10 +11,10 @@ type AuthUser = {
   role: "DONOR" | "ADMIN";
 };
 
-const DONOR_TOKEN_KEY = "donasi-track-donor-token";
-const DONOR_USER_KEY = "donasi-track-donor-user";
+const ADMIN_OPS_TOKEN_KEY = "donasi-track-admin-ops-token";
+const ADMIN_OPS_USER_KEY = "donasi-track-admin-ops-user";
 
-export default function DonorPage() {
+export default function AdminOperationalPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
@@ -23,19 +23,19 @@ export default function DonorPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem(DONOR_TOKEN_KEY);
-    const storedUser = localStorage.getItem(DONOR_USER_KEY);
+    const storedToken = localStorage.getItem(ADMIN_OPS_TOKEN_KEY);
+    const storedUser = localStorage.getItem(ADMIN_OPS_USER_KEY);
 
     if (storedToken && storedUser) {
       try {
         const parsed = JSON.parse(storedUser) as AuthUser;
-        if (parsed.role === "DONOR") {
+        if (parsed.role === "ADMIN") {
           setToken(storedToken);
           setUser(parsed);
         }
       } catch {
-        localStorage.removeItem(DONOR_TOKEN_KEY);
-        localStorage.removeItem(DONOR_USER_KEY);
+        localStorage.removeItem(ADMIN_OPS_TOKEN_KEY);
+        localStorage.removeItem(ADMIN_OPS_USER_KEY);
       }
     }
   }, []);
@@ -58,13 +58,13 @@ export default function DonorPage() {
         return;
       }
 
-      if (data.user.role !== "DONOR") {
-        setMessage("Akun ini bukan Donatur. Gunakan dashboard admin untuk pengelolaan konten.");
+      if (data.user.role !== "ADMIN") {
+        setMessage("Akun ini bukan Admin. Untuk berdonasi gunakan halaman donatur.");
         return;
       }
 
-      localStorage.setItem(DONOR_TOKEN_KEY, data.token);
-      localStorage.setItem(DONOR_USER_KEY, JSON.stringify(data.user));
+      localStorage.setItem(ADMIN_OPS_TOKEN_KEY, data.token);
+      localStorage.setItem(ADMIN_OPS_USER_KEY, JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
       setPassword("");
@@ -77,28 +77,28 @@ export default function DonorPage() {
   }
 
   function onLogout() {
-    localStorage.removeItem(DONOR_TOKEN_KEY);
-    localStorage.removeItem(DONOR_USER_KEY);
+    localStorage.removeItem(ADMIN_OPS_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_OPS_USER_KEY);
     setToken("");
     setUser(null);
-    setMessage("Sesi donatur telah keluar");
+    setMessage("Sesi admin operasional telah keluar");
   }
 
   return (
     <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Interface Donatur</h1>
+      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Operasional Admin</h1>
       <p className="muted" style={{ marginBottom: 10 }}>
-        Login dengan email donatur untuk eksplorasi kampanye, kirim donasi, dan pantau timeline bantuan.
+        Login dengan email admin untuk scan QR, update status bantuan, geolocation, dan sinkronisasi offline.
       </p>
 
       {!token || !user ? (
         <section className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
-          <h3>Login Donatur</h3>
-          <p className="muted">Akun admin tidak dapat mengakses halaman ini.</p>
+          <h3>Login Admin Operasional</h3>
+          <p className="muted">Akun donatur tidak dapat mengakses halaman ini.</p>
           <form className="form" style={{ marginTop: 8 }} onSubmit={onLogin}>
             <input
               type="email"
-              placeholder="Email donatur"
+              placeholder="Email admin"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
@@ -111,7 +111,7 @@ export default function DonorPage() {
               required
             />
             <button className="btn brand" type="submit" disabled={loading}>
-              {loading ? "Memproses..." : "Login Donatur"}
+              {loading ? "Memproses..." : "Login Admin"}
             </button>
           </form>
           {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
@@ -127,7 +127,7 @@ export default function DonorPage() {
               Logout
             </button>
           </div>
-          <DonorExperience authToken={token} />
+          <AdminOperationalFieldApp authToken={token} />
           {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
         </>
       )}

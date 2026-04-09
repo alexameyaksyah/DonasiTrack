@@ -49,15 +49,6 @@ async function main() {
     },
   });
 
-  const volunteer = await prisma.user.create({
-    data: {
-      name: "Relawan Demo",
-      email: "relawan@donasitrack.local",
-      passwordHash,
-      role: Role.VOLUNTEER,
-    },
-  });
-
   const campaignA = await prisma.campaign.create({
     data: {
       title: "Banjir Bandang Cianjur",
@@ -140,7 +131,7 @@ async function main() {
       quantity: 120,
       fromWarehouse: "Gudang Pusat Jakarta",
       destinationLocation: "Posko Utama Cianjur",
-      assignedVolunteerId: volunteer.id,
+      assignedOperatorId: admin.id,
       status: ShipmentStatus.IN_TRANSIT,
       createdById: admin.id,
     },
@@ -154,7 +145,7 @@ async function main() {
       quantity: 60,
       fromWarehouse: "Gudang Pusat Jakarta",
       destinationLocation: "Posko Padang Pariaman",
-      assignedVolunteerId: volunteer.id,
+      assignedOperatorId: admin.id,
       status: ShipmentStatus.DELIVERED,
       createdById: admin.id,
     },
@@ -171,8 +162,8 @@ async function main() {
       {
         shipmentId: shipmentA.id,
         status: ShipmentStatus.PICKED_UP,
-        note: "Relawan mengambil logistik dari gudang",
-        createdById: volunteer.id,
+        note: "Admin operasional mengambil logistik dari gudang",
+        createdById: admin.id,
         latitude: -6.21462,
         longitude: 106.84513,
       },
@@ -180,7 +171,7 @@ async function main() {
         shipmentId: shipmentA.id,
         status: ShipmentStatus.IN_TRANSIT,
         note: "Dalam perjalanan menuju posko Cianjur",
-        createdById: volunteer.id,
+        createdById: admin.id,
         latitude: -6.816,
         longitude: 107.142,
       },
@@ -194,7 +185,7 @@ async function main() {
         shipmentId: shipmentB.id,
         status: ShipmentStatus.DELIVERED,
         note: "Bantuan diterima koordinator posko",
-        createdById: volunteer.id,
+        createdById: admin.id,
         latitude: -0.604,
         longitude: 100.179,
         photoUrl: "https://example.com/proof/serah-terima-001.jpg",
@@ -212,10 +203,10 @@ async function main() {
         status: "stored",
       },
       {
-        userId: volunteer.id,
+        userId: admin.id,
         channel: "FCM",
-        title: "Tugas Logistik Baru",
-        body: "Anda mendapat pengiriman dengan kode DNT-DEMO-0001.",
+        title: "Tugas Operasional Logistik",
+        body: "Anda mendapat pengiriman operasional dengan kode DNT-DEMO-0001.",
         status: "stored",
       },
     ],
@@ -224,7 +215,6 @@ async function main() {
   console.log("Seed selesai.");
   console.log("Admin    : admin@donasitrack.local / Password123!");
   console.log("Donatur  : donor@donasitrack.local / Password123!");
-  console.log("Relawan  : relawan@donasitrack.local / Password123!");
   console.log("Tracking : DNT-DEMO-0001, DNT-DEMO-0002");
   console.log("Sample donation id (money):", donationMoney.id);
 

@@ -5,14 +5,14 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 ## Struktur Proyek
 
 - `apps/api`: Backend REST API (Express + TypeScript + Prisma + PostgreSQL)
-- `apps/web`: Frontend Next.js (Admin SSR + Donatur + Relawan)
-- `apps/mobile`: Frontend Flutter (Donatur + Relawan + Tracking)
+- `apps/web`: Frontend Next.js (Admin SSR + Donatur + Operasional Admin)
+- `apps/mobile`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
 - `packages/shared`: Ruang untuk shared package ke depan
 
 ## Fitur yang Sudah Diimplementasikan
 
 ### Backend
-- Desain database PostgreSQL untuk entitas User (Donatur/Admin/Relawan), Campaign, Donation, Inventory, AidShipment, TrackingEvent, NotificationLog.
+- Desain database PostgreSQL untuk entitas User (Donatur/Admin), Campaign, Donation, Inventory, AidShipment, TrackingEvent, NotificationLog.
 - REST API untuk:
   - JWT auth (`/api/auth/register`, `/api/auth/login`)
   - Campaign management (`/api/campaigns`)
@@ -28,15 +28,15 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 - **Dashboard Admin (SSR)**: statistik + grafik donasi masuk vs tersalurkan.
 - **Manajemen Kampanye**: daftar kampanye + form buat kampanye.
 - **Sistem Verifikasi**: validasi donasi pending.
-- **Manajemen Logistik**: alokasi barang dari gudang ke relawan.
+- **Manajemen Logistik**: alokasi barang dari gudang ke admin operasional.
 - **Interface Donatur**: eksplorasi kampanye, form donasi, dan akses tracking timeline.
-- **Interface Relawan**: scanner QR, update status lapangan, geolocation, dan offline queue sync.
+- **Operasional Admin**: scanner QR, update status lapangan, geolocation, dan offline queue sync.
 - **Tracking Visual**: halaman timeline per kode tracking.
 
 ### Flutter App
-- **Auth JWT**: login/registrasi role Donor, Volunteer, Admin.
+- **Auth JWT**: login role Donor dan Admin.
 - **Donatur**: eksplorasi kampanye, kirim donasi, queue offline untuk donasi gagal kirim.
-- **Relawan**: scan QR, update status logistik, geolocation, kamera + upload bukti foto, queue offline tracking.
+- **Operasional Admin**: scan QR, update status logistik, geolocation, kamera + upload bukti foto, queue offline tracking.
 - **Tracking**: lihat timeline status bantuan per tracking code.
 
 ## Konfigurasi Environment
@@ -118,13 +118,25 @@ npm run build:web
 npm run build:mobile
 ```
 
-## Login Donatur dan Relawan (Web)
+## Login Donatur dan Admin (Web)
 
 - Halaman `http://localhost:3000/donatur` hanya menerima akun dengan role `DONOR`.
-- Halaman `http://localhost:3000/relawan` hanya menerima akun dengan role `VOLUNTEER`.
-- Masing-masing halaman menyimpan sesi login terpisah di browser, jadi donatur dan relawan tidak saling menimpa token.
+- Halaman `http://localhost:3000/admin-operasional` digunakan sebagai area operasional admin dan hanya menerima role `ADMIN`.
+- URL lama `http://localhost:3000/relawan` otomatis diarahkan ke `/admin-operasional`.
+- Masing-masing halaman menyimpan sesi login terpisah di browser, jadi donatur dan admin tidak saling menimpa token.
 
-## Integrasi Prisma Studio Untuk Ubah Role User
+## Ubah Role User Dari Dashboard Admin
+
+1. Buka halaman `http://localhost:3000/admin/pengguna`.
+2. Masukkan JWT Admin.
+3. Muat daftar user lalu ubah role user menjadi `DONOR` atau `ADMIN`.
+
+Endpoint terkait:
+
+- `GET /api/admin/users`
+- `PATCH /api/admin/users/:id/role`
+
+## Integrasi Prisma Studio (Opsional)
 
 1. Jalankan Prisma Studio dari root monorepo:
 
@@ -133,7 +145,7 @@ npm run studio
 ```
 
 2. Buka model `User`.
-3. Ubah kolom `role` user menjadi `DONOR` atau `VOLUNTEER`.
+3. Ubah kolom `role` user menjadi `DONOR` atau `ADMIN`.
 4. Simpan perubahan di Prisma Studio.
 5. Login ulang di halaman web sesuai role terbaru.
 
@@ -148,7 +160,6 @@ npm run studio
 
 - Admin: `admin@donasitrack.local` / `Password123!`
 - Donatur: `donor@donasitrack.local` / `Password123!`
-- Relawan: `relawan@donasitrack.local` / `Password123!`
 - Tracking code demo: `DNT-DEMO-0001`, `DNT-DEMO-0002`
 
 ## Catatan Implementasi Lapangan

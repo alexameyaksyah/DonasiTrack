@@ -13,8 +13,8 @@ export default function Home() {
             <Link className="nav-chip" href="/donatur">
               Interface Donatur
             </Link>
-            <Link className="nav-chip" href="/relawan">
-              Interface Relawan
+            <Link className="nav-chip" href="/admin-operasional">
+              Operasional Admin
             </Link>
           </nav>
         </div>
@@ -26,7 +26,7 @@ export default function Home() {
             <span className="badge">MVP Siap Demo</span>
             <h1>Transparansi Donasi Bencana Dari Gudang Sampai Lokasi</h1>
             <p>
-              Platform ini menggabungkan API backend, dashboard admin SSR, serta interface donatur-relawan
+              Platform ini menggabungkan API backend, dashboard admin SSR, serta interface donatur-admin
               dengan tracking real-time untuk memastikan bantuan benar-benar sampai.
             </p>
             <div className="grid">
