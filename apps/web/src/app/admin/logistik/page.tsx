@@ -23,14 +23,17 @@ export default async function AdminLogisticsPage() {
   ]);
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Manajemen Logistik</h1>
+    <main className="container section fade-up">
+      <div className="header-stack">
+        <p className="badge">Logistics Flow</p>
+        <h1>Manajemen Logistik</h1>
+      </div>
       <AdminNav />
       <section className="grid">
         <LogisticsPanel />
         <div className="card">
           <h3>Referensi Data</h3>
-          <p className="muted" style={{ marginTop: 8 }}>Gunakan ID berikut saat membuat alokasi logistik.</p>
+          <p className="status-line">Gunakan ID berikut saat membuat alokasi logistik.</p>
           <div style={{ marginTop: 10 }}>
             <strong>Kampanye</strong>
             <ul className="timeline">

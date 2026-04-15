@@ -52,11 +52,12 @@ export default function AdminOperationalPage() {
   }
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Operasional Admin</h1>
-      <p className="muted" style={{ marginBottom: 10 }}>
-        Scan QR, update status bantuan, geolocation, dan sinkronisasi offline.
-      </p>
+    <main className="container section fade-up">
+      <div className="header-stack">
+        <p className="badge">Field Operations</p>
+        <h1>Operasional Admin</h1>
+        <p className="muted">Scan QR, update status bantuan, geolocation, dan sinkronisasi offline.</p>
+      </div>
 
       {!session.token || !session.user ? (
         <section className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
@@ -65,7 +66,7 @@ export default function AdminOperationalPage() {
           <Link href="/auth" className="btn brand" style={{ marginTop: 8 }}>
             Ke Halaman Login / Daftar
           </Link>
-          {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
+          {message ? <p className="status-line">{message}</p> : null}
         </section>
       ) : (
         <>
@@ -79,7 +80,7 @@ export default function AdminOperationalPage() {
             </button>
           </div>
           <AdminOperationalFieldApp authToken={session.token} />
-          {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
+          {message ? <p className="status-line">{message}</p> : null}
         </>
       )}
     </main>

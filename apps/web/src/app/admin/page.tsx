@@ -32,11 +32,14 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Dashboard Admin (SSR)</h1>
-      <p className="muted" style={{ marginBottom: 10 }}>
-        Halaman ini dirender di server. Isi token admin melalui env ADMIN_DASHBOARD_TOKEN agar statistik tampil.
-      </p>
+    <main className="container section fade-up">
+      <div className="header-stack">
+        <p className="badge">Admin Intelligence</p>
+        <h1>Dashboard Admin (SSR)</h1>
+        <p className="muted">
+          Halaman ini dirender di server. Isi token admin melalui env ADMIN_DASHBOARD_TOKEN agar statistik tampil.
+        </p>
+      </div>
       <AdminNav />
 
       {error ? <div className="panel">{error}</div> : null}

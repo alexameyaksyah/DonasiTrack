@@ -17,8 +17,11 @@ export default async function AdminCampaignsPage() {
   const campaigns = await getJson<Campaign[]>("/campaigns");
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Manajemen Kampanye</h1>
+    <main className="container section fade-up">
+      <div className="header-stack">
+        <p className="badge">Campaign Studio</p>
+        <h1>Manajemen Kampanye</h1>
+      </div>
       <AdminNav />
       <section className="grid">
         <CampaignForm />

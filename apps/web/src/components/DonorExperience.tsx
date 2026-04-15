@@ -90,7 +90,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
     <div className="grid">
       <div className="card">
         <h3>Eksplorasi Kampanye</h3>
-        <p className="muted">Data disimpan cache lokal agar tetap cepat di jaringan tidak stabil.</p>
+        <p className="status-line">Data disimpan cache lokal agar tetap cepat di jaringan tidak stabil.</p>
         <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
           {campaigns.map((campaign) => (
             <div className="panel" key={campaign.id}>
@@ -123,7 +123,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
 
       <div className="card">
         <h3>Tracking Bantuan</h3>
-        <p className="muted">Masukkan kode tracking untuk melihat timeline bantuan.</p>
+        <p className="status-line">Masukkan kode tracking untuk melihat timeline bantuan.</p>
         <div className="form" style={{ marginTop: 8 }}>
           <input value={trackingCode} onChange={(event) => setTrackingCode(event.target.value)} placeholder="Contoh: DNT-123456-ABCD" />
           <Link className="btn" href={`/tracking/${trackingCode || "demo"}`}>

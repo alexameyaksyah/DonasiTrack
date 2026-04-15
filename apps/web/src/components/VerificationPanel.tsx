@@ -73,13 +73,13 @@ export function VerificationPanel() {
   return (
     <div className="panel">
       <h3>Validasi Bukti Donasi</h3>
-      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
+      <p className="status-line">Token admin diambil otomatis dari sesi login.</p>
       <div className="form" style={{ marginTop: 8 }}>
         <button className="btn" onClick={loadPending} type="button">
           Muat Pending
         </button>
       </div>
-      {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
+      {message ? <p className="status-line">{message}</p> : null}
       <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
         {items.map((item) => (
           <div className="card" key={item.id}>

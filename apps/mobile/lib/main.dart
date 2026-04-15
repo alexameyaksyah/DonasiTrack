@@ -8,6 +8,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class MoonPalette {
+  static const Color lavender = Color(0xFF9985F3);
+  static const Color orchid = Color(0xFFC7B7FC);
+  static const Color thistle = Color(0xFFE2D3EF);
+  static const Color pearl = Color(0xFFF4ECFE);
+  static const Color ink = Color(0xFF2A1D56);
+  static const Color muted = Color(0xFF685B8D);
+}
+
 void main() {
   runApp(const DonasiTrackMobileApp());
 }
@@ -23,15 +32,126 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
   final AppSession session = AppSession();
   late final Future<void> bootstrap = session.load();
 
+  ThemeData _buildTheme() {
+    final ColorScheme scheme = ColorScheme.fromSeed(
+      seedColor: MoonPalette.lavender,
+      primary: MoonPalette.lavender,
+      secondary: MoonPalette.orchid,
+      surface: const Color(0xFFFDF9FF),
+      onPrimary: Colors.white,
+      onSecondary: MoonPalette.ink,
+      onSurface: MoonPalette.ink,
+      brightness: Brightness.light,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: Colors.transparent,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
+          color: MoonPalette.ink,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: Colors.white.withValues(alpha: 0.76),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.25)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.72),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.22)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.22)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: MoonPalette.lavender, width: 1.4),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: MoonPalette.lavender,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: MoonPalette.ink,
+          side: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.35)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.white.withValues(alpha: 0.78),
+        indicatorColor: MoonPalette.orchid.withValues(alpha: 0.64),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final bool selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? MoonPalette.ink : MoonPalette.muted,
+          );
+        }),
+      ),
+      dividerColor: MoonPalette.thistle,
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: MoonPalette.ink,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.4,
+        ),
+        titleMedium: TextStyle(
+          color: MoonPalette.ink,
+          fontWeight: FontWeight.w700,
+        ),
+        bodyMedium: TextStyle(color: MoonPalette.muted),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Donasi Track Mobile',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F7B6C)),
-        useMaterial3: true,
-      ),
+      theme: _buildTheme(),
+      builder: (BuildContext context, Widget? child) {
+        return DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: <Color>[
+                Color(0xFFF8F1FF),
+                MoonPalette.pearl,
+                Color(0xFFE7DBFF),
+              ],
+            ),
+          ),
+          child: child,
+        );
+      },
       home: FutureBuilder<void>(
         future: bootstrap,
         builder: (context, snapshot) {
@@ -65,7 +185,7 @@ class AuthStandalonePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login / Daftar')),
+      appBar: AppBar(title: const Text('Lavender Moon Access')),
       body: AuthPage(session: session),
     );
   }
@@ -261,7 +381,7 @@ class _HomeShellState extends State<HomeShell> {
       builder: (context, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Donasi Track Flutter'),
+            title: const Text('Donasi Track Mobile'),
             actions: <Widget>[
               if (widget.session.isAuthenticated)
                 IconButton(
@@ -271,7 +391,12 @@ class _HomeShellState extends State<HomeShell> {
                 ),
             ],
           ),
-          body: pages[index],
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: pages[index],
+            ),
+          ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: index,
             onDestinationSelected: (int value) => setState(() => index = value),
@@ -410,61 +535,103 @@ class _AuthPageState extends State<AuthPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextField(
-            controller: apiBase,
-            decoration: const InputDecoration(
-              labelText: 'API Base URL',
-              hintText: 'http://10.0.2.2:4000/api',
+          const Text(
+            'Akses akun dan sinkronkan endpoint API dalam satu layar yang ringkas.',
+            style: TextStyle(color: MoonPalette.muted),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'Koneksi API',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: apiBase,
+                    decoration: const InputDecoration(
+                      labelText: 'API Base URL',
+                      hintText: 'http://10.0.2.2:4000/api',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Aktif: ${widget.session.effectiveApiBase}'),
+                  const SizedBox(height: 4),
+                  Text('Session role: ${widget.session.role}'),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text('Aktif: ${widget.session.effectiveApiBase}'),
           const SizedBox(height: 12),
-          Text('Session role: ${widget.session.role}'),
-          const Divider(height: 28),
-          const Text('Login', style: TextStyle(fontWeight: FontWeight.bold)),
-          TextField(
-            controller: loginEmail,
-            decoration: const InputDecoration(labelText: 'Email'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text('Login', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: loginEmail,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: loginPassword,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                    onPressed: loading ? null : _doLogin,
+                    child: const Text('Login'),
+                  ),
+                ],
+              ),
+            ),
           ),
-          TextField(
-            controller: loginPassword,
-            decoration: const InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: loading ? null : _doLogin,
-            child: const Text('Login'),
-          ),
-          const Divider(height: 28),
-          const Text(
-            'Registrasi',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          TextField(
-            controller: registerName,
-            decoration: const InputDecoration(labelText: 'Nama'),
-          ),
-          TextField(
-            controller: registerEmail,
-            decoration: const InputDecoration(labelText: 'Email'),
-          ),
-          TextField(
-            controller: registerPassword,
-            decoration: const InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
-          const SizedBox(height: 8),
-          const Text('Role: DONOR', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          FilledButton(
-            onPressed: loading ? null : _doRegister,
-            child: const Text('Registrasi'),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text('Registrasi', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: registerName,
+                    decoration: const InputDecoration(labelText: 'Nama'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: registerEmail,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: registerPassword,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Role: DONOR', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: loading ? null : _doRegister,
+                    child: const Text('Registrasi'),
+                  ),
+                ],
+              ),
+            ),
           ),
           if (message.isNotEmpty) ...<Widget>[
             const SizedBox(height: 10),
-            Text(message),
+            Text(message, style: const TextStyle(color: MoonPalette.muted)),
           ],
         ],
       ),
@@ -621,9 +788,24 @@ class _DonorPageState extends State<DonorPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
-        const Text(
-          'Eksplorasi Kampanye',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Eksplorasi Kampanye',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Pilih kampanye, isi detail donasi, dan kirim saat online atau offline.',
+                  style: TextStyle(color: MoonPalette.muted),
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         ...campaigns.map(
@@ -638,10 +820,10 @@ class _DonorPageState extends State<DonorPage> {
             ),
           ),
         ),
-        const Divider(height: 30),
+        const SizedBox(height: 6),
         const Text(
           'Form Donasi',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         TextField(
           controller: campaignId,
@@ -689,7 +871,10 @@ class _DonorPageState extends State<DonorPage> {
           child: const Text('Sync Queue Offline'),
         ),
         if (message.isNotEmpty)
-          Padding(padding: const EdgeInsets.only(top: 8), child: Text(message)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(message, style: const TextStyle(color: MoonPalette.muted)),
+          ),
       ],
     );
   }
@@ -883,10 +1068,23 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
-        const Text(
-          'Operasional Admin',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Operasional Admin', style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 4),
+                Text(
+                  'Scan QR, update status, foto bukti, dan sinkronisasi queue offline.',
+                  style: TextStyle(color: MoonPalette.muted),
+                ),
+              ],
+            ),
+          ),
         ),
+        const SizedBox(height: 8),
         TextField(
           controller: shipmentInput,
           decoration: const InputDecoration(
@@ -925,6 +1123,7 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
         if (position != null)
           Text(
             'Lokasi: ${position!.latitude.toStringAsFixed(6)}, ${position!.longitude.toStringAsFixed(6)}',
+            style: const TextStyle(color: MoonPalette.muted),
           ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -943,7 +1142,10 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
           child: const Text('Sync Queue Tracking Offline'),
         ),
         if (message.isNotEmpty)
-          Padding(padding: const EdgeInsets.only(top: 8), child: Text(message)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(message, style: const TextStyle(color: MoonPalette.muted)),
+          ),
       ],
     );
   }
@@ -999,10 +1201,23 @@ class _TrackingPageState extends State<TrackingPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
-        const Text(
-          'Tracking Bantuan',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Tracking Bantuan', style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 4),
+                Text(
+                  'Lacak perjalanan bantuan secara realtime berdasarkan tracking code.',
+                  style: TextStyle(color: MoonPalette.muted),
+                ),
+              ],
+            ),
+          ),
         ),
+        const SizedBox(height: 8),
         TextField(
           controller: code,
           decoration: const InputDecoration(labelText: 'Tracking Code'),
@@ -1013,7 +1228,10 @@ class _TrackingPageState extends State<TrackingPage> {
           child: const Text('Cari Timeline'),
         ),
         if (message.isNotEmpty)
-          Padding(padding: const EdgeInsets.only(top: 8), child: Text(message)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(message, style: const TextStyle(color: MoonPalette.muted)),
+          ),
         if (payload != null) ...<Widget>[
           const SizedBox(height: 10),
           Text('Status: ${payload!['status']}'),

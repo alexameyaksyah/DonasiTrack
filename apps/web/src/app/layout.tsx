@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
+import { Manrope, Sora } from "next/font/google";
 import "./globals.css";
 
-const heading = Space_Grotesk({
+const heading = Sora({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
-const body = IBM_Plex_Sans({
+const body = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],

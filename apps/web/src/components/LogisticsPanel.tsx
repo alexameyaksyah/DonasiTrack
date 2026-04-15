@@ -54,7 +54,7 @@ export function LogisticsPanel() {
   return (
     <div className="panel">
       <h3>Alokasi Gudang ke Admin Operasional</h3>
-      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
+      <p className="status-line">Token admin diambil otomatis dari sesi login.</p>
       <form className="form" onSubmit={onSubmit} style={{ marginTop: 8 }}>
         <input name="campaignId" placeholder="Campaign ID" required />
         <input name="itemId" placeholder="Inventory Item ID" required />
@@ -66,7 +66,7 @@ export function LogisticsPanel() {
           Buat Pengiriman
         </button>
       </form>
-      {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
+      {message ? <p className="status-line">{message}</p> : null}
     </div>
   );
 }

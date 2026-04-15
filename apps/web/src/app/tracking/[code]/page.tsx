@@ -30,8 +30,11 @@ export default async function TrackingPage({ params }: { params: Promise<{ code:
   }
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Tracking Bantuan</h1>
+    <main className="container section fade-up">
+      <div className="header-stack">
+        <p className="badge">Realtime Tracking</p>
+        <h1>Tracking Bantuan</h1>
+      </div>
       <div className="card">
         {error ? <p>{error}</p> : null}
         {data ? (

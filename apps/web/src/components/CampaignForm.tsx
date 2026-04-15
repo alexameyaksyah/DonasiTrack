@@ -49,7 +49,7 @@ export function CampaignForm() {
   return (
     <div className="panel">
       <h3 style={{ marginBottom: 8 }}>Buat Kampanye</h3>
-      <p className="muted">Token admin diambil otomatis dari sesi login.</p>
+      <p className="status-line">Token admin diambil otomatis dari sesi login.</p>
       <form className="form" onSubmit={onSubmit}>
         <input name="title" placeholder="Judul kampanye" required />
         <textarea name="description" placeholder="Deskripsi" required rows={3} />
@@ -60,7 +60,7 @@ export function CampaignForm() {
           Simpan Kampanye
         </button>
       </form>
-      {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
+      {message ? <p className="status-line">{message}</p> : null}
     </div>
   );
 }

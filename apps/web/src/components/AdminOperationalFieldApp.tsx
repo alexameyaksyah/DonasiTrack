@@ -150,7 +150,7 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
     <div className="grid">
       <div className="card">
         <h3>Pemindai QR Admin Operasional</h3>
-        <p className="muted">Scan QR untuk mengambil ID pengiriman saat serah terima bantuan.</p>
+        <p className="status-line">Scan QR untuk mengambil ID pengiriman saat serah terima bantuan.</p>
         <div id={qrElementId} style={{ marginTop: 10 }} />
       </div>
 
@@ -176,10 +176,10 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
             Sinkronkan Data Offline ({queueCount})
           </button>
         </form>
-        <p className="muted" style={{ marginTop: 8 }}>
+        <p className="status-line">
           Lokasi: {latitude ?? "-"}, {longitude ?? "-"}
         </p>
-        {message ? <p className="muted">{message}</p> : null}
+        {message ? <p className="status-line">{message}</p> : null}
       </div>
     </div>
   );

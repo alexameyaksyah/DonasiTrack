@@ -96,70 +96,75 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="container section">
-      <h1 style={{ fontFamily: "var(--font-heading)", marginBottom: 10 }}>Login dan Daftar Akun</h1>
-      <p className="muted" style={{ marginBottom: 12 }}>
-        Registrasi publik otomatis membuat akun sebagai DONOR. Jika perlu mengubah role ke ADMIN, gunakan Prisma Studio.
-      </p>
+    <main className="container section fade-up">
+      <div className="hero-card" style={{ marginBottom: 16 }}>
+        <div className="header-stack">
+          <p className="badge">Lavender Moon Access</p>
+          <h1>Login dan Daftar Akun</h1>
+          <p className="muted">
+            Registrasi publik otomatis membuat akun sebagai DONOR. Jika perlu mengubah role ke ADMIN, gunakan Prisma Studio.
+          </p>
+        </div>
 
-      <section className="grid" style={{ alignItems: "start" }}>
-        <article className="card">
-          <h3>Login</h3>
-          <form className="form" style={{ marginTop: 8 }} onSubmit={onLogin}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={loginEmail}
-              onChange={(event) => setLoginEmail(event.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginPassword}
-              onChange={(event) => setLoginPassword(event.target.value)}
-              required
-            />
-            <button className="btn brand" type="submit" disabled={loading}>
-              {loading ? "Memproses..." : "Login"}
-            </button>
-          </form>
-        </article>
+        <section className="grid" style={{ alignItems: "start" }}>
+          <article className="card">
+            <h3>Login</h3>
+            <form className="form" style={{ marginTop: 8 }} onSubmit={onLogin}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                required
+              />
+              <button className="btn brand" type="submit" disabled={loading}>
+                {loading ? "Memproses..." : "Login"}
+              </button>
+            </form>
+          </article>
 
-        <article className="card">
-          <h3>Daftar Akun Baru</h3>
-          <p className="muted">Role pendaftaran awal: DONOR</p>
-          <form className="form" style={{ marginTop: 8 }} onSubmit={onRegister}>
-            <input
-              type="text"
-              placeholder="Nama"
-              value={registerName}
-              onChange={(event) => setRegisterName(event.target.value)}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={registerEmail}
-              onChange={(event) => setRegisterEmail(event.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password minimal 6 karakter"
-              value={registerPassword}
-              onChange={(event) => setRegisterPassword(event.target.value)}
-              required
-              minLength={6}
-            />
-            <button className="btn" type="submit" disabled={loading}>
-              {loading ? "Memproses..." : "Daftar"}
-            </button>
-          </form>
-        </article>
-      </section>
+          <article className="card">
+            <h3>Daftar Akun Baru</h3>
+            <p className="muted">Role pendaftaran awal: DONOR</p>
+            <form className="form" style={{ marginTop: 8 }} onSubmit={onRegister}>
+              <input
+                type="text"
+                placeholder="Nama"
+                value={registerName}
+                onChange={(event) => setRegisterName(event.target.value)}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={registerEmail}
+                onChange={(event) => setRegisterEmail(event.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password minimal 6 karakter"
+                value={registerPassword}
+                onChange={(event) => setRegisterPassword(event.target.value)}
+                required
+                minLength={6}
+              />
+              <button className="btn" type="submit" disabled={loading}>
+                {loading ? "Memproses..." : "Daftar"}
+              </button>
+            </form>
+          </article>
+        </section>
+      </div>
 
-      {message ? <p className="muted" style={{ marginTop: 10 }}>{message}</p> : null}
+      {message ? <p className="status-line">{message}</p> : null}
     </main>
   );
 }
