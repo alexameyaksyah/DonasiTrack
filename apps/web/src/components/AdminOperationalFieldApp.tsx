@@ -36,6 +36,9 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
   const [photoUrl, setPhotoUrl] = useState("");
   const [message, setMessage] = useState("");
   const [queueCount, setQueueCount] = useState(0);
+  const [isGeoLoading, setIsGeoLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const qrElementId = useMemo(() => "qr-reader", []);
 
@@ -79,13 +82,18 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
   }, [qrElementId]);
 
   function captureLocation() {
+    setIsGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLatitude(position.coords.latitude);
         setLongitude(position.coords.longitude);
         setMessage("Lokasi berhasil diambil");
+        setIsGeoLoading(false);
       },
-      () => setMessage("Gagal mengambil lokasi"),
+      () => {
+        setMessage("Gagal mengambil lokasi");
+        setIsGeoLoading(false);
+      },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   }
@@ -107,6 +115,7 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
     const body: QueueItem = {
       shipmentId,
@@ -126,10 +135,13 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
       localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
       setQueueCount(queue.length);
       setMessage("Offline: data tracking disimpan lokal dan bisa sync nanti");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   async function syncQueue() {
+    setIsSyncing(true);
     const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]") as QueueItem[];
     const remaining: QueueItem[] = [];
 
@@ -144,6 +156,7 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
     localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
     setQueueCount(remaining.length);
     setMessage(remaining.length ? "Sebagian data masih antri" : "Semua data offline berhasil disinkronkan");
+    setIsSyncing(false);
   }
 
   return (
@@ -166,14 +179,14 @@ export function AdminOperationalFieldApp({ authToken }: AdminOperationalFieldApp
           </select>
           <textarea placeholder="Catatan lapangan" value={note} onChange={(event) => setNote(event.target.value)} rows={3} />
           <input placeholder="URL foto bukti (hasil upload kamera)" value={photoUrl} onChange={(event) => setPhotoUrl(event.target.value)} />
-          <button className="btn secondary" type="button" onClick={captureLocation}>
-            Ambil Geolocation
+          <button className="btn info" type="button" onClick={captureLocation} disabled={isGeoLoading}>
+            {isGeoLoading ? "Mengambil Lokasi..." : "Ambil Geolocation"}
           </button>
-          <button className="btn brand" type="submit">
-            Kirim Tracking
+          <button className="btn success" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Mengirim..." : "Kirim Tracking"}
           </button>
-          <button className="btn" type="button" onClick={syncQueue}>
-            Sinkronkan Data Offline ({queueCount})
+          <button className="btn neutral" type="button" onClick={syncQueue} disabled={isSyncing}>
+            {isSyncing ? "Sinkronisasi..." : `Sinkronkan Data Offline (${queueCount})`}
           </button>
         </form>
         <p className="status-line">

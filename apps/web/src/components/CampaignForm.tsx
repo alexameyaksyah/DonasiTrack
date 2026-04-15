@@ -14,9 +14,11 @@ export function CampaignForm() {
     return localStorage.getItem(SESSION_TOKEN_KEY) || "";
   });
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(event.currentTarget);
 
     const body = {
@@ -27,23 +29,29 @@ export function CampaignForm() {
       targetAmount: Number(formData.get("targetAmount")),
     };
 
-    const response = await fetch(`${API_URL}/campaigns`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(token),
-      },
-      body: JSON.stringify(body),
-    });
+    try {
+      const response = await fetch(`${API_URL}/campaigns`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(token),
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      const data = await response.json();
-      setMessage(data.message || "Gagal membuat kampanye");
-      return;
+      if (!response.ok) {
+        const data = await response.json();
+        setMessage(data.message || "Gagal membuat kampanye");
+        return;
+      }
+
+      setMessage("Kampanye berhasil dibuat. Reload halaman untuk melihat data baru.");
+      event.currentTarget.reset();
+    } catch {
+      setMessage("Gagal terhubung ke server.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setMessage("Kampanye berhasil dibuat. Reload halaman untuk melihat data baru.");
-    event.currentTarget.reset();
   }
 
   return (
@@ -56,8 +64,8 @@ export function CampaignForm() {
         <input name="disasterType" placeholder="Jenis bencana" required />
         <input name="location" placeholder="Lokasi" required />
         <input name="targetAmount" type="number" placeholder="Target (angka)" required />
-        <button className="btn brand" type="submit">
-          Simpan Kampanye
+        <button className="btn success" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Menyimpan..." : "Simpan Kampanye"}
         </button>
       </form>
       {message ? <p className="status-line">{message}</p> : null}

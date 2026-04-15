@@ -76,3 +76,13 @@ campaignRouter.patch("/:id/close", requireAuth, requireRole(Role.ADMIN), async (
     return next(error);
   }
 });
+
+campaignRouter.delete("/:id", requireAuth, requireRole(Role.ADMIN), async (req, res, next) => {
+  try {
+    const id = String(req.params.id);
+    await prisma.campaign.delete({ where: { id } });
+    return res.json({ message: "Kampanye berhasil dihapus" });
+  } catch (error) {
+    return next(error);
+  }
+});

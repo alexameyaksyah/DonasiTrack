@@ -14,6 +14,39 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireRole(Role.ADMIN));
 
+adminRouter.get("/operators", async (_req, res, next) => {
+  try {
+    const operators = await prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return res.json(operators);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+adminRouter.get("/verifications", async (req, res, next) => {
+  try {
+    const status = req.query.status as VerificationStatus | undefined;
+    const verifications = await prisma.donation.findMany({
+      where: status ? { verificationStatus: status } : undefined,
+      include: { donor: true, campaign: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.json(verifications);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 adminRouter.get("/verifications/pending", async (_req, res, next) => {
   try {
     const pending = await prisma.donation.findMany({

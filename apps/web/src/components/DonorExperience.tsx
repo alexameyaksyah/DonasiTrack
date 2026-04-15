@@ -35,6 +35,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
   });
   const [message, setMessage] = useState("");
   const [trackingCode, setTrackingCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/campaigns`)
@@ -50,6 +51,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
 
   async function onDonation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(event.currentTarget);
     const body = {
       campaignId: String(formData.get("campaignId")),
@@ -83,6 +85,8 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
       queue.push(body);
       localStorage.setItem("donation-queue", JSON.stringify(queue));
       setMessage("Jaringan tidak stabil. Donasi disimpan lokal dan bisa dikirim ulang nanti.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -114,8 +118,8 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
           <input name="itemName" placeholder="Nama barang" />
           <input name="quantity" type="number" placeholder="Jumlah barang" />
           <input name="transferProofUrl" placeholder="URL bukti transfer/foto" />
-          <button className="btn brand" type="submit">
-            Kirim Donasi
+          <button className="btn success" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Mengirim..." : "Kirim Donasi"}
           </button>
         </form>
         {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
@@ -126,7 +130,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
         <p className="status-line">Masukkan kode tracking untuk melihat timeline bantuan.</p>
         <div className="form" style={{ marginTop: 8 }}>
           <input value={trackingCode} onChange={(event) => setTrackingCode(event.target.value)} placeholder="Contoh: DNT-123456-ABCD" />
-          <Link className="btn" href={`/tracking/${trackingCode || "demo"}`}>
+          <Link className="btn info" href={`/tracking/${trackingCode || "demo"}`}>
             Lihat Timeline
           </Link>
         </div>

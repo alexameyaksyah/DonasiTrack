@@ -124,7 +124,7 @@ export default function AuthPage() {
                 onChange={(event) => setLoginPassword(event.target.value)}
                 required
               />
-              <button className="btn brand" type="submit" disabled={loading}>
+              <button className="btn info" type="submit" disabled={loading}>
                 {loading ? "Memproses..." : "Login"}
               </button>
             </form>
@@ -156,7 +156,7 @@ export default function AuthPage() {
                 required
                 minLength={6}
               />
-              <button className="btn" type="submit" disabled={loading}>
+              <button className="btn success" type="submit" disabled={loading}>
                 {loading ? "Memproses..." : "Daftar"}
               </button>
             </form>

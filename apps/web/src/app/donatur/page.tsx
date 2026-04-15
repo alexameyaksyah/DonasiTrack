@@ -52,37 +52,78 @@ export default function DonorPage() {
   }
 
   return (
-    <main className="container section fade-up">
-      <div className="header-stack">
-        <p className="badge">Donor Console</p>
-        <h1>Interface Donatur</h1>
-        <p className="muted">Eksplorasi kampanye, kirim donasi, dan pantau timeline bantuan.</p>
-      </div>
-
-      {!session.token || !session.user ? (
-        <section className="card" style={{ maxWidth: 520, marginBottom: 12 }}>
-          <h3>Akses Donatur</h3>
-          <p className="muted">{message || "Sesi tidak ditemukan."}</p>
-          <Link href="/auth" className="btn brand" style={{ marginTop: 8 }}>
-            Ke Halaman Login / Daftar
+    <main className="admin-shell fade-up">
+      <aside className="console-sidebar">
+        <div className="console-brand">DonasiTrack</div>
+        <p className="console-caption">Menu Donatur</p>
+        <nav className="console-menu">
+          <Link href="/donatur" className="console-link active">
+            <span className="console-link-icon">DB</span>
+            Dashboard
           </Link>
-          {message ? <p className="status-line">{message}</p> : null}
-        </section>
-      ) : (
-        <>
-          <div className="panel" style={{ marginBottom: 12 }}>
-            <strong>{session.user.name}</strong>
-            <p className="muted">
-              {session.user.email} ({session.user.role})
-            </p>
-            <button className="btn" style={{ marginTop: 8 }} onClick={onLogout}>
-              Logout
-            </button>
+          <Link href="/tracking/demo" className="console-link">
+            <span className="console-link-icon">TR</span>
+            Tracking
+          </Link>
+          <Link href="/relawan" className="console-link">
+            <span className="console-link-icon">RW</span>
+            Relawan
+          </Link>
+        </nav>
+        <p className="console-caption">Akses</p>
+        <nav className="console-menu">
+          <Link href="/auth" className="console-link">
+            <span className="console-link-icon">AU</span>
+            Login / Daftar
+          </Link>
+        </nav>
+      </aside>
+
+      <section className="console-main">
+        <div className="console-topbar">
+          <div>
+            <h1>User Dashboard</h1>
+            <p>Kelola donasi dan tracking bantuan secara realtime.</p>
           </div>
-          <DonorExperience authToken={session.token} />
-          {message ? <p className="status-line">{message}</p> : null}
-        </>
-      )}
+          <div className="console-user-pill">{session.user?.name ?? "Guest"}</div>
+        </div>
+
+        {!session.token || !session.user ? (
+          <section className="console-surface">
+            <h2>Akses Donatur</h2>
+            <p className="console-muted">{message || "Sesi tidak ditemukan."}</p>
+            <Link href="/auth" className="console-btn info" style={{ marginTop: 12 }}>
+              Ke Halaman Login / Daftar
+            </Link>
+            {message ? <p className="status-line">{message}</p> : null}
+          </section>
+        ) : (
+          <>
+            <section className="console-kpis" style={{ marginBottom: 16 }}>
+              <article className="console-surface">
+                <p className="console-label">Nama Akun</p>
+                <p className="console-value" style={{ fontSize: "1.4rem" }}>{session.user.name}</p>
+                <p className="console-muted">{session.user.email}</p>
+              </article>
+              <article className="console-surface">
+                <p className="console-label">Role</p>
+                <p className="console-value" style={{ fontSize: "1.4rem" }}>{session.user.role}</p>
+                <p className="console-tag">Akses Donor Aktif</p>
+              </article>
+              <article className="console-surface">
+                <p className="console-label">Sesi</p>
+                <p className="console-value" style={{ fontSize: "1.4rem" }}>Online</p>
+                <button className="console-btn danger" style={{ marginTop: 10 }} onClick={onLogout}>
+                  Logout
+                </button>
+              </article>
+            </section>
+
+            <DonorExperience authToken={session.token} />
+            {message ? <p className="status-line">{message}</p> : null}
+          </>
+        )}
+      </section>
     </main>
   );
 }
