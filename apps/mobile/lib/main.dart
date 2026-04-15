@@ -184,10 +184,7 @@ class AuthStandalonePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Lavender Moon Access')),
-      body: AuthPage(session: session),
-    );
+    return Scaffold(body: SafeArea(child: AuthPage(session: session)));
   }
 }
 
@@ -432,11 +429,9 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   final TextEditingController loginEmail = TextEditingController();
-  final TextEditingController loginPassword = TextEditingController();
-  final TextEditingController registerName = TextEditingController();
   final TextEditingController registerEmail = TextEditingController();
-  final TextEditingController registerPassword = TextEditingController();
   final TextEditingController apiBase = TextEditingController();
+  bool isRegister = false;
   bool loading = false;
   String message = '';
 
@@ -449,12 +444,60 @@ class _AuthPageState extends State<AuthPage> {
   @override
   void dispose() {
     loginEmail.dispose();
-    loginPassword.dispose();
-    registerName.dispose();
     registerEmail.dispose();
-    registerPassword.dispose();
     apiBase.dispose();
     super.dispose();
+  }
+
+  String _passwordForEmail(String email) {
+    final String normalized = email.trim().toLowerCase();
+    return 'moon-$normalized-2026';
+  }
+
+  String _nameFromEmail(String email) {
+    final String localPart = email.split('@').first.trim();
+    if (localPart.isEmpty) return 'Donatur';
+    final String clean = localPart.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ');
+    final List<String> words = clean
+        .split(' ')
+        .where((String part) => part.trim().isNotEmpty)
+        .toList();
+    if (words.isEmpty) return 'Donatur';
+    return words
+        .map(
+          (String word) =>
+              '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+  }
+
+  void _toggleMode() {
+    setState(() {
+      isRegister = !isRegister;
+      message = '';
+    });
+  }
+
+  void _showForgotPasswordInfo() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fitur reset password akan tersedia di update berikutnya.'),
+      ),
+    );
+  }
+
+  void _showSocialInfo(String provider) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Login $provider belum tersedia.')),
+    );
+  }
+
+  Future<void> _saveApiBaseOnly() async {
+    await widget.session.saveApiBase(apiBase.text);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('API base disimpan: ${widget.session.effectiveApiBase}')),
+    );
   }
 
   Future<void> _doLogin() async {
@@ -466,9 +509,10 @@ class _AuthPageState extends State<AuthPage> {
     try {
       await widget.session.saveApiBase(apiBase.text);
       final ApiClient api = ApiClient(widget.session);
+      final String email = loginEmail.text.trim();
       final Map<String, dynamic> result = await api.login(
-        email: loginEmail.text.trim(),
-        password: loginPassword.text.trim(),
+        email: email,
+        password: _passwordForEmail(email),
       );
 
       final Map<String, dynamic> user = Map<String, dynamic>.from(
@@ -501,10 +545,11 @@ class _AuthPageState extends State<AuthPage> {
     try {
       await widget.session.saveApiBase(apiBase.text);
       final ApiClient api = ApiClient(widget.session);
+      final String email = registerEmail.text.trim();
       final Map<String, dynamic> result = await api.register(
-        name: registerName.text.trim(),
-        email: registerEmail.text.trim(),
-        password: registerPassword.text.trim(),
+        name: _nameFromEmail(email),
+        email: email,
+        password: _passwordForEmail(email),
       );
 
       final Map<String, dynamic> user = Map<String, dynamic>.from(
@@ -530,111 +575,247 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Text(
-            'Akses akun dan sinkronkan endpoint API dalam satu layar yang ringkas.',
-            style: TextStyle(color: MoonPalette.muted),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
+    final bool onLogin = !isRegister;
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const Text(
-                    'Koneksi API',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  const SizedBox(height: 6),
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.82),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: MoonPalette.lavender,
+                        size: 36,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: apiBase,
-                    decoration: const InputDecoration(
-                      labelText: 'API Base URL',
-                      hintText: 'http://10.0.2.2:4000/api',
+                  const SizedBox(height: 16),
+                  Text(
+                    onLogin ? "Let's Sign In." : "Create Account.",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 34,
+                      height: 0.95,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1,
+                      color: Color(0xFF1F2333),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    onLogin
+                        ? 'Experience AI Health Assistant for everyone.'
+                        : 'Daftar cepat cukup pakai email.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: MoonPalette.muted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  const Text(
+                    'Email Address',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF23253A),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text('Aktif: ${widget.session.effectiveApiBase}'),
-                  const SizedBox(height: 4),
-                  Text('Session role: ${widget.session.role}'),
+                  TextField(
+                    controller: onLogin ? loginEmail : registerEmail,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      hintText: 'elementary221b@gmail.com',
+                      prefixIcon: Icon(Icons.mail_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: <Color>[Color(0xFF6A35E6), Color(0xFF8D4CFF)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: MoonPalette.lavender.withValues(alpha: 0.35),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: FilledButton.icon(
+                      onPressed: loading
+                          ? null
+                          : (onLogin ? _doLogin : _doRegister),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        disabledBackgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        minimumSize: const Size.fromHeight(56),
+                      ),
+                      icon: loading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.arrow_forward_rounded),
+                      label: Text(onLogin ? 'Sign In' : 'Sign Up'),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  if (onLogin) ...<Widget>[
+                    Row(
+                      children: <Widget>[
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'or continue with',
+                            style: TextStyle(
+                              color: MoonPalette.muted.withValues(alpha: 0.9),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _showSocialInfo('Facebook'),
+                            child: const Text('f'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _showSocialInfo('Google'),
+                            child: const Text('G'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _showSocialInfo('Instagram'),
+                            child: const Text('ig'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (message.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        message,
+                        style: const TextStyle(
+                          color: Color(0xFF40435C),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        onLogin
+                            ? "Don't have an account? "
+                            : 'Already have an account? ',
+                        style: const TextStyle(
+                          color: Color(0xFF4D516B),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: loading ? null : _toggleMode,
+                        style: TextButton.styleFrom(
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: Text(
+                          onLogin ? 'Sign Up.' : 'Sign In.',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: MoonPalette.lavender,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (onLogin)
+                    Center(
+                      child: TextButton(
+                        onPressed: loading ? null : _showForgotPasswordInfo,
+                        child: const Text('Need help login?'),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title: const Text(
+                      'API Connection',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: MoonPalette.muted,
+                        fontSize: 13,
+                      ),
+                    ),
+                    childrenPadding: const EdgeInsets.only(bottom: 10),
+                    children: <Widget>[
+                      TextField(
+                        controller: apiBase,
+                        decoration: const InputDecoration(
+                          labelText: 'API Base URL',
+                          hintText: 'http://10.0.2.2:4000/api',
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: OutlinedButton(
+                          onPressed: loading ? null : _saveApiBaseOnly,
+                          child: const Text('Save API'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text('Login', style: TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: loginEmail,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: loginPassword,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledButton(
-                    onPressed: loading ? null : _doLogin,
-                    child: const Text('Login'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text('Registrasi', style: TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: registerName,
-                    decoration: const InputDecoration(labelText: 'Nama'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: registerEmail,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: registerPassword,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Role: DONOR', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  FilledButton(
-                    onPressed: loading ? null : _doRegister,
-                    child: const Text('Registrasi'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (message.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 10),
-            Text(message, style: const TextStyle(color: MoonPalette.muted)),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
