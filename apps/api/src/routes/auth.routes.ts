@@ -55,6 +55,21 @@ authRouter.post("/login", async (req, res, next) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    const accountState = await prisma.notificationLog.findFirst({
+      where: {
+        userId: user.id,
+        channel: "ACCOUNT",
+      },
+      orderBy: { createdAt: "desc" },
+      select: { status: true, body: true },
+    });
+
+    if (accountState?.status === "BLOCKED") {
+      return res.status(403).json({
+        message: accountState.body || "Akun Anda sedang diblokir oleh admin",
+      });
+    }
+
     const valid = await bcrypt.compare(body.password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ message: "Invalid credentials" });

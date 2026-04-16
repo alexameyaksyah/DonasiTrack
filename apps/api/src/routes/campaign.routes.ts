@@ -80,7 +80,51 @@ campaignRouter.patch("/:id/close", requireAuth, requireRole(Role.ADMIN), async (
 campaignRouter.delete("/:id", requireAuth, requireRole(Role.ADMIN), async (req, res, next) => {
   try {
     const id = String(req.params.id);
-    await prisma.campaign.delete({ where: { id } });
+
+    const campaign = await prisma.campaign.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        donations: {
+          select: { id: true },
+        },
+        shipments: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Kampanye tidak ditemukan" });
+    }
+
+    const donationIds = campaign.donations.map((donation) => donation.id);
+    const shipmentIds = campaign.shipments.map((shipment) => shipment.id);
+
+    await prisma.$transaction(async (tx) => {
+      if (shipmentIds.length > 0) {
+        await tx.trackingEvent.deleteMany({
+          where: { shipmentId: { in: shipmentIds } },
+        });
+
+        await tx.aidShipment.deleteMany({
+          where: { id: { in: shipmentIds } },
+        });
+      }
+
+      if (donationIds.length > 0) {
+        await tx.inventoryItem.deleteMany({
+          where: { sourceDonationId: { in: donationIds } },
+        });
+
+        await tx.donation.deleteMany({
+          where: { id: { in: donationIds } },
+        });
+      }
+
+      await tx.campaign.delete({ where: { id } });
+    });
+
     return res.json({ message: "Kampanye berhasil dihapus" });
   } catch (error) {
     return next(error);

@@ -40,15 +40,23 @@ function readDonorSession(): { token: string; user: AuthUser | null; message: st
   }
 }
 
+const EMPTY_SESSION: { token: string; user: AuthUser | null; message: string } = {
+  token: "",
+  user: null,
+  message: "",
+};
+
 export default function DonorPage() {
-  const [session, setSession] = useState(readDonorSession);
-  const [message, setMessage] = useState(session.message);
+  const [session, setSession] = useState(() => readDonorSession());
+  const [flashMessage, setFlashMessage] = useState("");
+  
+  
 
   function onLogout() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
-    setSession({ token: "", user: null, message: "" });
-    setMessage("Sesi donatur telah keluar");
+    setSession(EMPTY_SESSION);
+    setFlashMessage("Sesi donatur telah keluar");
   }
 
   return (
@@ -91,11 +99,11 @@ export default function DonorPage() {
         {!session.token || !session.user ? (
           <section className="console-surface">
             <h2>Akses Donatur</h2>
-            <p className="console-muted">{message || "Sesi tidak ditemukan."}</p>
+            <p className="console-muted">{session.message || flashMessage || "Sesi tidak ditemukan."}</p>
             <Link href="/auth" className="console-btn info" style={{ marginTop: 12 }}>
               Ke Halaman Login / Daftar
             </Link>
-            {message ? <p className="status-line">{message}</p> : null}
+            {flashMessage ? <p className="status-line">{flashMessage}</p> : null}
           </section>
         ) : (
           <>
@@ -120,7 +128,7 @@ export default function DonorPage() {
             </section>
 
             <DonorExperience authToken={session.token} />
-            {message ? <p className="status-line">{message}</p> : null}
+            {flashMessage ? <p className="status-line">{flashMessage}</p> : null}
           </>
         )}
       </section>

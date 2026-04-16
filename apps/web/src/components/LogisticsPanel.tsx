@@ -58,6 +58,33 @@ export function LogisticsPanel() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQty, setNewItemQty] = useState(10);
+  const [newItemWarehouse, setNewItemWarehouse] = useState("Gudang Pusat");
+  const [isCreatingItem, setIsCreatingItem] = useState(false);
+
+  function isCuid(value: string) {
+    return /^c[^\s-]{8,}$/i.test(value);
+  }
+
+  function toErrorMessage(payload: unknown, fallback: string) {
+    if (!payload || typeof payload !== "object") {
+      return fallback;
+    }
+
+    const map = payload as { message?: string; errors?: Array<{ path?: Array<string | number>; message?: string }> };
+    if (map.message) {
+      return map.message;
+    }
+
+    const first = map.errors?.[0];
+    if (first) {
+      const path = first.path?.join(".") || "field";
+      return `${path}: ${first.message || "data tidak valid"}`;
+    }
+
+    return fallback;
+  }
 
   const selectedItem = useMemo(() => inventory.find((item) => item.id === selectedItemId), [inventory, selectedItemId]);
 
@@ -111,6 +138,36 @@ export function LogisticsPanel() {
       return;
     }
 
+    if (!isCuid(campaignId)) {
+      setMessage("Kampanye belum valid. Silakan pilih kampanye yang tersedia.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!isCuid(selectedItemId)) {
+      setMessage("Item stok belum valid. Pilih item dari daftar stok gudang terlebih dulu.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!destinationLocation.trim()) {
+      setMessage("Lokasi distribusi wajib diisi.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!selectedItem || selectedItem.quantity <= 0) {
+      setMessage("Stok item tidak tersedia.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (quantity < 1 || quantity > selectedItem.quantity) {
+      setMessage(`Jumlah alokasi harus antara 1 sampai ${selectedItem.quantity}.`);
+      setIsSubmitting(false);
+      return;
+    }
+
     const body = {
       campaignId,
       itemId: selectedItemId,
@@ -130,19 +187,70 @@ export function LogisticsPanel() {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as unknown;
       if (!response.ok) {
-        setMessage(data.message || "Gagal membuat alokasi logistik");
+        setMessage(toErrorMessage(data, "Gagal membuat alokasi logistik"));
         return;
       }
 
-      setMessage(`Alokasi dibuat. Tracking code: ${data.trackingCode}`);
+      const created = data as { trackingCode?: string };
+      setMessage(`Alokasi dibuat. Tracking code: ${created.trackingCode || "-"}`);
       setDestinationLocation("");
       setQuantity(1);
+      const inventoryRes = await fetch(`${API_URL}/inventory`, { headers: authHeaders(token) });
+      if (inventoryRes.ok) {
+        const inventoryData = (await inventoryRes.json()) as InventoryItem[];
+        setInventory(inventoryData);
+        if (!inventoryData.some((item) => item.id === selectedItemId)) {
+          setSelectedItemId(inventoryData[0]?.id || "");
+        }
+      }
     } catch {
       setMessage("Gagal terhubung ke server.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function onCreateInventoryItem() {
+    if (!token) {
+      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
+    setIsCreatingItem(true);
+
+    try {
+      const response = await fetch(`${API_URL}/inventory`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(token),
+        },
+        body: JSON.stringify({
+          name: newItemName.trim(),
+          quantity: Number(newItemQty),
+          warehouse: newItemWarehouse.trim() || "Gudang Pusat",
+          unit: "pcs",
+        }),
+      });
+
+      const data = (await response.json()) as unknown;
+      if (!response.ok) {
+        setMessage(toErrorMessage(data, "Gagal menambah item stok"));
+        return;
+      }
+
+      const created = data as InventoryItem;
+      setInventory((prev) => [created, ...prev]);
+      setSelectedItemId(created.id);
+      setNewItemName("");
+      setNewItemQty(10);
+      setMessage(`Item stok ${created.name} berhasil ditambahkan.`);
+    } catch {
+      setMessage("Gagal terhubung ke server.");
+    } finally {
+      setIsCreatingItem(false);
     }
   }
 
@@ -163,7 +271,35 @@ export function LogisticsPanel() {
         <form id="logistics-allocation-form" onSubmit={onSubmit} className="logistics-board">
           <div className="logistics-column">
             <h3>Stok Gudang Pusat</h3>
+            <div className="form" style={{ marginBottom: 10 }}>
+              <input
+                placeholder="Nama item baru"
+                value={newItemName}
+                onChange={(event) => setNewItemName(event.target.value)}
+                minLength={2}
+                required
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <input
+                  type="number"
+                  min={1}
+                  value={newItemQty}
+                  onChange={(event) => setNewItemQty(Number(event.target.value))}
+                  required
+                />
+                <input
+                  placeholder="Gudang"
+                  value={newItemWarehouse}
+                  onChange={(event) => setNewItemWarehouse(event.target.value)}
+                  required
+                />
+              </div>
+              <button className="console-btn neutral" type="button" onClick={onCreateInventoryItem} disabled={isCreatingItem}>
+                {isCreatingItem ? "Menambah..." : "Tambah Stok"}
+              </button>
+            </div>
             <div className="logistics-list">
+              {inventory.length === 0 ? <p className="console-muted">Belum ada stok. Tambahkan item terlebih dulu.</p> : null}
               {inventory.map((item) => {
                 const active = selectedItemId === item.id;
                 return (

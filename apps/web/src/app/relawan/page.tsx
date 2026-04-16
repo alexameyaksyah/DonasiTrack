@@ -36,7 +36,7 @@ function readSession(): { token: string; user: SessionUser | null; message: stri
 }
 
 export default function RelawanDashboardPage() {
-  const [session] = useState(readSession);
+  const [session] = useState(() => readSession());
 
   return (
     <main className="admin-shell fade-up">

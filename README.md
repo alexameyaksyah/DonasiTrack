@@ -74,7 +74,7 @@ npm --workspace @donasi-track/api run prisma:generate
 npm --workspace @donasi-track/api run prisma:migrate
 ```
 
-Alternatif cepat untuk reset data (tanpa akun dummy):
+Alternatif cepat untuk reset data (bersih, tanpa data donasi dummy):
 
 ```bash
 npm --workspace @donasi-track/api run db:setup
@@ -155,10 +155,18 @@ npm run studio
 - Frontend: `http://localhost:3000`
 - Upload Proof API: `http://localhost:4000/api/uploads/proof`
 
-## Akun Dummy
+## Akun Seed Awal
 
-- Tidak ada akun dummy bawaan.
-- Semua akun dibuat lewat halaman daftar (`/auth`) atau langsung dari Prisma Studio.
+Setelah menjalankan `db:setup` atau `prisma:seed`, database dibersihkan dan hanya dibuat 1 akun admin bootstrap:
+
+- Email admin: `admin@donasitrack.id`
+- Password admin: `donasi123`
+
+Catatan:
+
+- Semua campaign, donation, inventory, shipment, dan tracking event lama akan dihapus.
+- Untuk donor, daftar akun baru dari halaman `/auth`.
+- Status donasi di dashboard admin akan terisi real-time sesuai donasi yang masuk dari user.
 
 ## Catatan Implementasi Lapangan
 

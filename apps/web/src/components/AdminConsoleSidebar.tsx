@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type AdminMenuKey = "dashboard" | "campaigns" | "verification" | "logistics" | "report" | "profile";
+type AdminMenuKey = "dashboard" | "campaigns" | "verification" | "logistics" | "users" | "report" | "profile";
 
 type AdminConsoleSidebarProps = {
   active: AdminMenuKey;
@@ -11,6 +11,7 @@ const entries: Array<{ key: AdminMenuKey; href: string; label: string; icon: str
   { key: "campaigns", href: "/admin/campaigns", label: "Kampanye", icon: "CP" },
   { key: "verification", href: "/admin/verifikasi", label: "Validasi Donatur", icon: "VD" },
   { key: "logistics", href: "/admin/logistik", label: "Logistik", icon: "LG" },
+  { key: "users", href: "/admin/pengguna", label: "Pengguna", icon: "US" },
 ];
 
 export function AdminConsoleSidebar({ active }: AdminConsoleSidebarProps) {

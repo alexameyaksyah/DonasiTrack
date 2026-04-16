@@ -21,23 +21,21 @@ type DonorExperienceProps = {
 };
 
 export function DonorExperience({ authToken }: DonorExperienceProps) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    try {
-      const cache = localStorage.getItem(CACHE_KEY);
-      return cache ? (JSON.parse(cache) as Campaign[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [message, setMessage] = useState("");
   const [trackingCode, setTrackingCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    try {
+      const cache = localStorage.getItem(CACHE_KEY);
+      if (cache) {
+        setCampaigns(JSON.parse(cache) as Campaign[]);
+      }
+    } catch {
+      // ignore invalid cache and continue with network fetch
+    }
+
     fetch(`${API_URL}/campaigns`)
       .then((res) => res.json())
       .then((data: Campaign[]) => {

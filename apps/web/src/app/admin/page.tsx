@@ -1,14 +1,40 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DonationChart } from "../../components/DonationChart";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
-import { getJson } from "../../lib/api";
+import { API_URL, authHeaders } from "../../lib/api";
 import { rupiah } from "../../lib/format";
-import Link from "next/link";
 
 type DashboardStats = {
   totalDonationVerified: number;
+  totalDistributedAmount: number;
   totalDistributedItems: number;
   totalInventoryItems: number;
   pendingVerifications: number;
+  donationStatusCounts: {
+    verified: number;
+    pending: number;
+    rejected: number;
+    total: number;
+  };
+  donationStatusPercentages: {
+    verified: number;
+    pending: number;
+    rejected: number;
+  };
+  latestDonations: Array<{
+    id: string;
+    donorName: string;
+    campaignTitle: string;
+    verificationStatus: "VERIFIED" | "PENDING" | "REJECTED";
+    amount: number;
+    itemName: string | null;
+    quantity: number | null;
+    createdAt: string;
+  }>;
   campaigns: Array<{
     id: string;
     title: string;
@@ -18,28 +44,98 @@ type DashboardStats = {
   }>;
 };
 
-export default async function AdminDashboardPage() {
-  let stats: DashboardStats | null = null;
-  let error = "";
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+const SESSION_USER_KEY = "donasi-track-session-user";
 
-  try {
-    stats = await getJson<DashboardStats>("/stats/dashboard", {
-      headers: {
-        Authorization: `Bearer ${process.env.ADMIN_DASHBOARD_TOKEN || ""}`,
-      },
-    });
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Gagal memuat statistik";
+function donationAmountLabel(item: DashboardStats["latestDonations"][number]) {
+  if (item.amount > 0) {
+    return `+${rupiah(item.amount)}`;
   }
 
-  const dateLabel = new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
+  if (item.itemName && item.quantity) {
+    return `+${item.quantity} ${item.itemName}`;
+  }
+
+  return "Donasi";
+}
+
+export default function AdminDashboardPage() {
+  const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const dateLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date()),
+    [],
+  );
 
   const activeCampaigns = stats?.campaigns.filter((campaign) => campaign.status === "OPEN").length ?? 0;
+
+  const loadStats = useCallback(async () => {
+    const token = localStorage.getItem(SESSION_TOKEN_KEY) || "";
+    if (!token) {
+      setError("Sesi admin tidak ditemukan. Silakan login ulang.");
+      setLoading(false);
+      router.push("/auth");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/stats/dashboard`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(token),
+        },
+        cache: "no-store",
+      });
+
+      const payload = (await response.json()) as DashboardStats | { message?: string };
+      if (!response.ok) {
+        const authError = response.status === 401 || response.status === 403;
+        const message = "message" in payload ? payload.message || "Gagal memuat statistik" : "Gagal memuat statistik";
+
+        if (authError) {
+          localStorage.removeItem(SESSION_TOKEN_KEY);
+          localStorage.removeItem(SESSION_USER_KEY);
+          router.push("/auth");
+        }
+
+        setError(message);
+        setLoading(false);
+        return;
+      }
+
+      setStats(payload as DashboardStats);
+      setError("");
+    } catch {
+      setError("Gagal terhubung ke server API");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    void loadStats();
+  }, [loadStats]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void loadStats();
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [loadStats]);
+
+  const verifiedPct = stats?.donationStatusPercentages.verified ?? 0;
+  const pendingPct = stats?.donationStatusPercentages.pending ?? 0;
+  const rejectedPct = stats?.donationStatusPercentages.rejected ?? 0;
 
   return (
     <main className="admin-shell fade-up">
@@ -58,19 +154,19 @@ export default async function AdminDashboardPage() {
 
         <section className="console-kpis">
           <article className="console-surface">
-            <p className="console-label">Total Donasi</p>
-            <p className="console-value">{stats ? rupiah(stats.totalDonationVerified) : "-"}</p>
-            <p className="console-tag">+12.4% bulan ini</p>
+            <p className="console-label">Total Donasi Masuk</p>
+            <p className="console-value">{stats ? rupiah(stats.totalDonationVerified) : loading ? "Memuat..." : "-"}</p>
+            <p className="console-tag">{stats?.donationStatusCounts.total ?? 0} donasi tercatat</p>
           </article>
           <article className="console-surface">
             <p className="console-label">Dana Tersalurkan</p>
-            <p className="console-value">{stats ? rupiah(stats.totalDistributedItems) : "-"}</p>
-            <p className="console-tag">72% tersalurkan</p>
+            <p className="console-value">{stats ? rupiah(stats.totalDistributedAmount) : loading ? "Memuat..." : "-"}</p>
+            <p className="console-tag">{stats?.totalDistributedItems ?? 0} item delivered</p>
           </article>
           <article className="console-surface">
             <p className="console-label">Kampanye Aktif</p>
             <p className="console-value">{activeCampaigns}</p>
-            <p className="console-tag warn">{stats?.pendingVerifications ?? 0} perlu perhatian</p>
+            <p className="console-tag warn">{stats?.pendingVerifications ?? 0} menunggu verifikasi</p>
           </article>
         </section>
 
@@ -83,33 +179,33 @@ export default async function AdminDashboardPage() {
           <article className="console-surface">
             <h2>Status Donasi</h2>
             <div className="console-progress-row">
-              <span>Dana Tersalurkan</span>
-              <span>72%</span>
+              <span>Terverifikasi</span>
+              <span>{verifiedPct}%</span>
             </div>
             <div className="console-progress-bar">
-              <span style={{ width: "72%" }} />
+              <span style={{ width: `${verifiedPct}%` }} />
             </div>
             <div className="console-progress-row">
               <span>Menunggu Verifikasi</span>
-              <span>18%</span>
+              <span>{pendingPct}%</span>
             </div>
             <div className="console-progress-bar amber">
-              <span style={{ width: "18%" }} />
+              <span style={{ width: `${pendingPct}%` }} />
             </div>
             <div className="console-progress-row">
-              <span>Dana Cadangan</span>
-              <span>10%</span>
+              <span>Ditolak</span>
+              <span>{rejectedPct}%</span>
             </div>
             <div className="console-progress-bar blue">
-              <span style={{ width: "10%" }} />
+              <span style={{ width: `${rejectedPct}%` }} />
             </div>
             <hr className="console-divider" />
-            <h3>Aktivitas Terbaru</h3>
+            <h3>Aktivitas Donasi Terbaru</h3>
             <ul className="console-activity">
-              {(stats?.campaigns.slice(0, 3) ?? []).map((campaign) => (
-                <li key={campaign.id}>
-                  <span>{campaign.title}</span>
-                  <strong>+{rupiah(campaign.collectedAmount)}</strong>
+              {(stats?.latestDonations ?? []).map((item) => (
+                <li key={item.id}>
+                  <span>{item.donorName} • {item.campaignTitle}</span>
+                  <strong>{donationAmountLabel(item)}</strong>
                 </li>
               ))}
             </ul>
@@ -152,7 +248,7 @@ export default async function AdminDashboardPage() {
                       </td>
                       <td>
                         <span className={`console-status ${campaign.status === "OPEN" ? "ok" : "pending"}`}>
-                          {campaign.status === "OPEN" ? "Active" : "Pending"}
+                          {campaign.status === "OPEN" ? "Active" : "Closed"}
                         </span>
                       </td>
                     </tr>

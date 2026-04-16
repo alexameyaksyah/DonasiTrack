@@ -35,8 +35,16 @@ function readProfileSession(): { token: string; user: SessionUser | null; messag
   }
 }
 
+const EMPTY_SESSION: { token: string; user: SessionUser | null; message: string } = {
+  token: "",
+  user: null,
+  message: "",
+};
+
 export default function ProfilePage() {
-  const [session, setSession] = useState(readProfileSession);
+  const [session, setSession] = useState(() => readProfileSession());
+  const [flashMessage, setFlashMessage] = useState("");
+
 
   let initials = "PR";
   if (session.user?.name) {
@@ -51,7 +59,8 @@ export default function ProfilePage() {
   function logout() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(SESSION_USER_KEY);
-    setSession({ token: "", user: null, message: "Anda telah logout." });
+    setSession(EMPTY_SESSION);
+    setFlashMessage("Anda telah logout.");
   }
 
   return (
@@ -70,7 +79,7 @@ export default function ProfilePage() {
         {!session.user ? (
           <section className="console-surface">
             <h2>Akun Tidak Ditemukan</h2>
-            <p className="console-muted">{session.message}</p>
+            <p className="console-muted">{session.message || flashMessage}</p>
             <Link href="/auth" className="console-btn info" style={{ marginTop: 10 }}>
               Login Sekarang
             </Link>
@@ -91,7 +100,7 @@ export default function ProfilePage() {
 
             <article className="console-surface">
               <h2>Informasi Akun</h2>
-              <div className="timeline">
+              <ul className="timeline">
                 <li>
                   <strong>Nama</strong>
                   <div className="console-muted">{session.user.name}</div>
@@ -104,7 +113,7 @@ export default function ProfilePage() {
                   <strong>Role</strong>
                   <div className="console-muted">{session.user.role}</div>
                 </li>
-              </div>
+              </ul>
             </article>
           </section>
         )}

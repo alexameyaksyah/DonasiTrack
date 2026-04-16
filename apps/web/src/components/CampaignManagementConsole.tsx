@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { API_URL, authHeaders } from "../lib/api";
 import { rupiah } from "../lib/format";
 
@@ -29,6 +30,7 @@ type ToastState = { kind: ToastKind; text: string } | null;
 type SortBy = "title" | "target" | "collected" | "status";
 
 const SESSION_TOKEN_KEY = "donasi-track-session-token";
+const SESSION_USER_KEY = "donasi-track-session-user";
 const PAGE_SIZE = 6;
 
 function progressPercent(campaign: Campaign) {
@@ -68,6 +70,7 @@ function toForm(campaign?: Campaign): CampaignFormData {
 }
 
 export function CampaignManagementConsole() {
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [search, setSearch] = useState("");
@@ -90,6 +93,14 @@ export function CampaignManagementConsole() {
   const notify = useCallback((kind: ToastKind, text: string) => {
     setToast({ kind, text });
   }, []);
+
+  const resetExpiredSession = useCallback((message?: string) => {
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
+    setToken("");
+    notify("error", message || "Sesi admin berakhir, silakan login ulang.");
+    router.push("/auth");
+  }, [notify, router]);
 
   const loadCampaigns = useCallback(async () => {
     setIsLoading(true);
@@ -255,6 +266,14 @@ export function CampaignManagementConsole() {
         ),
       );
 
+      const hasAuthError = results.some(
+        (result) => result.status === "fulfilled" && (result.value.status === 401 || result.value.status === 403),
+      );
+      if (hasAuthError) {
+        resetExpiredSession();
+        return;
+      }
+
       const successCount = results.filter((result) => result.status === "fulfilled" && result.value.ok).length;
       const failedCount = results.length - successCount;
 
@@ -297,6 +316,14 @@ export function CampaignManagementConsole() {
           }),
         ),
       );
+
+      const hasAuthError = results.some(
+        (result) => result.status === "fulfilled" && (result.value.status === 401 || result.value.status === 403),
+      );
+      if (hasAuthError) {
+        resetExpiredSession();
+        return;
+      }
 
       const successCount = results.filter((result) => result.status === "fulfilled" && result.value.ok).length;
       const failedCount = results.length - successCount;
@@ -366,6 +393,10 @@ export function CampaignManagementConsole() {
       const data = (await response.json()) as { message?: string };
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          resetExpiredSession(data.message);
+          return;
+        }
         notify("error", data.message || "Gagal menyimpan kampanye.");
         return;
       }
@@ -410,6 +441,10 @@ export function CampaignManagementConsole() {
 
       const payload = (await response.json()) as { message?: string };
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          resetExpiredSession(payload.message);
+          return;
+        }
         notify("error", payload.message || "Gagal menghapus kampanye.");
         return;
       }
