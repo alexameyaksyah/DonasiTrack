@@ -19,7 +19,17 @@ export async function createCampaign(body: CampaignCreateInput, token: string) {
   return response.json();
 }
 
-// Menghapus kampanye tunggal
+// PUT: Memperbarui data kampanye yang sudah ada
+export async function updateCampaign(id: string, data: CampaignFormData, token: string) {
+  const res = await fetch(`${API_URL}/campaigns/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Gagal mengupdate kampanye");
+}
+
+// DELETE: Menghapus data kampanye
 export async function deleteCampaign(id: string, token: string) {
   const res = await fetch(`${API_URL}/campaigns/${id}`, {
     method: "DELETE",
