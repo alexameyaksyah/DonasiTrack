@@ -38,3 +38,10 @@ export type SortBy = "title" | "target" | "collected" | "status";
 // Tipe untuk notifikasi toast di UI
 export type ToastKind = "success" | "error" | "info";
 export type ToastState = { kind: ToastKind; text: string } | null;
+
+// Tipe untuk data chart di dashboard
+export type CampaignChartData = {
+  title: string;
+  collectedAmount: number;
+  distributedAmount: number;
+};
