@@ -29,16 +29,9 @@ export async function updateCampaign(id: string, data: CampaignFormData, token: 
   if (!res.ok) throw new Error("Gagal mengupdate kampanye");
 }
 
-// DELETE: Menghapus data kampanye
-export async function deleteCampaign(id: string, token: string) {
-  const res = await fetch(`${API_URL}/campaigns/${id}`, {
-    method: "DELETE",
-    headers: authHeaders(token),
-  });
-  if (!res.ok) throw new Error("Gagal menghapus kampanye");
-}
 
-// Menutup kampanye (Set status ke CLOSED)
+
+// PATCH: Menutup status kampanye secara manual
 export async function closeCampaign(id: string, token: string) {
   const res = await fetch(`${API_URL}/campaigns/${id}/close`, {
     method: "PATCH",
@@ -47,12 +40,3 @@ export async function closeCampaign(id: string, token: string) {
   if (!res.ok) throw new Error("Gagal menutup kampanye");
 }
 
-// Update data kampanye
-export async function updateCampaign(id: string, data: CampaignFormData, token: string) {
-  const res = await fetch(`${API_URL}/campaigns/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeaders(token) },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Gagal mengupdate kampanye");
-}
