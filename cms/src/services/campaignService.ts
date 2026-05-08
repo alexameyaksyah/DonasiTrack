@@ -46,4 +46,3 @@ export async function closeCampaign(id: string, token: string) {
   });
   if (!res.ok) throw new Error("Gagal menutup kampanye");
 }
-
