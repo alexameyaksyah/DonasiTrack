@@ -4,9 +4,9 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 
 ## Struktur Proyek
 
-- `apps/api`: Backend REST API (Express + TypeScript + Prisma + PostgreSQL)
-- `apps/web`: Frontend Next.js (Admin SSR + Donatur + Operasional Admin)
-- `apps/mobile`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
+- `api`: Backend REST API (Express + TypeScript + Prisma + PostgreSQL)
+- `cms`: Frontend Next.js (Admin SSR + Donatur + Operasional Admin)
+- `user`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
 - `packages/shared`: Ruang untuk shared package ke depan
 
 ## Fitur yang Sudah Diimplementasikan
