@@ -1,5 +1,5 @@
 import { API_URL, authHeaders } from "../lib/api";
-import { CampaignCreateInput } from "../types/campaign";
+import { CampaignCreateInput, CampaignFormData } from "../types/campaign";
 
 // Mengirim data kampanye baru ke server melalui API
 export async function createCampaign(body: CampaignCreateInput, token: string) {
