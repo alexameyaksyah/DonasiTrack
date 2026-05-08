@@ -19,3 +19,14 @@ export function visualStatus(
   if (campaign.status === "CLOSED") return "closed";
   return progressPercent(campaign) >= 65 ? "active" : "pending";
 }
+
+// Mapper data untuk form editor
+export function toForm(campaign?: Campaign | null): CampaignFormData {
+  return {
+    title: campaign?.title ?? "",
+    description: campaign?.description ?? "",
+    disasterType: campaign?.disasterType ?? "",
+    location: campaign?.location ?? "",
+    targetAmount: campaign?.targetAmount ?? 0,
+  };
+}
