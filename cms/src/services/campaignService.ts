@@ -19,3 +19,12 @@ export async function createCampaign(body: CampaignCreateInput, token: string) {
 
   return response.json();
 }
+
+// Menghapus kampanye tunggal
+export async function deleteCampaign(id: string, token: string) {
+  const res = await fetch(`${API_URL}/campaigns/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Gagal menghapus kampanye");
+}
