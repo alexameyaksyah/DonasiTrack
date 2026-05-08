@@ -4,6 +4,7 @@ export function useGeolocation() {
   const [coords, setCoords] = useState({ latitude: undefined as number | undefined, longitude: undefined as number | undefined });
   const [isGeoLoading, setIsGeoLoading] = useState(false);
 
+  // Fungsi untuk mengambil koordinat GPS perangkat
   function captureLocation(callback?: (msg: string) => void) {
     setIsGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
