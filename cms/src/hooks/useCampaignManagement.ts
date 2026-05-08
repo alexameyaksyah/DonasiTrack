@@ -32,3 +32,15 @@ export function useCampaignManagement(initialCampaigns: Campaign[]) {
           item.location.toLowerCase().includes(query),
       );
     }
+
+    // 3. Sorting Data
+    result.sort((a, b) => {
+      let value = 0;
+      if (sortBy === "title") value = a.title.localeCompare(b.title);
+      else if (sortBy === "target") value = a.targetAmount - b.targetAmount;
+      else if (sortBy === "collected")
+        value = a.collectedAmount - b.collectedAmount;
+      else value = visualStatus(a).localeCompare(visualStatus(b));
+
+      return sortDir === "asc" ? value : -value;
+    });
