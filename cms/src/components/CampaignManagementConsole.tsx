@@ -2,32 +2,23 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL, authHeaders } from "../lib/api";
+
+// Import Utilities & Types
 import { rupiah } from "../lib/format";
+import { progressPercent, visualStatus, toForm } from "../lib/campaign-utils";
+import {
+  Campaign,
+  CampaignFormData,
+  FilterKey,
+  SortBy,
+  ToastKind,
+  ToastState,
+} from "../types/campaign";
 
-type Campaign = {
-  id: string;
-  title: string;
-  description: string;
-  disasterType: string;
-  location: string;
-  collectedAmount: number;
-  targetAmount: number;
-  status: "OPEN" | "CLOSED";
-};
-
-type CampaignFormData = {
-  title: string;
-  description: string;
-  disasterType: string;
-  location: string;
-  targetAmount: number;
-};
-
-type FilterKey = "all" | "active" | "pending" | "closed";
-type ToastKind = "success" | "error" | "info";
-type ToastState = { kind: ToastKind; text: string } | null;
-type SortBy = "title" | "target" | "collected" | "status";
+// Import Services & Hooks
+import * as campaignService from "../services/campaignService";
+import { useCampaignManagement } from "../hooks/useCampaignManagement";
+import { authHeaders } from "../lib/api";
 
 const SESSION_TOKEN_KEY = "donasi-track-session-token";
 const SESSION_USER_KEY = "donasi-track-session-user";
