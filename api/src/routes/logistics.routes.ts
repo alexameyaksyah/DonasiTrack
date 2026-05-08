@@ -1,0 +1,161 @@
+import { Role, ShipmentStatus } from "@prisma/client";
+import { Router } from "express";
+import { z } from "zod";
+import { prisma } from "../db";
+import { requireAuth, requireRole } from "../middleware/auth";
+import { sendNotification } from "../services/notification.service";
+
+const createShipmentSchema = z.object({
+  campaignId: z.string().cuid(),
+  itemId: z.string().cuid(),
+  quantity: z.number().int().positive(),
+  fromWarehouse: z.string().min(2),
+  destinationLocation: z.string().min(2),
+  assignedAdminId: z.string().cuid().optional(),
+});
+
+const updateStatusSchema = z.object({
+  status: z.nativeEnum(ShipmentStatus),
+  note: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  photoUrl: z.string().url().optional(),
+});
+
+function createTrackingCode() {
+  const stamp = Date.now().toString().slice(-6);
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `DNT-${stamp}-${rand}`;
+}
+
+export const logisticsRouter = Router();
+
+logisticsRouter.use(requireAuth);
+
+logisticsRouter.post("/", requireRole(Role.ADMIN), async (req, res, next) => {
+  try {
+    const body = createShipmentSchema.parse(req.body);
+
+    const shipment = await prisma.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.findUnique({ where: { id: body.itemId } });
+      if (!item || item.quantity < body.quantity) {
+        throw new Error("Stok barang tidak mencukupi");
+      }
+
+      await tx.inventoryItem.update({
+        where: { id: body.itemId },
+        data: { quantity: { decrement: body.quantity } },
+      });
+
+      const created = await tx.aidShipment.create({
+        data: {
+          trackingCode: createTrackingCode(),
+          campaignId: body.campaignId,
+          itemId: body.itemId,
+          quantity: body.quantity,
+          fromWarehouse: body.fromWarehouse,
+          destinationLocation: body.destinationLocation,
+          assignedOperatorId: body.assignedAdminId,
+          createdById: req.user!.id,
+        },
+      });
+
+      await tx.trackingEvent.create({
+        data: {
+          shipmentId: created.id,
+          status: ShipmentStatus.CREATED,
+          note: "Pengiriman dibuat oleh admin",
+          createdById: req.user!.id,
+        },
+      });
+
+      return created;
+    });
+
+    if (shipment.assignedOperatorId) {
+      const assignedAdmin = await prisma.user.findUnique({ where: { id: shipment.assignedOperatorId } });
+      await sendNotification({
+        userId: assignedAdmin?.id,
+        token: assignedAdmin?.fcmToken || undefined,
+        title: "Tugas Operasional Logistik",
+        body: `Anda mendapat pengiriman operasional dengan kode ${shipment.trackingCode}`,
+        payload: { shipmentId: shipment.id },
+      });
+    }
+
+    return res.status(201).json(shipment);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+logisticsRouter.patch("/:id/status", requireRole(Role.ADMIN), async (req, res, next) => {
+  try {
+    const shipmentId = String(req.params.id);
+    const body = updateStatusSchema.parse(req.body);
+    const shipment = await prisma.aidShipment.findUnique({ where: { id: shipmentId } });
+
+    if (!shipment) {
+      return res.status(404).json({ message: "Shipment not found" });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.aidShipment.update({
+        where: { id: shipment.id },
+        data: { status: body.status },
+      });
+
+      await tx.trackingEvent.create({
+        data: {
+          shipmentId: shipment.id,
+          status: body.status,
+          note: body.note,
+          latitude: body.latitude,
+          longitude: body.longitude,
+          photoUrl: body.photoUrl,
+          createdById: req.user!.id,
+        },
+      });
+    });
+
+    return res.json({ message: "Status updated" });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+logisticsRouter.get("/mine", requireRole(Role.ADMIN), async (req, res, next) => {
+  try {
+    const shipments = await prisma.aidShipment.findMany({
+      where: { assignedOperatorId: req.user!.id },
+      include: { campaign: true, item: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.json(shipments);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+logisticsRouter.get("/:id", async (req, res, next) => {
+  try {
+    const shipmentId = String(req.params.id);
+    const shipment = await prisma.aidShipment.findUnique({
+      where: { id: shipmentId },
+      include: {
+        campaign: true,
+        item: true,
+        assignedOperator: true,
+        trackingEvents: { orderBy: { createdAt: "asc" } },
+      },
+    });
+
+    if (!shipment) {
+      return res.status(404).json({ message: "Shipment not found" });
+    }
+
+    return res.json(shipment);
+  } catch (error) {
+    return next(error);
+  }
+});
