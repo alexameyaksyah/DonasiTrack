@@ -226,7 +226,7 @@ export function CampaignManagementConsole() {
       await Promise.allSettled(
         selectedIds.map((id) => campaignService.deleteCampaign(id, token)),
       );
-      notify("success", "Proses penghapusan massal selesai.");
+      notify("success", "Proses penghapusan selesai.");
       await loadCampaigns();
       setSelectedIds([]);
     } finally {
