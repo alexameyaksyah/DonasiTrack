@@ -198,264 +198,117 @@ export function CampaignManagementConsole() {
     }
   }
 
-    setIsBulkClosing(true);
+  async function bulkCloseSelected() {
+    if (!token) return;
+    const targets = campaigns.filter(
+      (c) => selectedIds.includes(c.id) && c.status === "OPEN",
+    );
+    if (targets.length === 0)
+      return notify("info", "Tidak ada kampanye OPEN yang bisa ditutup.");
 
+    setIsBulkClosing(true);
     try {
       const results = await Promise.allSettled(
-        targets.map((item) =>
-          fetch(`${API_URL}/campaigns/${item.id}/close`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeaders(token),
-            },
-          }),
-        ),
+        targets.map((c) => campaignService.closeCampaign(c.id, token)),
       );
-
-      const hasAuthError = results.some(
-        (result) => result.status === "fulfilled" && (result.value.status === 401 || result.value.status === 403),
-      );
-      if (hasAuthError) {
-        resetExpiredSession();
-        return;
-      }
-
-      const successCount = results.filter((result) => result.status === "fulfilled" && result.value.ok).length;
-      const failedCount = results.length - successCount;
-
-      notify(
-        failedCount > 0 ? "info" : "success",
-        failedCount > 0
-          ? `${successCount} kampanye ditutup, ${failedCount} gagal.`
-          : `${successCount} kampanye berhasil ditutup.`,
-      );
-
+      notify("success", "Proses penutupan massal selesai.");
       await loadCampaigns();
       setSelectedIds([]);
-    } catch {
-      notify("error", "Gagal menutup kampanye terpilih.");
     } finally {
       setIsBulkClosing(false);
     }
   }
 
   async function bulkDeleteSelected() {
-    if (!token) {
-      notify("error", "Token admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
-
-    if (selectedIds.length === 0) {
-      return;
-    }
-
+    if (!token || selectedIds.length === 0) return;
     setIsBulkDeleting(true);
-
     try {
-      const results = await Promise.allSettled(
-        selectedIds.map((id) =>
-          fetch(`${API_URL}/campaigns/${id}`, {
-            method: "DELETE",
-            headers: {
-              ...authHeaders(token),
-            },
-          }),
-        ),
+      await Promise.allSettled(
+        selectedIds.map((id) => campaignService.deleteCampaign(id, token)),
       );
-
-      const hasAuthError = results.some(
-        (result) => result.status === "fulfilled" && (result.value.status === 401 || result.value.status === 403),
-      );
-      if (hasAuthError) {
-        resetExpiredSession();
-        return;
-      }
-
-      const successCount = results.filter((result) => result.status === "fulfilled" && result.value.ok).length;
-      const failedCount = results.length - successCount;
-
-      notify(
-        failedCount > 0 ? "info" : "success",
-        failedCount > 0
-          ? `${successCount} kampanye dihapus, ${failedCount} gagal.`
-          : `${successCount} kampanye berhasil dihapus.`,
-      );
-
+      notify("success", "Proses penghapusan massal selesai.");
       await loadCampaigns();
       setSelectedIds([]);
-    } catch {
-      notify("error", "Gagal menghapus kampanye terpilih.");
     } finally {
       setIsBulkDeleting(false);
     }
   }
 
-  function openCreate() {
-    setEditing(null);
-    setForm(toForm());
-    setEditorOpen(true);
-  }
-
-  function openEdit(campaign: Campaign) {
-    setEditing(campaign);
-    setForm(toForm(campaign));
-    setEditorOpen(true);
-  }
-
-  function closeEditor() {
-    setEditorOpen(false);
-    setEditing(null);
-    setForm(toForm());
-  }
-
-  async function saveCampaign(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!token) {
-      notify("error", "Token admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
-
-    setIsSaving(true);
-
-    const method = editing ? "PUT" : "POST";
-    const endpoint = editing ? `${API_URL}/campaigns/${editing.id}` : `${API_URL}/campaigns`;
-
-    try {
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(token),
-        },
-        body: JSON.stringify({
-          title: form.title,
-          description: form.description,
-          disasterType: form.disasterType,
-          location: form.location,
-          targetAmount: Number(form.targetAmount),
-        }),
-      });
-
-      const data = (await response.json()) as { message?: string };
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          resetExpiredSession(data.message);
-          return;
-        }
-        notify("error", data.message || "Gagal menyimpan kampanye.");
-        return;
-      }
-
-      notify("success", editing ? "Kampanye berhasil diupdate." : "Kampanye baru berhasil dibuat.");
-      closeEditor();
-      await loadCampaigns();
-    } catch {
-      notify("error", "Gagal terhubung ke server API.");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  function requestDelete(campaign: Campaign) {
-    setDeleteCandidate(campaign);
-  }
-
-  function closeDeleteModal() {
-    setDeleteCandidate(null);
-  }
-
-  async function confirmDeleteCampaign() {
-    if (!deleteCandidate) {
-      return;
-    }
-
-    if (!token) {
-      notify("error", "Token admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
-
-    setIsDeletingId(deleteCandidate.id);
-
-    try {
-      const response = await fetch(`${API_URL}/campaigns/${deleteCandidate.id}`, {
-        method: "DELETE",
-        headers: {
-          ...authHeaders(token),
-        },
-      });
-
-      const payload = (await response.json()) as { message?: string };
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          resetExpiredSession(payload.message);
-          return;
-        }
-        notify("error", payload.message || "Gagal menghapus kampanye.");
-        return;
-      }
-
-      notify("success", "Kampanye berhasil dihapus.");
-      closeDeleteModal();
-      await loadCampaigns();
-    } catch {
-      notify("error", "Gagal terhubung ke server API.");
-    } finally {
-      setIsDeletingId("");
-    }
-  }
-
+  // --- RENDER ---
   return (
     <section className="console-surface">
+      {/* TOOLBAR */}
       <div className="campaign-toolbar">
         <h2>Manajemen Kampanye</h2>
-        <button className="console-btn success" onClick={openCreate} type="button">
+        <button
+          className="console-btn success"
+          onClick={() => {
+            setEditing(null);
+            setForm(toForm());
+            setEditorOpen(true);
+          }}
+        >
           + Buat Kampanye Baru
         </button>
       </div>
 
+      {/* TABS */}
       <div className="campaign-tabs">
-        <button className={`campaign-tab ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")} type="button">
-          Semua ({counts.all})
-        </button>
-        <button className={`campaign-tab ${filter === "active" ? "active" : ""}`} onClick={() => setFilter("active")} type="button">
-          Aktif ({counts.active})
-        </button>
-        <button className={`campaign-tab ${filter === "pending" ? "active" : ""}`} onClick={() => setFilter("pending")} type="button">
-          Pending ({counts.pending})
-        </button>
-        <button className={`campaign-tab ${filter === "closed" ? "active" : ""}`} onClick={() => setFilter("closed")} type="button">
-          Closed ({counts.closed})
-        </button>
+        {(["all", "active", "pending", "closed"] as FilterKey[]).map((key) => (
+          <button
+            key={key}
+            className={`campaign-tab ${filter === key ? "active" : ""}`}
+            onClick={() => setFilter(key)}
+          >
+            {key.charAt(0).toUpperCase() + key.slice(1)} ({counts[key]})
+          </button>
+        ))}
       </div>
 
+      {/* SEARCH & SORT */}
       <div className="campaign-search-row">
         <input
           className="campaign-search-input"
           placeholder="Cari kampanye, kategori, atau lokasi"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <div className="campaign-sort-controls">
-          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)}>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortBy)}
+          >
             <option value="title">Sort Nama</option>
             <option value="target">Sort Target</option>
             <option value="collected">Sort Terkumpul</option>
             <option value="status">Sort Status</option>
           </select>
-          <button className="campaign-page-btn" type="button" onClick={toggleSortDir}>
+          <button
+            className="campaign-page-btn"
+            onClick={() =>
+              setSortDir((prev) => (prev === "asc" ? "desc" : "asc"))
+            }
+          >
             {sortDir === "asc" ? "Asc" : "Desc"}
           </button>
         </div>
       </div>
 
+      {/* BULK BAR */}
       <div className="campaign-bulk-bar">
         <span>{selectedCount} dipilih</span>
-        <button className="console-btn warning" type="button" onClick={bulkCloseSelected} disabled={selectedCount === 0 || isBulkClosing}>
+        <button
+          className="console-btn warning"
+          onClick={bulkCloseSelected}
+          disabled={selectedCount === 0 || isBulkClosing}
+        >
           {isBulkClosing ? "Closing..." : "Close Terpilih"}
         </button>
-        <button className="console-btn danger" type="button" onClick={bulkDeleteSelected} disabled={selectedCount === 0 || isBulkDeleting}>
+        <button
+          className="console-btn danger"
+          onClick={bulkDeleteSelected}
+          disabled={selectedCount === 0 || isBulkDeleting}
+        >
           {isBulkDeleting ? "Menghapus..." : "Hapus Terpilih"}
         </button>
       </div>
