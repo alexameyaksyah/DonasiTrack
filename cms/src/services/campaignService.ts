@@ -1,7 +1,12 @@
 import { API_URL, authHeaders } from "../lib/api";
 import { CampaignCreateInput, CampaignFormData } from "../types/campaign";
 
-// Mengirim data kampanye baru ke server melalui API
+// GET: Mengambil semua data kampanye
+export async function fetchCampaigns(): Promise<Campaign[]> {
+  const response = await fetch(`${API_URL}/campaigns`, { cache: "no-store" });
+  if (!response.ok) throw new Error("Gagal mengambil data kampanye");
+  return response.json();
+}
 export async function createCampaign(body: CampaignCreateInput, token: string) {
   const response = await fetch(`${API_URL}/campaigns`, {
     method: "POST",
