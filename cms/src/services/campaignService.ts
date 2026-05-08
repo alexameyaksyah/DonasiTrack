@@ -28,3 +28,12 @@ export async function deleteCampaign(id: string, token: string) {
   });
   if (!res.ok) throw new Error("Gagal menghapus kampanye");
 }
+
+// Menutup kampanye (Set status ke CLOSED)
+export async function closeCampaign(id: string, token: string) {
+  const res = await fetch(`${API_URL}/campaigns/${id}/close`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Gagal menutup kampanye");
+}
