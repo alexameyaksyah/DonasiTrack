@@ -37,3 +37,13 @@ export async function closeCampaign(id: string, token: string) {
   });
   if (!res.ok) throw new Error("Gagal menutup kampanye");
 }
+
+// Update data kampanye
+export async function updateCampaign(id: string, data: CampaignFormData, token: string) {
+  const res = await fetch(`${API_URL}/campaigns/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Gagal mengupdate kampanye");
+}
