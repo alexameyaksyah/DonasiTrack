@@ -11,3 +11,11 @@ export function progressPercent(campaign: Campaign) {
     ),
   );
 }
+
+// Menentukan status visual berdasarkan progress
+export function visualStatus(
+  campaign: Campaign,
+): "active" | "pending" | "closed" {
+  if (campaign.status === "CLOSED") return "closed";
+  return progressPercent(campaign) >= 65 ? "active" : "pending";
+}
