@@ -21,3 +21,12 @@ export type Campaign = {
   targetAmount: number;
   status: CampaignStatus;
 };
+
+// Struktur data untuk filter dan sorting di UI
+export type CampaignFormData = {
+  title: string;
+  description: string;
+  disasterType: string;
+  location: string;
+  targetAmount: number;
+};
