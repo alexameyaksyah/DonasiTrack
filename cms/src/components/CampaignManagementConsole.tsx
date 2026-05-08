@@ -24,93 +24,71 @@ const SESSION_TOKEN_KEY = "donasi-track-session-token";
 const SESSION_USER_KEY = "donasi-track-session-user";
 const PAGE_SIZE = 6;
 
-function progressPercent(campaign: Campaign) {
-  if (campaign.targetAmount <= 0) {
-    return 0;
-  }
-
-  return Math.max(0, Math.min(100, Math.round((campaign.collectedAmount / campaign.targetAmount) * 100)));
-}
-
-function visualStatus(campaign: Campaign): "active" | "pending" | "closed" {
-  if (campaign.status === "CLOSED") {
-    return "closed";
-  }
-
-  return progressPercent(campaign) >= 65 ? "active" : "pending";
-}
-
-function toForm(campaign?: Campaign): CampaignFormData {
-  if (!campaign) {
-    return {
-      title: "",
-      description: "",
-      disasterType: "",
-      location: "",
-      targetAmount: 0,
-    };
-  }
-
-  return {
-    title: campaign.title,
-    description: campaign.description,
-    disasterType: campaign.disasterType,
-    location: campaign.location,
-    targetAmount: campaign.targetAmount,
-  };
-}
-
 export function CampaignManagementConsole() {
   const router = useRouter();
+
+  // --- STATE UTAMA (Data Mentah) ---
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [filter, setFilter] = useState<FilterKey>("all");
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<SortBy>("title");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [token, setToken] = useState("");
-  const [toast, setToast] = useState<ToastState>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // --- STATE UI (Modal, Toast, Loading Action) ---
+  const [toast, setToast] = useState<ToastState>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState("");
   const [isBulkClosing, setIsBulkClosing] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Campaign | null>(null);
   const [form, setForm] = useState<CampaignFormData>(toForm());
 
+  // --- MENGGUNAKAN CUSTOM HOOK (The Brain) ---
+  const {
+    filter,
+    setFilter,
+    search,
+    setSearch,
+    sortBy,
+    setSortBy,
+    sortDir,
+    setSortDir,
+    selectedIds,
+    setSelectedIds,
+    currentPage,
+    setCurrentPage,
+    processedData,
+  } = useCampaignManagement(campaigns);
+
+  // --- HANDLERS DASAR ---
   const notify = useCallback((kind: ToastKind, text: string) => {
     setToast({ kind, text });
   }, []);
 
-  const resetExpiredSession = useCallback((message?: string) => {
-    localStorage.removeItem(SESSION_TOKEN_KEY);
-    localStorage.removeItem(SESSION_USER_KEY);
-    setToken("");
-    notify("error", message || "Sesi admin berakhir, silakan login ulang.");
-    router.push("/auth");
-  }, [notify, router]);
+  const resetExpiredSession = useCallback(
+    (message?: string) => {
+      localStorage.removeItem(SESSION_TOKEN_KEY);
+      localStorage.removeItem(SESSION_USER_KEY);
+      setToken("");
+      notify("error", message || "Sesi admin berakhir, silakan login ulang.");
+      router.push("/auth");
+    },
+    [notify, router],
+  );
 
   const loadCampaigns = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/campaigns`, { cache: "no-store" });
-      const payload = (await response.json()) as Campaign[];
-      if (!response.ok) {
-        notify("error", "Gagal memuat data kampanye.");
-        return;
-      }
-
-      setCampaigns(payload);
+      const data = await campaignService.fetchCampaigns();
+      setCampaigns(data);
     } catch {
-      notify("error", "Gagal terhubung ke server API.");
+      notify("error", "Gagal memuat data kampanye.");
     } finally {
       setIsLoading(false);
     }
   }, [notify]);
 
+  // --- EFFECTS ---
   useEffect(() => {
     setToken(localStorage.getItem(SESSION_TOKEN_KEY) || "");
   }, []);
@@ -120,127 +98,105 @@ export function CampaignManagementConsole() {
   }, [loadCampaigns]);
 
   useEffect(() => {
-    if (!toast) {
-      return;
+    if (toast) {
+      const timer = window.setTimeout(() => setToast(null), 3000);
+      return () => window.clearTimeout(timer);
     }
-
-    const timer = window.setTimeout(() => setToast(null), 3000);
-    return () => window.clearTimeout(timer);
   }, [toast]);
 
+  // Reset pagination saat filter/search berubah
   useEffect(() => {
     setCurrentPage(1);
     setSelectedIds([]);
-  }, [filter, search]);
+  }, [filter, search, setCurrentPage, setSelectedIds]);
 
-  const counts = useMemo(() => {
-    const active = campaigns.filter((item) => visualStatus(item) === "active").length;
-    const pending = campaigns.filter((item) => visualStatus(item) === "pending").length;
-    const closed = campaigns.filter((item) => visualStatus(item) === "closed").length;
-
-    return {
+  // --- LOGIKA PERHITUNGAN DASHBOARD ---
+  const counts = useMemo(
+    () => ({
       all: campaigns.length,
-      active,
-      pending,
-      closed,
-    };
-  }, [campaigns]);
+      active: campaigns.filter((c) => visualStatus(c) === "active").length,
+      pending: campaigns.filter((c) => visualStatus(c) === "pending").length,
+      closed: campaigns.filter((c) => visualStatus(c) === "closed").length,
+    }),
+    [campaigns],
+  );
 
-  const filteredCampaigns = useMemo(() => {
-    if (filter === "all") {
-      return campaigns;
-    }
-
-    return campaigns.filter((item) => visualStatus(item) === filter);
-  }, [campaigns, filter]);
-
-  const searchedCampaigns = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) {
-      return filteredCampaigns;
-    }
-
-    return filteredCampaigns.filter((item) => {
-      return (
-        item.title.toLowerCase().includes(query) ||
-        item.disasterType.toLowerCase().includes(query) ||
-        item.location.toLowerCase().includes(query)
-      );
-    });
-  }, [filteredCampaigns, search]);
-
-  const sortedCampaigns = useMemo(() => {
-    const sorted = [...searchedCampaigns];
-
-    sorted.sort((a, b) => {
-      let value = 0;
-
-      if (sortBy === "title") {
-        value = a.title.localeCompare(b.title);
-      } else if (sortBy === "target") {
-        value = a.targetAmount - b.targetAmount;
-      } else if (sortBy === "collected") {
-        value = a.collectedAmount - b.collectedAmount;
-      } else {
-        value = visualStatus(a).localeCompare(visualStatus(b));
-      }
-
-      return sortDir === "asc" ? value : -value;
-    });
-
-    return sorted;
-  }, [searchedCampaigns, sortBy, sortDir]);
-
-  const totalPages = Math.max(1, Math.ceil(sortedCampaigns.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(processedData.length / PAGE_SIZE));
   const pagedCampaigns = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return sortedCampaigns.slice(start, start + PAGE_SIZE);
-  }, [currentPage, sortedCampaigns]);
+    return processedData.slice(start, start + PAGE_SIZE);
+  }, [currentPage, processedData]);
 
+  // --- SELECTION HANDLERS ---
   const selectedCount = selectedIds.length;
-  const selectedOnPageCount = pagedCampaigns.filter((item) => selectedIds.includes(item.id)).length;
-  const canSelectAllOnPage = pagedCampaigns.length > 0;
-  const allPageSelected = canSelectAllOnPage && selectedOnPageCount === pagedCampaigns.length;
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  function toggleSortDir() {
-    setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-  }
+  const selectedOnPageCount = pagedCampaigns.filter((item) =>
+    selectedIds.includes(item.id),
+  ).length;
+  const allPageSelected =
+    pagedCampaigns.length > 0 && selectedOnPageCount === pagedCampaigns.length;
 
   function toggleSelectOne(id: string) {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((value) => value !== id) : [...prev, id]));
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
+    );
   }
 
   function toggleSelectAllOnPage() {
-    if (!canSelectAllOnPage) {
-      return;
-    }
-
     if (allPageSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !pagedCampaigns.some((item) => item.id === id)));
-      return;
+      setSelectedIds((prev) =>
+        prev.filter((id) => !pagedCampaigns.some((item) => item.id === id)),
+      );
+    } else {
+      const pageIds = pagedCampaigns.map((item) => item.id);
+      setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
     }
-
-    const pageIds = pagedCampaigns.map((item) => item.id);
-    setSelectedIds((prev) => [...new Set([...prev, ...pageIds])]);
   }
 
-  async function bulkCloseSelected() {
-    if (!token) {
-      notify("error", "Token admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
+  // --- CRUD & BULK ACTIONS ---
+  async function saveCampaign(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token) return notify("error", "Token admin tidak ditemukan.");
 
-    const targets = campaigns.filter((item) => selectedIds.includes(item.id) && item.status === "OPEN");
-    if (targets.length === 0) {
-      notify("info", "Tidak ada kampanye OPEN yang bisa ditutup.");
-      return;
+    setIsSaving(true);
+    try {
+      if (editing) {
+        await campaignService.updateCampaign(editing.id, form, token);
+      } else {
+        await campaignService.createCampaign(form, token);
+      }
+      notify(
+        "success",
+        editing
+          ? "Kampanye berhasil diupdate."
+          : "Kampanye baru berhasil dibuat.",
+      );
+      setEditorOpen(false);
+      await loadCampaigns();
+    } catch (err) {
+      // Hapus ': any', biarkan TypeScript menganggapnya 'unknown'
+      // Lakukan pengecekan apakah 'err' adalah objek Error resmi
+      const errorMessage =
+        err instanceof Error ? err.message : "Gagal menyimpan data.";
+      notify("error", errorMessage);
+    } finally {
+      setIsSaving(false);
     }
+  }
+
+  async function confirmDeleteCampaign() {
+    if (!deleteCandidate || !token) return;
+    setIsDeletingId(deleteCandidate.id);
+    try {
+      await campaignService.deleteCampaign(deleteCandidate.id, token);
+      notify("success", "Kampanye berhasil dihapus.");
+      setDeleteCandidate(null);
+      await loadCampaigns();
+    } catch {
+      notify("error", "Gagal menghapus kampanye.");
+    } finally {
+      setIsDeletingId("");
+    }
+  }
 
     setIsBulkClosing(true);
 
