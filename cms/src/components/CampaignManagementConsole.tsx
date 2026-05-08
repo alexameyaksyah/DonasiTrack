@@ -313,27 +313,21 @@ export function CampaignManagementConsole() {
         </button>
       </div>
 
+      {/* TABLE SECTION */}
       {isLoading ? (
         <p className="console-muted">Memuat data kampanye...</p>
       ) : (
         <>
-          {campaigns.length === 0 ? (
-            <div className="campaign-empty-state">
-              <div className="campaign-empty-icon">+</div>
-              <h3>Belum ada kampanye</h3>
-              <p className="console-muted">Mulai buat kampanye pertama untuk mengaktifkan dashboard penggalangan.</p>
-              <button className="console-btn success" type="button" onClick={openCreate}>
-                Buat Kampanye Baru
-              </button>
-            </div>
-          ) : null}
-
           <div className="console-table-wrap" style={{ marginTop: 8 }}>
             <table className="console-table">
               <thead>
                 <tr>
                   <th>
-                    <input type="checkbox" checked={allPageSelected} onChange={toggleSelectAllOnPage} />
+                    <input
+                      type="checkbox"
+                      checked={allPageSelected}
+                      onChange={toggleSelectAllOnPage}
+                    />
                   </th>
                   <th>Nama Kampanye</th>
                   <th>Kategori</th>
@@ -348,18 +342,22 @@ export function CampaignManagementConsole() {
                 {pagedCampaigns.map((campaign) => {
                   const status = visualStatus(campaign);
                   const progress = progressPercent(campaign);
-                  const isSelected = selectedIds.includes(campaign.id);
-
                   return (
                     <tr key={campaign.id}>
                       <td>
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelectOne(campaign.id)} />
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(campaign.id)}
+                          onChange={() => toggleSelectOne(campaign.id)}
+                        />
                       </td>
                       <td>
                         <strong>{campaign.title}</strong>
                       </td>
                       <td>
-                        <span className="campaign-chip">{campaign.disasterType}</span>
+                        <span className="campaign-chip">
+                          {campaign.disasterType}
+                        </span>
                       </td>
                       <td>{rupiah(campaign.targetAmount)}</td>
                       <td>{rupiah(campaign.collectedAmount)}</td>
@@ -370,31 +368,39 @@ export function CampaignManagementConsole() {
                               width: `${progress}%`,
                               background:
                                 status === "active"
-                                  ? "linear-gradient(90deg, #20be93 0%, #3fd1a6 100%)"
+                                  ? "#20be93"
                                   : status === "pending"
-                                    ? "linear-gradient(90deg, #e7aa38 0%, #f7bf5e 100%)"
-                                    : "linear-gradient(90deg, #6f7890 0%, #8a93ad 100%)",
+                                    ? "#e7aa38"
+                                    : "#6f7890",
                             }}
                           />
                         </div>
                       </td>
                       <td>
-                        <span className={`console-status ${status === "active" ? "ok" : status === "pending" ? "pending" : "closed"}`}>
-                          {status === "active" ? "Active" : status === "pending" ? "Pending" : "Closed"}
+                        <span
+                          className={`console-status ${status === "active" ? "ok" : status === "pending" ? "pending" : "closed"}`}
+                        >
+                          {status.toUpperCase()}
                         </span>
                       </td>
                       <td>
                         <div className="campaign-actions">
-                          <button className="console-btn info" onClick={() => openEdit(campaign)} type="button">
+                          <button
+                            className="console-btn info"
+                            onClick={() => {
+                              setEditing(campaign);
+                              setForm(toForm(campaign));
+                              setEditorOpen(true);
+                            }}
+                          >
                             Edit
                           </button>
                           <button
                             className="console-btn danger"
-                            onClick={() => requestDelete(campaign)}
-                            type="button"
+                            onClick={() => setDeleteCandidate(campaign)}
                             disabled={isDeletingId === campaign.id}
                           >
-                            {isDeletingId === campaign.id ? "Menghapus..." : "Hapus"}
+                            {isDeletingId === campaign.id ? "..." : "Hapus"}
                           </button>
                         </div>
                       </td>
@@ -405,15 +411,11 @@ export function CampaignManagementConsole() {
             </table>
           </div>
 
-          {campaigns.length > 0 && pagedCampaigns.length === 0 ? (
-            <p className="campaign-empty">Tidak ada kampanye yang cocok dengan filter atau pencarian saat ini.</p>
-          ) : null}
-
+          {/* PAGINATION */}
           <div className="campaign-pagination">
             <button
               className="campaign-page-btn"
-              type="button"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               Sebelumnya
@@ -423,8 +425,7 @@ export function CampaignManagementConsole() {
             </span>
             <button
               className="campaign-page-btn"
-              type="button"
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
               Berikutnya
@@ -433,88 +434,97 @@ export function CampaignManagementConsole() {
         </>
       )}
 
-      {editorOpen ? (
-        <div className="campaign-modal-backdrop" role="dialog" aria-modal="true">
+      {/* MODAL EDITOR */}
+      {editorOpen && (
+        <div className="campaign-modal-backdrop">
           <div className="campaign-modal">
             <div className="campaign-toolbar">
               <h3>{editing ? "Edit Kampanye" : "Buat Kampanye Baru"}</h3>
-              <button className="console-btn neutral" onClick={closeEditor} type="button">
+              <button
+                className="console-btn neutral"
+                onClick={() => setEditorOpen(false)}
+              >
                 Tutup
               </button>
             </div>
-
             <form className="form" onSubmit={saveCampaign}>
               <input
-                placeholder="Judul kampanye"
+                placeholder="Judul"
                 value={form.title}
-                onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
-                minLength={3}
               />
               <textarea
                 placeholder="Deskripsi"
                 rows={3}
                 value={form.description}
-                onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 required
-                minLength={10}
               />
               <input
-                placeholder="Kategori bencana"
+                placeholder="Kategori"
                 value={form.disasterType}
-                onChange={(event) => setForm((prev) => ({ ...prev, disasterType: event.target.value }))}
+                onChange={(e) =>
+                  setForm({ ...form, disasterType: e.target.value })
+                }
                 required
-                minLength={3}
               />
               <input
                 placeholder="Lokasi"
                 value={form.location}
-                onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
                 required
-                minLength={3}
               />
               <input
                 type="number"
-                placeholder="Target dana"
+                placeholder="Target Dana"
                 value={form.targetAmount || ""}
-                onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    targetAmount: Number(event.target.value),
-                  }))
+                onChange={(e) =>
+                  setForm({ ...form, targetAmount: Number(e.target.value) })
                 }
                 required
-                min={1}
               />
-
               <button className="btn success" type="submit" disabled={isSaving}>
-                {isSaving ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Buat Kampanye"}
+                {isSaving ? "Menyimpan..." : "Simpan"}
               </button>
             </form>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {deleteCandidate ? (
-        <div className="campaign-modal-backdrop" role="dialog" aria-modal="true">
+      {/* MODAL DELETE */}
+      {deleteCandidate && (
+        <div className="campaign-modal-backdrop">
           <div className="campaign-modal">
             <h3>Konfirmasi Hapus</h3>
             <p className="console-muted">
-              Apakah kamu yakin ingin menghapus kampanye <strong>{deleteCandidate.title}</strong>? Aksi ini tidak bisa dibatalkan.
+              Yakin ingin menghapus <strong>{deleteCandidate.title}</strong>?
             </p>
             <div className="campaign-actions" style={{ marginTop: 14 }}>
-              <button className="console-btn neutral" onClick={closeDeleteModal} type="button" disabled={isDeletingId === deleteCandidate.id}>
+              <button
+                className="console-btn neutral"
+                onClick={() => setDeleteCandidate(null)}
+              >
                 Batal
               </button>
-              <button className="console-btn danger" onClick={confirmDeleteCampaign} type="button" disabled={isDeletingId === deleteCandidate.id}>
-                {isDeletingId === deleteCandidate.id ? "Menghapus..." : "Ya, Hapus"}
+              <button
+                className="console-btn danger"
+                onClick={confirmDeleteCampaign}
+                disabled={!!isDeletingId}
+              >
+                Ya, Hapus
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {toast ? <div className={`campaign-toast ${toast.kind}`}>{toast.text}</div> : null}
+      {/* TOAST */}
+      {toast && (
+        <div className={`campaign-toast ${toast.kind}`}>{toast.text}</div>
+      )}
     </section>
   );
 }
