@@ -30,3 +30,7 @@ export type CampaignFormData = {
   location: string;
   targetAmount: number;
 };
+
+// Tipe pendukung UI Dashboard
+export type FilterKey = "all" | "active" | "pending" | "closed";
+export type SortBy = "title" | "target" | "collected" | "status";
