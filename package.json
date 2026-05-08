@@ -19,7 +19,8 @@
   "type": "commonjs",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "api",
+  "cms",
+  "user"
+]
 }
