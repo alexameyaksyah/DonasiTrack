@@ -10,12 +10,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { CampaignChartData } from "../types/campaign";
 
-type CampaignData = {
-  title: string;
-  collectedAmount: number;
-  distributedAmount: number;
-};
+interface DonationChartProps {
+  data: CampaignChartData[];
+}
 
 export function DonationChart({ data }: { data: CampaignData[] }) {
   return (
