@@ -44,3 +44,24 @@ export function useCampaignManagement(initialCampaigns: Campaign[]) {
 
       return sortDir === "asc" ? value : -value;
     });
+
+    return result;
+  }, [initialCampaigns, filter, search, sortBy, sortDir]);
+
+  // --- RETURN DATA ---
+  return {
+    filter,
+    setFilter,
+    search,
+    setSearch,
+    sortBy,
+    setSortBy,
+    sortDir,
+    setSortDir,
+    selectedIds,
+    setSelectedIds,
+    currentPage,
+    setCurrentPage,
+    processedData,
+  };
+}
