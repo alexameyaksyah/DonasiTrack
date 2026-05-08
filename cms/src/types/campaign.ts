@@ -6,3 +6,6 @@ export type CampaignCreateInput = {
   location: string;
   targetAmount: number;
 };
+
+// Struktur data kampanye yang diterima dari server
+export type CampaignStatus = "OPEN" | "CLOSED";
