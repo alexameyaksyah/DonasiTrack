@@ -34,3 +34,7 @@ export type CampaignFormData = {
 // Tipe pendukung UI Dashboard
 export type FilterKey = "all" | "active" | "pending" | "closed";
 export type SortBy = "title" | "target" | "collected" | "status";
+
+// Tipe untuk notifikasi toast di UI
+export type ToastKind = "success" | "error" | "info";
+export type ToastState = { kind: ToastKind; text: string } | null;
