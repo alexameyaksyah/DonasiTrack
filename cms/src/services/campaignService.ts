@@ -1,5 +1,5 @@
 import { API_URL, authHeaders } from "../lib/api";
-import { CampaignCreateInput, CampaignFormData } from "../types/campaign";
+import { Campaign, CampaignCreateInput, CampaignFormData } from "../types/campaign";
 
 // GET: Mengambil semua data kampanye
 export async function fetchCampaigns(): Promise<Campaign[]> {
