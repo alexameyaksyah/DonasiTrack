@@ -7,21 +7,15 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
   if (!response.ok) throw new Error("Gagal mengambil data kampanye");
   return response.json();
 }
+
+// POST: Membuat kampanye baru
 export async function createCampaign(body: CampaignCreateInput, token: string) {
   const response = await fetch(`${API_URL}/campaigns`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(token),
-    },
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
     body: JSON.stringify(body),
   });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Gagal membuat kampanye");
-  }
-
+  if (!response.ok) throw new Error("Gagal membuat kampanye");
   return response.json();
 }
 
