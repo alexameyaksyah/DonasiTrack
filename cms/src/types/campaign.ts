@@ -9,3 +9,15 @@ export type CampaignCreateInput = {
 
 // Struktur data kampanye yang diterima dari server
 export type CampaignStatus = "OPEN" | "CLOSED";
+
+// Struktur data kampanye lengkap dengan ID dan status
+export type Campaign = {
+  id: string;
+  title: string;
+  description: string;
+  disasterType: string;
+  location: string;
+  collectedAmount: number;
+  targetAmount: number;
+  status: CampaignStatus;
+};
