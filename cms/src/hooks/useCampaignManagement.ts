@@ -13,3 +13,22 @@ export function useCampaignManagement(initialCampaigns: Campaign[]) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // --- LOGIKA FILTERING, SEARCHING, & SORTING ---
+  const processedData = useMemo(() => {
+    let result = [...initialCampaigns];
+
+    // 1. Filter Berdasarkan Tab (Status Visual)
+    if (filter !== "all") {
+      result = result.filter((item) => visualStatus(item) === filter);
+    }
+
+    // 2. Search Berdasarkan Judul, Kategori, atau Lokasi
+    const query = search.trim().toLowerCase();
+    if (query) {
+      result = result.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.disasterType.toLowerCase().includes(query) ||
+          item.location.toLowerCase().includes(query),
+      );
+    }
