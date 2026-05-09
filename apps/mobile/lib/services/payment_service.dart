@@ -33,10 +33,6 @@ class PaymentService {
 }
 
 class PaymentTransaction {
-  final String id;
-  final double amount;
-  final String status;
-  final DateTime timestamp;
 
   PaymentTransaction({
     required this.id,
@@ -44,4 +40,8 @@ class PaymentTransaction {
     required this.status,
     required this.timestamp,
   });
+  final String id;
+  final double amount;
+  final String status;
+  final DateTime timestamp;
 }

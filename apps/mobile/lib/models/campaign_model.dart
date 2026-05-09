@@ -1,13 +1,4 @@
 class Campaign {
-  final String id;
-  final String title;
-  final String description;
-  final double targetAmount;
-  final double currentAmount;
-  final DateTime startDate;
-  final DateTime? endDate;
-  final String status;
-  final String? imageUrl;
 
   Campaign({
     required this.id,
@@ -34,9 +25,17 @@ class Campaign {
       imageUrl: json['imageUrl'] as String?,
     );
   }
+  final String id;
+  final String title;
+  final String description;
+  final double targetAmount;
+  final double currentAmount;
+  final DateTime startDate;
+  final DateTime? endDate;
+  final String status;
+  final String? imageUrl;
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'title': title,
       'description': description,
@@ -47,7 +46,6 @@ class Campaign {
       'status': status,
       'imageUrl': imageUrl,
     };
-  }
 
   double get progressPercentage => (currentAmount / targetAmount) * 100;
 }

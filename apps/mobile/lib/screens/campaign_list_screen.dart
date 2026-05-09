@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CampaignListScreen extends StatefulWidget {
-  const CampaignListScreen({Key? key}) : super(key: key);
+  const CampaignListScreen({super.key});
 
   @override
   State<CampaignListScreen> createState() => _CampaignListScreenState();
@@ -37,8 +37,7 @@ class _CampaignListScreenState extends State<CampaignListScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Active Campaigns')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -68,5 +67,4 @@ class _CampaignListScreenState extends State<CampaignListScreen> {
                   ),
                 ),
     );
-  }
 }

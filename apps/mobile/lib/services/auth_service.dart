@@ -32,7 +32,5 @@ class AuthService {
     }
   }
 
-  Future<bool> verifyToken() async {
-    return _token != null;
-  }
+  Future<bool> verifyToken() async => _token != null;
 }

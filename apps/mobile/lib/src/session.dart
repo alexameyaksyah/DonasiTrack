@@ -24,7 +24,7 @@ class AppSession extends ChangeNotifier {
   bool get isAuthenticated => token.isNotEmpty;
 
   Future<void> load() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     token = prefs.getString(_tokenKey) ?? '';
     userId = prefs.getString(_userIdKey) ?? '';
     role = prefs.getString(_roleKey) ?? 'DONOR';
@@ -40,7 +40,7 @@ class AppSession extends ChangeNotifier {
     token = newToken;
     userId = newUserId;
     role = newRole;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
     await prefs.setString(_userIdKey, userId);
     await prefs.setString(_roleKey, role);
@@ -49,7 +49,7 @@ class AppSession extends ChangeNotifier {
 
   Future<void> saveApiBase(String value) async {
     apiBaseUrl = value.trim();
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_apiKey, apiBaseUrl);
     notifyListeners();
   }
@@ -58,7 +58,7 @@ class AppSession extends ChangeNotifier {
     token = '';
     userId = '';
     role = 'DONOR';
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_roleKey);

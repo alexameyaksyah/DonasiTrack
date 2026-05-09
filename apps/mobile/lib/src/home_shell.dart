@@ -7,7 +7,7 @@ import 'pages/admin_operational_page.dart';
 import 'pages/tracking_page.dart';
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.session});
+  const HomeShell({required this.session, super.key});
 
   final AppSession session;
 
@@ -20,7 +20,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = <Widget>[
+    final pages = <Widget>[
       DonorPage(session: widget.session),
       AdminOperationalPage(session: widget.session),
       TrackingPage(session: widget.session),
@@ -28,8 +28,7 @@ class _HomeShellState extends State<HomeShell> {
 
     return AnimatedBuilder(
       animation: widget.session,
-      builder: (context, _) {
-        return Scaffold(
+      builder: (context, _) => Scaffold(
           appBar: AppBar(
             title: const Text('Donasi Track Flutter'),
             actions: <Widget>[
@@ -74,8 +73,7 @@ class _HomeShellState extends State<HomeShell> {
               ),
             ],
           ),
-        );
-      },
+        ),
     );
   }
 }

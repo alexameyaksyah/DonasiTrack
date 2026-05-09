@@ -12,8 +12,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
   bool captured = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Scan QR')),
       body: MobileScanner(
         onDetect: (BarcodeCapture capture) {
@@ -27,5 +26,4 @@ class _QrScannerPageState extends State<QrScannerPage> {
         },
       ),
     );
-  }
 }

@@ -7,7 +7,7 @@ import '../session.dart';
 import '../api_client.dart';
 
 class DonorPage extends StatefulWidget {
-  const DonorPage({super.key, required this.session});
+  const DonorPage({required this.session, super.key});
 
   final AppSession session;
 
@@ -47,10 +47,10 @@ class _DonorPageState extends State<DonorPage> {
   }
 
   Future<void> _loadCampaigns() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? cache = prefs.getString(campaignCacheKey);
+    final prefs = await SharedPreferences.getInstance();
+    final cache = prefs.getString(campaignCacheKey);
     if (cache != null && cache.isNotEmpty) {
-      final List<dynamic> decoded = jsonDecode(cache) as List<dynamic>;
+      final decoded = jsonDecode(cache) as List<dynamic>;
       setState(() {
         campaigns = decoded
             .map((dynamic item) => Map<String, dynamic>.from(item as Map))
@@ -59,8 +59,8 @@ class _DonorPageState extends State<DonorPage> {
     }
 
     try {
-      final ApiClient api = ApiClient(widget.session);
-      final List<Map<String, dynamic>> fresh = await api.campaigns();
+      final api = ApiClient(widget.session);
+      final fresh = await api.campaigns();
       setState(() => campaigns = fresh);
       await prefs.setString(campaignCacheKey, jsonEncode(fresh));
     } catch (_) {
@@ -81,7 +81,7 @@ class _DonorPageState extends State<DonorPage> {
       message = '';
     });
 
-    final Map<String, dynamic> body = <String, dynamic>{
+    final body = <String, dynamic>{
       'campaignId': campaignId.text.trim(),
       'type': donationType,
       'amount': amount.text.trim().isEmpty
@@ -97,15 +97,15 @@ class _DonorPageState extends State<DonorPage> {
     };
 
     try {
-      final ApiClient api = ApiClient(widget.session);
+      final api = ApiClient(widget.session);
       await api.donate(body);
       setState(
         () => message = 'Donasi terkirim dan menunggu verifikasi admin.',
       );
     } catch (_) {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final String? existing = prefs.getString(donationQueueKey);
-      final List<dynamic> queue = existing == null
+      final prefs = await SharedPreferences.getInstance();
+      final existing = prefs.getString(donationQueueKey);
+      final queue = existing == null
           ? <dynamic>[]
           : (jsonDecode(existing) as List<dynamic>);
       queue.add(body);
@@ -119,21 +119,21 @@ class _DonorPageState extends State<DonorPage> {
   }
 
   Future<void> _syncDonationQueue() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? existing = prefs.getString(donationQueueKey);
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(donationQueueKey);
     if (existing == null) {
       setState(() => message = 'Queue kosong.');
       return;
     }
 
-    final ApiClient api = ApiClient(widget.session);
-    final List<Map<String, dynamic>> queue =
+    final api = ApiClient(widget.session);
+    final queue =
         (jsonDecode(existing) as List<dynamic>)
             .map((dynamic item) => Map<String, dynamic>.from(item as Map))
             .toList();
-    final List<Map<String, dynamic>> remain = <Map<String, dynamic>>[];
+    final remain = <Map<String, dynamic>>[];
 
-    for (final Map<String, dynamic> item in queue) {
+    for (final item in queue) {
       try {
         await api.donate(item);
       } catch (_) {
@@ -151,8 +151,7 @@ class _DonorPageState extends State<DonorPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
+  Widget build(BuildContext context) => ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
         const Text(
@@ -226,5 +225,4 @@ class _DonorPageState extends State<DonorPage> {
           Padding(padding: const EdgeInsets.only(top: 8), child: Text(message)),
       ],
     );
-  }
 }

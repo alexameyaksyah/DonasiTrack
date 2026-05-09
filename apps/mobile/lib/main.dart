@@ -20,8 +20,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
   late final Future<void> bootstrap = session.load();
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context) => MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Donasi Track Mobile',
       theme: ThemeData(
@@ -62,5 +61,4 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
         },
       ),
     );
-  }
 }

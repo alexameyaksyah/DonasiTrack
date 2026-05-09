@@ -1,12 +1,4 @@
 class Donation {
-  final String id;
-  final String userId;
-  final double amount;
-  final String currency;
-  final String category;
-  final String? description;
-  final DateTime donationDate;
-  final String status;
 
   Donation({
     required this.id,
@@ -31,9 +23,16 @@ class Donation {
       status: json['status'] as String,
     );
   }
+  final String id;
+  final String userId;
+  final double amount;
+  final String currency;
+  final String category;
+  final String? description;
+  final DateTime donationDate;
+  final String status;
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'userId': userId,
       'amount': amount,
@@ -43,5 +42,4 @@ class Donation {
       'donationDate': donationDate.toIso8601String(),
       'status': status,
     };
-  }
 }

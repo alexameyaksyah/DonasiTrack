@@ -2,11 +2,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  final String baseUrl;
-  final http.Client client;
 
   ApiService({required this.baseUrl, http.Client? client})
       : client = client ?? http.Client();
+  final String baseUrl;
+  final http.Client client;
 
   Future<dynamic> get(String endpoint) async {
     try {

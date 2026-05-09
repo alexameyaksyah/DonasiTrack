@@ -10,7 +10,7 @@ import '../api_client.dart';
 import '../widgets/qr_scanner_page.dart';
 
 class AdminOperationalPage extends StatefulWidget {
-  const AdminOperationalPage({super.key, required this.session});
+  const AdminOperationalPage({required this.session, super.key});
 
   final AppSession session;
 
@@ -45,7 +45,7 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
   }
 
   Future<void> _scanQrCode() async {
-    final String? scanned = await Navigator.push<String>(
+    final scanned = await Navigator.push<String>(
       context,
       MaterialPageRoute<String>(builder: (_) => const QrScannerPage()),
     );
@@ -58,23 +58,23 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
   }
 
   Future<String> _resolveShipmentId(String rawInput) async {
-    final String input = rawInput.trim();
+    final input = rawInput.trim();
     if (input.startsWith('DNT-')) {
-      final ApiClient api = ApiClient(widget.session);
-      final Map<String, dynamic> payload = await api.trackingByCode(input);
+      final api = ApiClient(widget.session);
+      final payload = await api.trackingByCode(input);
       return payload['id']?.toString() ?? input;
     }
     return input;
   }
 
   Future<void> _captureLocation() async {
-    final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() => message = 'Layanan lokasi tidak aktif.');
       return;
     }
 
-    LocationPermission permission = await Geolocator.checkPermission();
+    var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
@@ -85,7 +85,7 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       return;
     }
 
-    final Position current = await Geolocator.getCurrentPosition();
+    final current = await Geolocator.getCurrentPosition();
     setState(() {
       position = current;
       message = 'Koordinat berhasil diambil.';
@@ -98,16 +98,16 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       return;
     }
 
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 75,
     );
     if (file == null) return;
 
     try {
-      final ApiClient api = ApiClient(widget.session);
-      final String url = await api.uploadProof(file);
+      final api = ApiClient(widget.session);
+      final url = await api.uploadProof(file);
       setState(() {
         uploadedPhotoUrl = url;
         message = 'Foto bukti berhasil diupload.';
@@ -128,8 +128,8 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       return;
     }
 
-    final String shipmentId = await _resolveShipmentId(shipmentInput.text);
-    final Map<String, dynamic> body = <String, dynamic>{
+    final shipmentId = await _resolveShipmentId(shipmentInput.text);
+    final body = <String, dynamic>{
       'shipmentId': shipmentId,
       'status': status,
       'note': note.text.trim().isEmpty ? null : note.text.trim(),
@@ -139,7 +139,7 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
     };
 
     try {
-      final ApiClient api = ApiClient(widget.session);
+      final api = ApiClient(widget.session);
       await api.updateShipmentStatus(
         shipmentId: shipmentId,
         status: status,
@@ -150,9 +150,9 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       );
       setState(() => message = 'Status pengiriman berhasil diperbarui.');
     } catch (_) {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final String? existing = prefs.getString(trackingQueueKey);
-      final List<dynamic> queue = existing == null
+      final prefs = await SharedPreferences.getInstance();
+      final existing = prefs.getString(trackingQueueKey);
+      final queue = existing == null
           ? <dynamic>[]
           : (jsonDecode(existing) as List<dynamic>);
       queue.add(body);
@@ -162,21 +162,21 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
   }
 
   Future<void> _syncTrackingQueue() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? existing = prefs.getString(trackingQueueKey);
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(trackingQueueKey);
     if (existing == null) {
       setState(() => message = 'Queue tracking kosong.');
       return;
     }
 
-    final List<Map<String, dynamic>> queue =
+    final queue =
         (jsonDecode(existing) as List<dynamic>)
             .map((dynamic item) => Map<String, dynamic>.from(item as Map))
             .toList();
-    final List<Map<String, dynamic>> remain = <Map<String, dynamic>>[];
-    final ApiClient api = ApiClient(widget.session);
+    final remain = <Map<String, dynamic>>[];
+    final api = ApiClient(widget.session);
 
-    for (final Map<String, dynamic> item in queue) {
+    for (final item in queue) {
       try {
         await api.updateShipmentStatus(
           shipmentId: item['shipmentId'].toString(),
@@ -201,8 +201,7 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
+  Widget build(BuildContext context) => ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
         const Text(
@@ -292,5 +291,4 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
         ],
       ],
     );
-  }
 }

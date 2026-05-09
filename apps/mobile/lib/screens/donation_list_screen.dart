@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DonationListScreen extends StatefulWidget {
-  const DonationListScreen({Key? key}) : super(key: key);
+  const DonationListScreen({super.key});
 
   @override
   State<DonationListScreen> createState() => _DonationListScreenState();
@@ -37,8 +37,7 @@ class _DonationListScreenState extends State<DonationListScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('My Donations')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -67,5 +66,4 @@ class _DonationListScreenState extends State<DonationListScreen> {
         child: const Icon(Icons.add),
       ),
     );
-  }
 }

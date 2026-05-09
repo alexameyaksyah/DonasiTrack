@@ -1,10 +1,4 @@
 class User {
-  final String id;
-  final String name;
-  final String email;
-  final String? profileImage;
-  final DateTime createdAt;
-  final DateTime? updatedAt;
 
   User({
     required this.id,
@@ -25,9 +19,14 @@ class User {
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
     );
   }
+  final String id;
+  final String name;
+  final String email;
+  final String? profileImage;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'name': name,
       'email': email,
@@ -35,5 +34,4 @@ class User {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
-  }
 }

@@ -5,7 +5,7 @@ import '../session.dart';
 import '../api_client.dart';
 
 class TrackingPage extends StatefulWidget {
-  const TrackingPage({super.key, required this.session});
+  const TrackingPage({required this.session, super.key});
 
   final AppSession session;
 
@@ -26,8 +26,8 @@ class _TrackingPageState extends State<TrackingPage> {
 
   Future<void> _findTracking() async {
     try {
-      final ApiClient api = ApiClient(widget.session);
-      final Map<String, dynamic> data = await api.trackingByCode(
+      final api = ApiClient(widget.session);
+      final data = await api.trackingByCode(
         code.text.trim(),
       );
       setState(() {
@@ -35,7 +35,7 @@ class _TrackingPageState extends State<TrackingPage> {
         message = '';
       });
     } on DioException catch (error) {
-      final String? serverMessage = error.response?.data is Map
+      final serverMessage = error.response?.data is Map
           ? (error.response?.data['message'] as String?)
           : null;
       setState(() {
@@ -47,7 +47,7 @@ class _TrackingPageState extends State<TrackingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> events = payload == null
+    final events = payload == null
         ? <dynamic>[]
         : (payload!['trackingEvents'] as List<dynamic>? ?? <dynamic>[]);
 
@@ -79,10 +79,10 @@ class _TrackingPageState extends State<TrackingPage> {
           const Divider(height: 24),
           const Text('Timeline', style: TextStyle(fontWeight: FontWeight.bold)),
           ...events.map((dynamic item) {
-            final Map<String, dynamic> event = Map<String, dynamic>.from(
+            final event = Map<String, dynamic>.from(
               item as Map,
             );
-            final Map<String, dynamic> createdBy = Map<String, dynamic>.from(
+            final createdBy = Map<String, dynamic>.from(
               (event['createdBy'] ?? <String, dynamic>{}) as Map,
             );
             return Card(

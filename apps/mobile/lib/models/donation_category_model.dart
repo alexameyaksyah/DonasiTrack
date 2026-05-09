@@ -1,9 +1,4 @@
 class DonationCategory {
-  final String id;
-  final String name;
-  final String? description;
-  final String? icon;
-  final String color;
 
   DonationCategory({
     required this.id,
@@ -22,14 +17,17 @@ class DonationCategory {
       color: json['color'] as String,
     );
   }
+  final String id;
+  final String name;
+  final String? description;
+  final String? icon;
+  final String color;
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'name': name,
       'description': description,
       'icon': icon,
       'color': color,
     };
-  }
 }

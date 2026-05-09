@@ -5,21 +5,19 @@ import '../session.dart';
 import '../api_client.dart';
 
 class AuthStandalonePage extends StatelessWidget {
-  const AuthStandalonePage({super.key, required this.session});
+  const AuthStandalonePage({required this.session, super.key});
 
   final AppSession session;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Login / Daftar')),
       body: AuthPage(session: session),
     );
-  }
 }
 
 class AuthPage extends StatefulWidget {
-  const AuthPage({super.key, required this.session});
+  const AuthPage({required this.session, super.key});
 
   final AppSession session;
 
@@ -54,13 +52,13 @@ class _AuthPageState extends State<AuthPage> {
     });
 
     try {
-      final ApiClient api = ApiClient(widget.session);
-      final Map<String, dynamic> result = await api.login(
+      final api = ApiClient(widget.session);
+      final result = await api.login(
         email: loginEmail.text.trim(),
         password: loginPassword.text.trim(),
       );
 
-      final Map<String, dynamic> user = Map<String, dynamic>.from(
+      final user = Map<String, dynamic>.from(
         result['user'] as Map,
       );
       await widget.session.saveSession(
@@ -72,7 +70,7 @@ class _AuthPageState extends State<AuthPage> {
       if (!mounted) return;
       setState(() => message = 'Login berhasil');
     } on DioException catch (error) {
-      final String? serverMessage = error.response?.data is Map
+      final serverMessage = error.response?.data is Map
           ? (error.response?.data['message'] as String?)
           : null;
       setState(() => message = serverMessage ?? 'Login gagal');
@@ -88,7 +86,7 @@ class _AuthPageState extends State<AuthPage> {
     });
 
     try {
-      final ApiClient api = ApiClient(widget.session);
+      final api = ApiClient(widget.session);
       await api.register(
         name: registerName.text.trim(),
         email: registerEmail.text.trim(),
@@ -109,10 +107,10 @@ class _AuthPageState extends State<AuthPage> {
         registerPassword.clear();
       });
       // switch to Login tab
-      final TabController tab = DefaultTabController.of(context);
+      final tab = DefaultTabController.of(context);
       tab.animateTo(0);
     } on DioException catch (error) {
-      final String? serverMessage = error.response?.data is Map
+      final serverMessage = error.response?.data is Map
           ? (error.response?.data['message'] as String?)
           : null;
       setState(() => message = serverMessage ?? 'Registrasi gagal');
@@ -121,8 +119,7 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
   @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
+  Widget build(BuildContext context) => DefaultTabController(
       length: 2,
       child: Column(
         children: <Widget>[
@@ -210,5 +207,4 @@ class _AuthPageState extends State<AuthPage> {
         ],
       ),
     );
-  }
 }

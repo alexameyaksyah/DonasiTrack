@@ -1,14 +1,4 @@
 class Organization {
-  final String id;
-  final String name;
-  final String description;
-  final String? logoUrl;
-  final String? website;
-  final String? email;
-  final String? phone;
-  final String? address;
-  final String status;
-  final DateTime createdAt;
 
   Organization({
     required this.id,
@@ -37,9 +27,18 @@ class Organization {
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
+  final String id;
+  final String name;
+  final String description;
+  final String? logoUrl;
+  final String? website;
+  final String? email;
+  final String? phone;
+  final String? address;
+  final String status;
+  final DateTime createdAt;
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson() => {
       'id': id,
       'name': name,
       'description': description,
@@ -51,5 +50,4 @@ class Organization {
       'status': status,
       'createdAt': createdAt.toIso8601String(),
     };
-  }
 }

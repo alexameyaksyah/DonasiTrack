@@ -25,7 +25,7 @@ class ApiClient {
     required String email,
     required String password,
   }) async {
-    final Response<dynamic> response = await dio.post(
+    final response = await dio.post(
       '/auth/login',
       data: {'email': email, 'password': password},
     );
@@ -37,7 +37,7 @@ class ApiClient {
     required String email,
     required String password,
   }) async {
-    final Response<dynamic> response = await dio.post(
+    final response = await dio.post(
       '/auth/register',
       data: {'name': name, 'email': email, 'password': password},
     );
@@ -45,7 +45,7 @@ class ApiClient {
   }
 
   Future<List<Map<String, dynamic>>> campaigns() async {
-    final Response<dynamic> response = await dio.get('/campaigns');
+    final response = await dio.get('/campaigns');
     return (response.data as List<dynamic>)
         .map((dynamic item) => Map<String, dynamic>.from(item as Map))
         .toList();
@@ -60,7 +60,7 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> trackingByCode(String code) async {
-    final Response<dynamic> response = await dio.get('/tracking/$code');
+    final response = await dio.get('/tracking/$code');
     return Map<String, dynamic>.from(response.data as Map);
   }
 
@@ -86,18 +86,18 @@ class ApiClient {
   }
 
   Future<String> uploadProof(XFile file) async {
-    final MultipartFile multipart = kIsWeb
+    final multipart = kIsWeb
         ? MultipartFile.fromBytes(await file.readAsBytes(), filename: file.name)
         : await MultipartFile.fromFile(file.path, filename: file.name);
 
-    final FormData formData = FormData.fromMap({'file': multipart});
-    final Response<dynamic> response = await dio.post(
+    final formData = FormData.fromMap({'file': multipart});
+    final response = await dio.post(
       '/uploads/proof',
       data: formData,
       options: Options(headers: authHeader, contentType: 'multipart/form-data'),
     );
 
-    final Map<String, dynamic> map = Map<String, dynamic>.from(
+    final map = Map<String, dynamic>.from(
       response.data as Map,
     );
     return map['url'] as String;
