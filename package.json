@@ -6,11 +6,11 @@
   "scripts": {
     "dev:api": "npm --workspace @donasi-track/api run dev",
     "dev:web": "npm --workspace web run dev",
-    "dev:mobile": "cd user && flutter run",
+    "dev:mobile": "cd mobile && flutter run",
     "studio": "npm --workspace @donasi-track/api run prisma:studio",
     "build:api": "npm --workspace @donasi-track/api run build",
     "build:web": "npm --workspace web run build",
-    "build:mobile": "cd user && flutter build web",
+    "build:mobile": "cd mobile && flutter build web",
     "build": "npm run build:api && npm run build:web"
   },
   "keywords": [],
@@ -21,6 +21,6 @@
   "workspaces": [
   "api",
   "cms",
-  "user"
+  "mobile"
 ]
 }

@@ -6,7 +6,7 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 
 - `api`: Backend REST API (Express + TypeScript + Prisma + PostgreSQL)
 - `cms`: Frontend Next.js (Admin SSR + Donatur + Operasional Admin)
-- `user`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
+- `mobile`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
 - `packages/shared`: Ruang untuk shared package ke depan
 
 ## Fitur yang Sudah Diimplementasikan
@@ -103,7 +103,7 @@ npm run dev:mobile
 Atau langsung dari folder Flutter:
 
 ```bash
-cd user
+cd mobile
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000/api
 ```
 
