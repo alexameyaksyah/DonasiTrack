@@ -1,4 +1,0 @@
-# Build configuration for iOS
-Xcode version: 15.0
-iOS deployment target: 12.0
-CocoaPods version: 1.14.0
