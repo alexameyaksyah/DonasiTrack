@@ -352,6 +352,16 @@ class ApiClient {
     return Map<String, dynamic>.from(response.data as Map);
   }
 
+  Future<List<Map<String, dynamic>>> myOperationalShipments() async {
+    final Response<dynamic> response = await dio.get(
+      '/logistics/mine',
+      options: Options(headers: authHeader),
+    );
+    return (response.data as List<dynamic>)
+        .map((dynamic item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+  }
+
   Future<void> updateShipmentStatus({
     required String shipmentId,
     required String status,
@@ -403,6 +413,24 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
+  String? adminPrefillCode;
+  String? adminPrefillShipmentId;
+
+  void _handleAdminCode(String code) {
+    setState(() {
+      adminPrefillCode = code;
+      adminPrefillShipmentId = null;
+      index = 1;
+    });
+  }
+
+  void _handleAdminShipment(Map<String, dynamic> shipment) {
+    setState(() {
+      adminPrefillShipmentId = shipment['id']?.toString();
+      adminPrefillCode = shipment['trackingCode']?.toString();
+      index = 1;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -414,9 +442,19 @@ class _HomeShellState extends State<HomeShell> {
             DonorProfileTab(session: widget.session),
           ]
         : <Widget>[
-            AdminOperationalPage(session: widget.session),
-            TrackingPage(session: widget.session),
-            DonorProfileTab(session: widget.session),
+            AdminScannerTab(
+              session: widget.session,
+              onCodeCaptured: _handleAdminCode,
+            ),
+            AdminFormTab(
+              session: widget.session,
+              prefillCode: adminPrefillCode,
+              prefillShipmentId: adminPrefillShipmentId,
+            ),
+            AdminTasksTab(
+              session: widget.session,
+              onSelectShipment: _handleAdminShipment,
+            ),
           ];
 
     final List<({IconData icon, String label})> destinations = isDonorMode
@@ -426,28 +464,16 @@ class _HomeShellState extends State<HomeShell> {
             (icon: Icons.person_rounded, label: 'Profil'),
           ]
         : <({IconData icon, String label})>[
-            (icon: Icons.admin_panel_settings_rounded, label: 'Operasional'),
-            (icon: Icons.timeline_rounded, label: 'Lacak'),
-            (icon: Icons.person_rounded, label: 'Profil'),
+            (icon: Icons.qr_code_scanner_rounded, label: 'Scanner'),
+            (icon: Icons.assignment_rounded, label: 'Form'),
+            (icon: Icons.list_alt_rounded, label: 'Tugas'),
           ];
 
     return AnimatedBuilder(
       animation: widget.session,
       builder: (context, _) {
         return Scaffold(
-          appBar: isDonorMode
-              ? null
-              : AppBar(
-                  title: const Text('Donasi Track Mobile'),
-                  actions: <Widget>[
-                    if (widget.session.isAuthenticated)
-                      IconButton(
-                        onPressed: widget.session.logout,
-                        icon: const Icon(Icons.logout),
-                        tooltip: 'Logout',
-                      ),
-                  ],
-                ),
+          appBar: null,
           body: SafeArea(
             child: Padding(
               padding: isDonorMode
@@ -2165,32 +2191,113 @@ class _DonorProfileTabState extends State<DonorProfileTab> {
   }
 }
 
-class AdminOperationalPage extends StatefulWidget {
-  const AdminOperationalPage({super.key, required this.session});
+class AdminHeader extends StatelessWidget {
+  const AdminHeader({
+    super.key,
+    required this.session,
+    required this.title,
+    this.subtitle,
+  });
 
   final AppSession session;
+  final String title;
+  final String? subtitle;
 
   @override
-  State<AdminOperationalPage> createState() => _AdminOperationalPageState();
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: MoonPalette.lavender.withValues(alpha: 0.25),
+                ),
+              ),
+              child: const Icon(Icons.shield_rounded, size: 18),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'DonasiTrack',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F4EA),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Text(
+                'Relawan',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0E6B63),
+                ),
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: <Widget>[
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF22C55E),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Online',
+                  style: TextStyle(fontSize: 12, color: MoonPalette.muted),
+                ),
+                IconButton(
+                  onPressed: session.logout,
+                  icon: const Icon(Icons.logout, size: 18),
+                  tooltip: 'Logout',
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        if (subtitle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              subtitle!,
+              style: const TextStyle(color: MoonPalette.muted),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
-class _AdminOperationalPageState extends State<AdminOperationalPage> {
-  static const String trackingQueueKey = 'tracking_queue';
+class AdminScannerTab extends StatefulWidget {
+  const AdminScannerTab({
+    super.key,
+    required this.session,
+    required this.onCodeCaptured,
+  });
 
-  final TextEditingController shipmentInput = TextEditingController();
-  final TextEditingController note = TextEditingController();
-
-  String status = 'PICKED_UP';
-  String message = '';
-  String? uploadedPhotoUrl;
-  Position? position;
+  final AppSession session;
+  final ValueChanged<String> onCodeCaptured;
 
   @override
-  void dispose() {
-    shipmentInput.dispose();
-    note.dispose();
-    super.dispose();
-  }
+  State<AdminScannerTab> createState() => _AdminScannerTabState();
+}
+
+class _AdminScannerTabState extends State<AdminScannerTab> {
+  String message = '';
 
   Future<void> _scanQrCode() async {
     final String? scanned = await Navigator.push<String>(
@@ -2198,11 +2305,132 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       MaterialPageRoute<String>(builder: (_) => const QrScannerPage()),
     );
     if (scanned != null && scanned.isNotEmpty) {
-      setState(() {
-        shipmentInput.text = scanned;
-        message = 'QR terbaca: $scanned';
-      });
+      setState(() => message = 'QR terbaca: $scanned');
+      widget.onCodeCaptured(scanned);
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      children: <Widget>[
+        AdminHeader(
+          session: widget.session,
+          title: 'Scanner QR Bantuan',
+          subtitle: 'Arahkan kamera ke QR Code penerima bantuan.',
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  height: 210,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F2434),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: const Color(0xFF4ADE80),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.qr_code_scanner,
+                      color: Colors.white54,
+                      size: 54,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Arahkan ke QR Code penerima',
+                  style: TextStyle(color: MoonPalette.muted),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _scanQrCode,
+                  child: const Text('Scan QR'),
+                ),
+                if (message.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: MoonPalette.muted),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AdminFormTab extends StatefulWidget {
+  const AdminFormTab({
+    super.key,
+    required this.session,
+    this.prefillCode,
+    this.prefillShipmentId,
+  });
+
+  final AppSession session;
+  final String? prefillCode;
+  final String? prefillShipmentId;
+
+  @override
+  State<AdminFormTab> createState() => _AdminFormTabState();
+}
+
+class _AdminFormTabState extends State<AdminFormTab> {
+  static const String trackingQueueKey = 'tracking_queue';
+
+  final TextEditingController shipmentInput = TextEditingController();
+  final TextEditingController recipientName = TextEditingController();
+  final TextEditingController note = TextEditingController();
+
+  String status = 'DELIVERED';
+  String message = '';
+  String? uploadedPhotoUrl;
+  Position? position;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyPrefill();
+  }
+
+  @override
+  void didUpdateWidget(AdminFormTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.prefillCode != widget.prefillCode ||
+        oldWidget.prefillShipmentId != widget.prefillShipmentId) {
+      _applyPrefill();
+    }
+  }
+
+  void _applyPrefill() {
+    if (widget.prefillShipmentId != null &&
+        widget.prefillShipmentId!.trim().isNotEmpty) {
+      shipmentInput.text = widget.prefillShipmentId!.trim();
+    } else if (widget.prefillCode != null &&
+        widget.prefillCode!.trim().isNotEmpty) {
+      shipmentInput.text = widget.prefillCode!.trim();
+    }
+  }
+
+  @override
+  void dispose() {
+    shipmentInput.dispose();
+    recipientName.dispose();
+    note.dispose();
+    super.dispose();
   }
 
   Future<String> _resolveShipmentId(String rawInput) async {
@@ -2276,11 +2504,27 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
       return;
     }
 
+    if (shipmentInput.text.trim().isEmpty) {
+      setState(() => message = 'Tracking code atau shipment ID wajib diisi.');
+      return;
+    }
+
     final String shipmentId = await _resolveShipmentId(shipmentInput.text);
+    final List<String> noteParts = <String>[];
+    if (recipientName.text.trim().isNotEmpty) {
+      noteParts.add('Penerima: ${recipientName.text.trim()}');
+    }
+    if (note.text.trim().isNotEmpty) {
+      noteParts.add(note.text.trim());
+    }
+    final String? combinedNote = noteParts.isEmpty
+        ? null
+        : noteParts.join(' - ');
+
     final Map<String, dynamic> body = <String, dynamic>{
       'shipmentId': shipmentId,
       'status': status,
-      'note': note.text.trim().isEmpty ? null : note.text.trim(),
+      'note': combinedNote,
       'latitude': position?.latitude,
       'longitude': position?.longitude,
       'photoUrl': uploadedPhotoUrl,
@@ -2309,135 +2553,274 @@ class _AdminOperationalPageState extends State<AdminOperationalPage> {
     }
   }
 
-  Future<void> _syncTrackingQueue() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? existing = prefs.getString(trackingQueueKey);
-    if (existing == null) {
-      setState(() => message = 'Queue tracking kosong.');
-      return;
-    }
+  @override
+  Widget build(BuildContext context) {
+    final String gpsLabel = position == null
+        ? 'Belum diambil'
+        : '${position!.latitude.toStringAsFixed(5)}, ${position!.longitude.toStringAsFixed(5)}';
 
-    final List<Map<String, dynamic>> queue =
-        (jsonDecode(existing) as List<dynamic>)
-            .map((dynamic item) => Map<String, dynamic>.from(item as Map))
-            .toList();
-    final List<Map<String, dynamic>> remain = <Map<String, dynamic>>[];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      children: <Widget>[
+        AdminHeader(
+          session: widget.session,
+          title: 'Bukti Serah Terima',
+          subtitle: 'Lengkapi laporan penyerahan bantuan di lapangan.',
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  controller: shipmentInput,
+                  decoration: const InputDecoration(
+                    labelText: 'Tracking Code / Shipment ID',
+                    hintText: 'contoh: DNT-123456-ABCD',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children:
+                      <String>[
+                        'PICKED_UP',
+                        'IN_TRANSIT',
+                        'DELIVERED',
+                        'FAILED',
+                      ].map((String value) {
+                        final bool selected = status == value;
+                        return ChoiceChip(
+                          label: Text(value),
+                          selected: selected,
+                          onSelected: (_) => setState(() => status = value),
+                        );
+                      }).toList(),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: recipientName,
+                  decoration: const InputDecoration(labelText: 'Nama Penerima'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: note,
+                  minLines: 2,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Catatan',
+                    hintText: 'Kondisi penerima, catatan penting...',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Upload Foto Bukti',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _pickAndUploadPhoto,
+                  child: Container(
+                    height: 110,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: MoonPalette.lavender.withValues(alpha: 0.25),
+                        style: BorderStyle.solid,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const Icon(Icons.camera_alt_outlined),
+                        const SizedBox(height: 6),
+                        Text(
+                          uploadedPhotoUrl == null
+                              ? 'Tap untuk upload foto'
+                              : 'Foto siap diupload',
+                          style: const TextStyle(color: MoonPalette.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Koordinat GPS\n$gpsLabel')),
+                    OutlinedButton(
+                      onPressed: _captureLocation,
+                      child: const Text('Ambil Lokasi'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _submitTracking,
+                    child: const Text('Kirim Laporan'),
+                  ),
+                ),
+                if (message.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: MoonPalette.muted),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AdminTasksTab extends StatefulWidget {
+  const AdminTasksTab({
+    super.key,
+    required this.session,
+    required this.onSelectShipment,
+  });
+
+  final AppSession session;
+  final ValueChanged<Map<String, dynamic>> onSelectShipment;
+
+  @override
+  State<AdminTasksTab> createState() => _AdminTasksTabState();
+}
+
+class _AdminTasksTabState extends State<AdminTasksTab> {
+  late Future<List<Map<String, dynamic>>> futureShipments = _loadShipments();
+
+  Future<List<Map<String, dynamic>>> _loadShipments() async {
     final ApiClient api = ApiClient(widget.session);
+    return api.myOperationalShipments();
+  }
 
-    for (final Map<String, dynamic> item in queue) {
-      try {
-        await api.updateShipmentStatus(
-          shipmentId: item['shipmentId'].toString(),
-          status: item['status'].toString(),
-          note: item['note']?.toString(),
-          latitude: (item['latitude'] as num?)?.toDouble(),
-          longitude: (item['longitude'] as num?)?.toDouble(),
-          photoUrl: item['photoUrl']?.toString(),
-        );
-      } catch (_) {
-        remain.add(item);
-      }
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'CREATED':
+        return const Color(0xFFFBBF24);
+      case 'PICKED_UP':
+      case 'IN_TRANSIT':
+        return const Color(0xFF22C55E);
+      case 'DELIVERED':
+        return const Color(0xFF3B82F6);
+      case 'FAILED':
+        return const Color(0xFFEF4444);
+      default:
+        return MoonPalette.muted;
     }
+  }
 
-    if (remain.isEmpty) {
-      await prefs.remove(trackingQueueKey);
-      setState(() => message = 'Queue tracking sukses disinkronkan.');
-    } else {
-      await prefs.setString(trackingQueueKey, jsonEncode(remain));
-      setState(() => message = '${remain.length} event tracking masih antri.');
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'CREATED':
+        return 'Menunggu';
+      case 'PICKED_UP':
+      case 'IN_TRANSIT':
+        return 'Aktif';
+      case 'DELIVERED':
+        return 'Selesai';
+      case 'FAILED':
+        return 'Gagal';
+      default:
+        return status;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: <Widget>[
-        const Card(
-          child: Padding(
-            padding: EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Operasional Admin',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: futureShipments,
+      builder: (context, snapshot) {
+        final List<Map<String, dynamic>> shipments =
+            snapshot.data ?? <Map<String, dynamic>>[];
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            setState(() => futureShipments = _loadShipments());
+            await futureShipments;
+          },
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+            children: <Widget>[
+              AdminHeader(
+                session: widget.session,
+                title: 'Tugas Hari Ini',
+                subtitle: 'Daftar pengiriman yang ditugaskan ke Anda.',
+              ),
+              const SizedBox(height: 12),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Scan QR, update status, foto bukti, dan sinkronisasi queue offline.',
-                  style: TextStyle(color: MoonPalette.muted),
-                ),
-              ],
-            ),
+              if (snapshot.hasError)
+                const Text('Gagal memuat tugas. Tarik untuk refresh.'),
+              if (snapshot.connectionState != ConnectionState.waiting &&
+                  shipments.isEmpty)
+                const Text('Belum ada tugas operasional.'),
+              ...shipments.map((Map<String, dynamic> item) {
+                final Map<String, dynamic> campaign = Map<String, dynamic>.from(
+                  (item['campaign'] ?? <String, dynamic>{}) as Map,
+                );
+                final Map<String, dynamic> inventory =
+                    Map<String, dynamic>.from(
+                      (item['item'] ?? <String, dynamic>{}) as Map,
+                    );
+                final String status = item['status']?.toString() ?? '-';
+                final String title =
+                    campaign['title']?.toString() ??
+                    inventory['name']?.toString() ??
+                    'Pengiriman Bantuan';
+                final String subtitle =
+                    '${inventory['quantity'] ?? item['quantity'] ?? '-'} ${inventory['name'] ?? 'paket'} - ${item['destinationLocation'] ?? '-'}';
+
+                return Card(
+                  child: ListTile(
+                    onTap: () => widget.onSelectShipment(item),
+                    title: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Text(subtitle),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _statusColor(status).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        _statusLabel(status),
+                        style: TextStyle(
+                          color: _statusColor(status),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: shipmentInput,
-          decoration: const InputDecoration(
-            labelText: 'Shipment ID atau Tracking Code',
-            hintText: 'contoh: DNT-123456-ABCD atau shipment id',
-          ),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: _scanQrCode,
-          icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('Scan QR Code'),
-        ),
-        DropdownButtonFormField<String>(
-          initialValue: status,
-          items: const <DropdownMenuItem<String>>[
-            DropdownMenuItem(value: 'PICKED_UP', child: Text('PICKED_UP')),
-            DropdownMenuItem(value: 'IN_TRANSIT', child: Text('IN_TRANSIT')),
-            DropdownMenuItem(value: 'DELIVERED', child: Text('DELIVERED')),
-            DropdownMenuItem(value: 'FAILED', child: Text('FAILED')),
-          ],
-          onChanged: (String? value) =>
-              setState(() => status = value ?? 'PICKED_UP'),
-          decoration: const InputDecoration(labelText: 'Status'),
-        ),
-        TextField(
-          controller: note,
-          decoration: const InputDecoration(labelText: 'Catatan lapangan'),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: _captureLocation,
-          icon: const Icon(Icons.my_location),
-          label: const Text('Ambil Geolocation'),
-        ),
-        if (position != null)
-          Text(
-            'Lokasi: ${position!.latitude.toStringAsFixed(6)}, ${position!.longitude.toStringAsFixed(6)}',
-            style: const TextStyle(color: MoonPalette.muted),
-          ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: _pickAndUploadPhoto,
-          icon: const Icon(Icons.camera_alt),
-          label: const Text('Ambil & Upload Foto Bukti'),
-        ),
-        if (uploadedPhotoUrl != null) Text('Foto URL: $uploadedPhotoUrl'),
-        const SizedBox(height: 10),
-        FilledButton(
-          onPressed: _submitTracking,
-          child: const Text('Kirim Update Tracking'),
-        ),
-        OutlinedButton(
-          onPressed: _syncTrackingQueue,
-          child: const Text('Sync Queue Tracking Offline'),
-        ),
-        if (message.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              message,
-              style: const TextStyle(color: MoonPalette.muted),
-            ),
-          ),
-      ],
+        );
+      },
     );
   }
 }

@@ -18,6 +18,7 @@ export function CampaignForm() {
       disasterType: String(formData.get("disasterType")),
       location: String(formData.get("location")),
       targetAmount: Number(formData.get("targetAmount")),
+      status: String(formData.get("status") || "PENDING"),
     };
 
     // Memanggil fungsi submitCampaign dan menunggu hasilnya untuk menentukan apakah form bisa di-reset
@@ -34,6 +35,11 @@ export function CampaignForm() {
       <p className="status-line">Lengkapi formulir di bawah untuk merilis kampanye donasi.</p>
       
       <form className="form" onSubmit={onSubmit}>
+        <select name="status" defaultValue="PENDING">
+          <option value="PENDING">PENDING</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="INACTIVE">INACTIVE</option>
+        </select>
         <input name="title" placeholder="Judul kampanye" required />
         <textarea name="description" placeholder="Deskripsi kampanye" required rows={3} />
         <input name="disasterType" placeholder="Jenis bencana (cth: Banjir, Gempa)" required />

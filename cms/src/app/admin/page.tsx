@@ -40,7 +40,7 @@ type DashboardStats = {
     title: string;
     collectedAmount: number;
     distributedAmount: number;
-    status: "OPEN" | "CLOSED";
+    status: "PENDING" | "ACTIVE" | "INACTIVE";
   }>;
 };
 
@@ -76,7 +76,9 @@ export default function AdminDashboardPage() {
     [],
   );
 
-  const activeCampaigns = stats?.campaigns.filter((campaign) => campaign.status === "OPEN").length ?? 0;
+  const activeCampaigns =
+    stats?.campaigns.filter((campaign) => campaign.status === "ACTIVE")
+      .length ?? 0;
 
   const loadStats = useCallback(async () => {
     const token = localStorage.getItem(SESSION_TOKEN_KEY) || "";
@@ -247,8 +249,20 @@ export default function AdminDashboardPage() {
                         </div>
                       </td>
                       <td>
-                        <span className={`console-status ${campaign.status === "OPEN" ? "ok" : "pending"}`}>
-                          {campaign.status === "OPEN" ? "Active" : "Closed"}
+                        <span
+                          className={`console-status ${
+                            campaign.status === "ACTIVE"
+                              ? "ok"
+                              : campaign.status === "PENDING"
+                                ? "pending"
+                                : "closed"
+                          }`}
+                        >
+                          {campaign.status === "ACTIVE"
+                            ? "Active"
+                            : campaign.status === "PENDING"
+                              ? "Pending"
+                              : "Inactive"}
                         </span>
                       </td>
                     </tr>

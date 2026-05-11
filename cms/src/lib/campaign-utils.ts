@@ -15,9 +15,10 @@ export function progressPercent(campaign: Campaign) {
 // Menentukan status visual berdasarkan progress
 export function visualStatus(
   campaign: Campaign,
-): "active" | "pending" | "closed" {
-  if (campaign.status === "CLOSED") return "closed";
-  return progressPercent(campaign) >= 65 ? "active" : "pending";
+): "active" | "pending" | "inactive" {
+  if (campaign.status === "INACTIVE") return "inactive";
+  if (campaign.status === "ACTIVE") return "active";
+  return "pending";
 }
 
 // Mapper data untuk form editor
@@ -28,5 +29,6 @@ export function toForm(campaign?: Campaign | null): CampaignFormData {
     disasterType: campaign?.disasterType ?? "",
     location: campaign?.location ?? "",
     targetAmount: campaign?.targetAmount ?? 0,
+    status: campaign?.status,
   };
 }

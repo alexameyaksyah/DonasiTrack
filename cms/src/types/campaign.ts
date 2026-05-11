@@ -5,10 +5,11 @@ export type CampaignCreateInput = {
   disasterType: string;
   location: string;
   targetAmount: number;
+  status?: CampaignStatus;
 };
 
 // Struktur data kampanye yang diterima dari server
-export type CampaignStatus = "OPEN" | "CLOSED";
+export type CampaignStatus = "PENDING" | "ACTIVE" | "INACTIVE";
 
 // Struktur data kampanye lengkap dengan ID dan status
 export type Campaign = {
@@ -29,10 +30,11 @@ export type CampaignFormData = {
   disasterType: string;
   location: string;
   targetAmount: number;
+  status?: CampaignStatus;
 };
 
 // Tipe pendukung UI Dashboard
-export type FilterKey = "all" | "active" | "pending" | "closed";
+export type FilterKey = "all" | "active" | "pending" | "inactive";
 export type SortBy = "title" | "target" | "collected" | "status";
 
 // Tipe untuk notifikasi toast di UI

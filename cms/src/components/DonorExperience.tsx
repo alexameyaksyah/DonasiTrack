@@ -11,7 +11,7 @@ type Campaign = {
   location: string;
   targetAmount: number;
   collectedAmount: number;
-  status: "OPEN" | "CLOSED";
+  status: "PENDING" | "ACTIVE" | "INACTIVE";
 };
 
 const CACHE_KEY = "donasi-track-campaigns";
@@ -39,8 +39,9 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
     fetch(`${API_URL}/campaigns`)
       .then((res) => res.json())
       .then((data: Campaign[]) => {
-        setCampaigns(data);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        const activeOnly = data.filter((campaign) => campaign.status === "ACTIVE");
+        setCampaigns(activeOnly);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(activeOnly));
       })
       .catch(() => {
         setMessage("Mode cache aktif: menampilkan kampanye dari data lokal.");
