@@ -944,35 +944,6 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ExpansionTile(
-                    tilePadding: EdgeInsets.zero,
-                    title: const Text(
-                      'API Connection',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: MoonPalette.muted,
-                        fontSize: 13,
-                      ),
-                    ),
-                    childrenPadding: const EdgeInsets.only(bottom: 10),
-                    children: <Widget>[
-                      TextField(
-                        controller: apiBase,
-                        decoration: const InputDecoration(
-                          labelText: 'API Base URL',
-                          hintText: 'http://10.0.2.2:4000/api',
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: OutlinedButton(
-                          onPressed: loading ? null : _saveApiBaseOnly,
-                          child: const Text('Save API'),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
