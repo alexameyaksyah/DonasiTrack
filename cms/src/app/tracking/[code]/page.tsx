@@ -63,6 +63,7 @@ export default async function TrackingPage({
               <p className="muted" style={{ fontSize: "0.85em" }}>
                 Status Stok Gudang:{" "}
                 {data.item.quantity === 0
+                  ? "✅ Terdistribusi Penuh"
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
