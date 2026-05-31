@@ -50,3 +50,7 @@ export default function TrackingPage() {
         headers: authHeaders(token),
       });
 
+      if (!res.ok) {
+        throw new Error("Kode tracking tidak ditemukan atau server bermasalah.");
+      }
+
