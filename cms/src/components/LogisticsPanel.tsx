@@ -234,6 +234,8 @@ export function LogisticsPanel() {
           <p style={{ fontWeight: "bold", color: "#4ade80" }}>
             ✓ Alokasi Berhasil Dicatat!
           </p>
+          <p className="console-muted">Kode: {lastTrackingCode}</p>
+          <Link
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
