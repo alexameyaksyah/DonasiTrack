@@ -143,3 +143,27 @@ export default function TrackingPage() {
                         zIndex: 2
                       }} />
 
+                      <div>
+                        <div style={{ fontSize: "0.85rem", color: index === 0 ? "#3b82f6" : "#64748b", fontWeight: index === 0 ? "bold" : "normal" }}>
+                          {new Date(event.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                        </div>
+                        <div style={{ fontSize: "1rem", marginTop: "4px", color: index === 0 ? "#f8fafc" : "#94a3b8", fontWeight: index === 0 ? "bold" : "500" }}>
+                          {event.status}
+                        </div>
+                        <div style={{ fontSize: "0.85rem", color: "#475569", marginTop: "2px" }}>
+                          📍 {event.location} | Oleh: {event.createdBy?.name}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="console-muted">Belum ada riwayat perjalanan.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      </section>
+    </main>
+  );
+}
