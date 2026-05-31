@@ -81,7 +81,10 @@ export function LogisticsPanel() {
     return map.errors?.[0]?.message || fallback;
   }
 
-  const selectedItem = useMemo(() => inventory.find((item) => item.id === selectedItemId), [inventory, selectedItemId]);
+  const selectedItem = useMemo(
+    () => inventory.find((item) => item.id === selectedItemId),
+    [inventory, selectedItemId],
+  );
 
   useEffect(() => {
     async function loadData() {
