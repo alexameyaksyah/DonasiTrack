@@ -64,6 +64,9 @@ export default async function TrackingPage({
                 Status Stok Gudang:{" "}
                 {data.item.quantity === 0
                   ? "✅ Terdistribusi Penuh"
+                  : `${data.item.quantity} Tersisa`}
+              </p>
+            </div>
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
