@@ -250,39 +250,54 @@ export function LogisticsPanel() {
         </div>
       )}
 
+      {message && !lastTrackingCode ? (
+        <p className="status-line">{message}</p>
+      ) : null}
+
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
       ) : (
-        <form id="logistics-allocation-form" onSubmit={onSubmit} className="logistics-board">
+        <form
+          id="logistics-allocation-form"
+          onSubmit={onSubmit}
+          className="logistics-board"
+        >
           <div className="logistics-column">
             <h3>Stok Gudang Pusat</h3>
             <div className="form" style={{ marginBottom: 10 }}>
               <input
                 placeholder="Nama item baru"
                 value={newItemName}
-                onChange={(event) => setNewItemName(event.target.value)}
-                minLength={2}
-                required
+                onChange={(e) => setNewItemName(e.target.value)}
               />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 8,
+                }}
+              >
                 <input
                   type="number"
-                  min={1}
                   value={newItemQty}
-                  onChange={(event) => setNewItemQty(Number(event.target.value))}
-                  required
+                  onChange={(e) => setNewItemQty(Number(e.target.value))}
                 />
                 <input
                   placeholder="Gudang"
                   value={newItemWarehouse}
-                  onChange={(event) => setNewItemWarehouse(event.target.value)}
-                  required
+                  onChange={(e) => setNewItemWarehouse(e.target.value)}
                 />
               </div>
-              <button className="console-btn neutral" type="button" onClick={onCreateInventoryItem} disabled={isCreatingItem}>
+              <button
+                className="console-btn neutral"
+                type="button"
+                onClick={onCreateInventoryItem}
+                disabled={isCreatingItem}
+              >
                 {isCreatingItem ? "Menambah..." : "Tambah Stok"}
               </button>
             </div>
+
             <div className="logistics-list">
               {inventory.length === 0 ? <p className="console-muted">Belum ada stok. Tambahkan item terlebih dulu.</p> : null}
               {inventory.map((item) => {
