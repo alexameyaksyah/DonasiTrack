@@ -170,6 +170,7 @@ export function LogisticsPanel() {
       const inventoryRes = await fetch(`${API_URL}/inventory`, {
         headers: authHeaders(token),
       });
+      if (inventoryRes.ok) setInventory(await inventoryRes.json());
     } catch {
       setMessage("Gagal terhubung ke server.");
     } finally {
