@@ -236,6 +236,8 @@ export function LogisticsPanel() {
           </p>
           <p className="console-muted">Kode: {lastTrackingCode}</p>
           <Link
+            href={`/tracking/${lastTrackingCode}`}
+            target="_blank"
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
