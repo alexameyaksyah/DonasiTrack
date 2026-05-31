@@ -106,3 +106,27 @@ export default function TrackingPage() {
         <section className="console-surface" style={{ padding: "2rem" }}>
           {error && <p style={{ color: "#ef4444" }}>❌ {error}</p>}
 
+          {!data && !error && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📦</div>
+              <h2 style={{ marginBottom: "8px" }}>Siap Melacak</h2>
+              <p className="console-muted">Masukkan nomor resi untuk melihat riwayat perjalanan barang.</p>
+            </div>
+          )}
+
+          {data && (
+            <div style={{ textAlign: "left" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", backgroundColor: "#0f172a", padding: "15px", borderRadius: "10px", marginBottom: "25px" }}>
+                <div>
+                  <h3 style={{ color: "#3b82f6", margin: "0 0 5px 0" }}>{data.trackingCode}</h3>
+                  <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>{data.item?.name || "Paket Bantuan"}</p>
+                  <p className="console-muted" style={{ fontSize: "0.85rem" }}>Tujuan: {data.destinationLocation}</p>
+                </div>
+              </div>
+
+              {/* Tampilan Timeline Ala Shopee */}
+              <div style={{ position: "relative", paddingLeft: "30px", marginTop: "20px" }}>
+                {data.trackingEvents && data.trackingEvents.length > 0 ? (
+                  data.trackingEvents.map((event, index) => (
+                    <div key={event.id} style={{ position: "relative", marginBottom: "30px" }}>
+                      
