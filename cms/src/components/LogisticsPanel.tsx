@@ -90,7 +90,7 @@ export function LogisticsPanel() {
     async function loadData() {
       setIsLoadingData(true);
       if (!token) {
-        setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+        setMessage("Sesi admin tidak ditemukan.");
         setIsLoadingData(false);
         return;
       }
