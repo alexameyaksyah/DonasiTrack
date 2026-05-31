@@ -312,6 +312,18 @@ export function LogisticsPanel() {
                         setSelectedItemId(item.id);
                         setLastTrackingCode(""); // Reset tracking code lama jika pilih item baru
                       }}
+                    >
+                      <span className="logistics-icon">
+                        {emojiByItem(item.name)}
+                      </span>
+                      <span className="logistics-title-wrap">
+                        <strong>{item.name}</strong>
+                        <small>{item.quantity} paket</small>
+                      </span>
+                      <span className="logistics-pill">Stok</span>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 
