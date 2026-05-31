@@ -228,6 +228,9 @@ export function LogisticsPanel() {
             padding: 16,
             border: "1px solid #4ade80",
             borderRadius: 8,
+            backgroundColor: "rgba(74, 222, 128, 0.1)",
+          }}
+        >
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
