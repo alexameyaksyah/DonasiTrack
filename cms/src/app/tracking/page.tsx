@@ -15,3 +15,18 @@ interface TrackingEvent {
     role: string;
   };
 }
+
+interface ShipmentData {
+  id: string;
+  trackingCode: string;
+  destinationLocation: string;
+  quantity: number;
+  createdAt: string;
+  item?: {
+    name: string;
+  };
+  campaign?: {
+    title: string;
+  };
+  trackingEvents: TrackingEvent[];
+}
