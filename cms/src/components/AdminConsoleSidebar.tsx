@@ -10,7 +10,7 @@ export function AdminConsoleSidebar({ active }: AdminConsoleSidebarProps) {
       <p className="console-caption">Menu Utama</p>
       <nav className="console-menu">
         {MAIN_MENU_ENTRIES.map((entry) => (
-          <SidebarItem 
+          <SidebarItem
             key={entry.key}
             href={entry.href}
             icon={entry.icon}
@@ -22,8 +22,12 @@ export function AdminConsoleSidebar({ active }: AdminConsoleSidebarProps) {
 
       <p className="console-caption">Lainnya</p>
       <nav className="console-menu">
-        <SidebarItem href="/tracking/demo" icon="RP" label="Laporan" isActive={active === "report"} />
-        <SidebarItem href="/profil" icon="PR" label="Profil" isActive={active === "profile"} />
+        <SidebarItem
+          href="/tracking"
+          icon="TR"
+          label="Lacak Bantuan"
+          isActive={active === "tracking"}
+        />
       </nav>
     </aside>
   );
