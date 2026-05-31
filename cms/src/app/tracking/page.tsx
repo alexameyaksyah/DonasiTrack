@@ -43,3 +43,6 @@ export default function TrackingPage() {
     setLoading(true);
     setError("");
     setData(null);
+
+    try {
+      const token = localStorage.getItem("donasi-track-session-token") || "";
