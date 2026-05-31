@@ -135,3 +135,11 @@ export default function TrackingPage() {
                         <div style={{ position: "absolute", left: "-21px", top: "20px", bottom: "-30px", width: "2px", backgroundColor: "#334155" }} />
                       )}
 
+                      {/* Titik Indikator */}
+                      <div style={{
+                        position: "absolute", left: "-26px", top: "5px", width: "12px", height: "12px", borderRadius: "50%",
+                        backgroundColor: index === 0 ? "#3b82f6" : "#475569",
+                        border: index === 0 ? "4px solid #1e293b" : "none",
+                        zIndex: 2
+                      }} />
+
