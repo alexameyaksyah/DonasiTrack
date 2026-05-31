@@ -330,34 +330,34 @@ export function LogisticsPanel() {
           <div className="logistics-column">
             <h3>Kurir / Relawan</h3>
             <div className="logistics-list">
-              {operators.map((operator) => {
-                const active = selectedOperatorId === operator.id;
-                return (
-                  <button
-                    key={operator.id}
-                    type="button"
-                    className={`logistics-card ${active ? "active" : ""}`}
-                    onClick={() => setSelectedOperatorId(operator.id)}
-                  >
-                    <span className="logistics-icon">{initial(operator.name)}</span>
-                    <span className="logistics-title-wrap">
-                      <strong>{operator.name}</strong>
-                      <small>{operator.email}</small>
-                    </span>
-                    <span className="logistics-pill ok">Kurir</span>
-                  </button>
-                );
-              })}
+              {operators.map((op) => (
+                <button
+                  key={op.id}
+                  type="button"
+                  className={`logistics-card ${selectedOperatorId === op.id ? "active" : ""}`}
+                  onClick={() => setSelectedOperatorId(op.id)}
+                >
+                  <span className="logistics-icon">{initial(op.name)}</span>
+                  <span className="logistics-title-wrap">
+                    <strong>{op.name}</strong>
+                    <small>{op.email}</small>
+                  </span>
+                  <span className="logistics-pill ok">Kurir</span>
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="logistics-config">
             <div className="form">
-              <select value={campaignId} onChange={(event) => setCampaignId(event.target.value)} required>
+              <select
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
+              >
                 <option value="">Pilih Kampanye</option>
-                {campaigns.map((campaign) => (
-                  <option key={campaign.id} value={campaign.id}>
-                    {campaign.title}
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
                   </option>
                 ))}
               </select>
