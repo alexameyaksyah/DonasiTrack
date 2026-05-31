@@ -130,3 +130,8 @@ export default function TrackingPage() {
                   data.trackingEvents.map((event, index) => (
                     <div key={event.id} style={{ position: "relative", marginBottom: "30px" }}>
                       
+                      {/* Garis Vertikal */}
+                      {index !== data.trackingEvents.length - 1 && (
+                        <div style={{ position: "absolute", left: "-21px", top: "20px", bottom: "-30px", width: "2px", backgroundColor: "#334155" }} />
+                      )}
+
