@@ -148,31 +148,28 @@ export function LogisticsPanel() {
     try {
       const response = await fetch(`${API_URL}/logistics`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(token),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders(token) },
         body: JSON.stringify(body),
       });
 
-      const data = (await response.json()) as unknown;
+      const data = (await response.json()) as { trackingCode?: string };
+
       if (!response.ok) {
-        setMessage(toErrorMessage(data, "Gagal membuat alokasi logistik"));
+        setMessage(toErrorMessage(data, "Gagal membuat alokasi"));
         return;
       }
 
-      const created = data as { trackingCode?: string };
-      setMessage(`Alokasi dibuat. Tracking code: ${created.trackingCode || "-"}`);
+      // SIMPAN KODE TRACKING UNTUK UI
+      setLastTrackingCode(data.trackingCode || "");
+      setMessage(`Alokasi berhasil dibuat!`);
+
       setDestinationLocation("");
       setQuantity(1);
-      const inventoryRes = await fetch(`${API_URL}/inventory`, { headers: authHeaders(token) });
-      if (inventoryRes.ok) {
-        const inventoryData = (await inventoryRes.json()) as InventoryItem[];
-        setInventory(inventoryData);
-        if (!inventoryData.some((item) => item.id === selectedItemId)) {
-          setSelectedItemId(inventoryData[0]?.id || "");
-        }
-      }
+
+      // Refresh Stok
+      const inventoryRes = await fetch(`${API_URL}/inventory`, {
+        headers: authHeaders(token),
+      });
     } catch {
       setMessage("Gagal terhubung ke server.");
     } finally {
