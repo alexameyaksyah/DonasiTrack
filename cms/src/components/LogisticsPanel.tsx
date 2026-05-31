@@ -310,6 +310,8 @@ export function LogisticsPanel() {
                       className={`logistics-card ${active ? "active" : ""}`}
                       onClick={() => {
                         setSelectedItemId(item.id);
+                        setLastTrackingCode(""); // Reset tracking code lama jika pilih item baru
+                      }}
             </div>
           </div>
 
