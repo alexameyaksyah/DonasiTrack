@@ -299,27 +299,17 @@ export function LogisticsPanel() {
             </div>
 
             <div className="logistics-list">
-              {inventory.length === 0 ? <p className="console-muted">Belum ada stok. Tambahkan item terlebih dulu.</p> : null}
-              {inventory.map((item) => {
-                const active = selectedItemId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`logistics-card ${active ? "active" : ""}`}
-                    onClick={() => setSelectedItemId(item.id)}
-                  >
-                    <span className="logistics-icon">{emojiByItem(item.name)}</span>
-                    <span className="logistics-title-wrap">
-                      <strong>{item.name}</strong>
-                      <small>
-                        {item.quantity} {item.name.toLowerCase().includes("air") ? "galon" : "paket"}
-                      </small>
-                    </span>
-                    <span className="logistics-pill">Stok</span>
-                  </button>
-                );
-              })}
+              {inventory
+                .filter((item) => item.quantity > 0) // Filter stok kosong agar tidak membingungkan
+                .map((item) => {
+                  const active = selectedItemId === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`logistics-card ${active ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedItemId(item.id);
             </div>
           </div>
 
