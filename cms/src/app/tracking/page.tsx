@@ -69,3 +69,6 @@ export default function TrackingPage() {
 
   return (
     <main className="admin-shell fade-up">
+      <AdminConsoleSidebar active="tracking" />
+
+      <section className="console-main">
