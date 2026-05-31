@@ -366,18 +366,18 @@ export function LogisticsPanel() {
                 min={1}
                 max={selectedItem?.quantity || 1}
                 value={quantity}
-                onChange={(event) => setQuantity(Number(event.target.value))}
-                placeholder="Jumlah alokasi"
-                required
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                placeholder="Jumlah"
               />
               <input
                 value={destinationLocation}
-                onChange={(event) => setDestinationLocation(event.target.value)}
+                onChange={(e) => setDestinationLocation(e.target.value)}
                 placeholder="Lokasi distribusi"
-                required
               />
             </div>
-            <p className="console-muted">Drag item dari gudang ke sini untuk mengalokasikan (mode klik aktif).</p>
+            <p className="console-muted">
+              Klik item stok dan kurir, lalu tentukan jumlah dan lokasi tujuan.
+            </p>
           </div>
         </form>
       )}
