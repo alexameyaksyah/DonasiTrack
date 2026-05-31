@@ -32,3 +32,4 @@ interface ShipmentData {
 }
 
 export default function TrackingPage() {
+  const [code, setCode] = useState<string>("");
