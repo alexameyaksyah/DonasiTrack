@@ -30,3 +30,5 @@ interface ShipmentData {
   };
   trackingEvents: TrackingEvent[];
 }
+
+export default function TrackingPage() {
