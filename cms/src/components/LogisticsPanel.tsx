@@ -129,6 +129,9 @@ export function LogisticsPanel() {
     if (
       !isCuid(campaignId) ||
       !isCuid(selectedItemId) ||
+      !destinationLocation.trim()
+    ) {
+      setMessage("Pastikan semua data (Kampanye, Item, Lokasi) sudah terisi.");
       setIsSubmitting(false);
       return;
     }
