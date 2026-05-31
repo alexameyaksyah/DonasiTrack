@@ -56,6 +56,9 @@ export default async function TrackingPage({
                 margin: "12px 0",
               }}
             >
+              <p style={{ margin: 0 }}>
+                <strong>Detail Barang:</strong>
+              </p>
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
