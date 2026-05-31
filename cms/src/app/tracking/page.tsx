@@ -66,3 +66,6 @@ export default function TrackingPage() {
       setLoading(false);
     }
   };
+
+  return (
+    <main className="admin-shell fade-up">
