@@ -18,7 +18,11 @@ type TrackingData = {
   }>;
 };
 
-export default async function TrackingPage({ params }: { params: Promise<{ code: string }> }) {
+export default async function TrackingPage({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
   const { code } = await params;
   let data: TrackingData | null = null;
   let error = "";
@@ -26,7 +30,8 @@ export default async function TrackingPage({ params }: { params: Promise<{ code:
   try {
     data = await getJson<TrackingData>(`/tracking/${code}`);
   } catch (err) {
-    error = err instanceof Error ? err.message : "Data tracking tidak ditemukan";
+    error =
+      err instanceof Error ? err.message : "Data tracking tidak ditemukan";
   }
 
   return (
