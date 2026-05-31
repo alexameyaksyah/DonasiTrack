@@ -33,3 +33,4 @@ interface ShipmentData {
 
 export default function TrackingPage() {
   const [code, setCode] = useState<string>("");
+  const [data, setData] = useState<ShipmentData | null>(null); // State sudah punya tipe data
