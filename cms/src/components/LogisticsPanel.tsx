@@ -231,6 +231,9 @@ export function LogisticsPanel() {
             backgroundColor: "rgba(74, 222, 128, 0.1)",
           }}
         >
+          <p style={{ fontWeight: "bold", color: "#4ade80" }}>
+            ✓ Alokasi Berhasil Dicatat!
+          </p>
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
