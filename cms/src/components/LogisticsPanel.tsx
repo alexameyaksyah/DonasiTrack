@@ -106,11 +106,6 @@ export function LogisticsPanel() {
         const campaignData = (await campaignRes.json()) as Campaign[];
         const operatorData = (await operatorRes.json()) as Operator[];
 
-        if (!inventoryRes.ok || !campaignRes.ok || !operatorRes.ok) {
-          setMessage("Gagal memuat data logistik. Coba refresh.");
-          return;
-        }
-
         setInventory(inventoryData);
         setCampaigns(campaignData);
         setOperators(operatorData);
@@ -123,45 +118,17 @@ export function LogisticsPanel() {
         setIsLoadingData(false);
       }
     }
-
     void loadData();
   }, [token]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    if (!token) {
-      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
-      setIsSubmitting(false);
-      return;
-    }
+    setMessage("");
 
-    if (!isCuid(campaignId)) {
-      setMessage("Kampanye belum valid. Silakan pilih kampanye yang tersedia.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!isCuid(selectedItemId)) {
-      setMessage("Item stok belum valid. Pilih item dari daftar stok gudang terlebih dulu.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!destinationLocation.trim()) {
-      setMessage("Lokasi distribusi wajib diisi.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!selectedItem || selectedItem.quantity <= 0) {
-      setMessage("Stok item tidak tersedia.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (quantity < 1 || quantity > selectedItem.quantity) {
-      setMessage(`Jumlah alokasi harus antara 1 sampai ${selectedItem.quantity}.`);
+    if (
+      !isCuid(campaignId) ||
+      !isCuid(selectedItemId) ||
       setIsSubmitting(false);
       return;
     }
