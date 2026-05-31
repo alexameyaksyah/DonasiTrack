@@ -82,3 +82,27 @@ export default function TrackingPage() {
 
         <section className="console-surface" style={{ marginBottom: "20px" }}>
           <div style={{ display: "flex", gap: "12px" }}>
+            <input
+              type="text"
+              placeholder="Masukkan Kode Tracking (Contoh: DNT-xxxx)"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              style={{
+                flex: 1, padding: "12px 16px", borderRadius: "8px",
+                backgroundColor: "#1e293b", border: "1px solid #334155",
+                color: "white", outline: "none"
+              }}
+            />
+            <button 
+              onClick={handleSearch}
+              className="console-btn info"
+              disabled={loading}
+            >
+              {loading ? "Mencari..." : "Cari Data 🔎"}
+            </button>
+          </div>
+        </section>
+
+        <section className="console-surface" style={{ padding: "2rem" }}>
+          {error && <p style={{ color: "#ef4444" }}>❌ {error}</p>}
+
