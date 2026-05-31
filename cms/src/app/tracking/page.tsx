@@ -38,3 +38,8 @@ export default function TrackingPage() {
   const [error, setError] = useState<string>("");
 
   const handleSearch = async () => {
+    if (!code) return;
+    
+    setLoading(true);
+    setError("");
+    setData(null);
