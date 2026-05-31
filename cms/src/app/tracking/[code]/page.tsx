@@ -52,6 +52,10 @@ export default async function TrackingPage({
                 padding: "12px",
                 backgroundColor: "#f8f9fa",
                 borderRadius: "8px",
+                borderLeft: "4px solid #4ade80",
+                margin: "12px 0",
+              }}
+            >
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
