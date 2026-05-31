@@ -72,3 +72,13 @@ export default function TrackingPage() {
       <AdminConsoleSidebar active="tracking" />
 
       <section className="console-main">
+        <div className="console-topbar">
+          <div>
+            <h1>Tracking Logistik</h1>
+            <p>Pantau posisi dan status distribusi bantuan secara real-time.</p>
+          </div>
+          <div className="console-user-pill">Admin Mode</div>
+        </div>
+
+        <section className="console-surface" style={{ marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: "12px" }}>
