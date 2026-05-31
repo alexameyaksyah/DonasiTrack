@@ -54,3 +54,15 @@ export default function TrackingPage() {
         throw new Error("Kode tracking tidak ditemukan atau server bermasalah.");
       }
 
+      const result: ShipmentData = await res.json(); // Casting data ke interface
+      setData(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Terjadi kesalahan yang tidak diketahui.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
