@@ -73,15 +73,10 @@ export default async function TrackingPage({
                 <li key={event.id}>
                   <strong>{event.status}</strong>
                   <p className="muted">{event.note || "Tanpa catatan"}</p>
-                  <p className="muted">{dateTime(event.createdAt)} - {event.createdBy.name} ({event.createdBy.role})</p>
-                  {event.latitude && event.longitude ? (
-                    <p className="muted">Koordinat: {event.latitude}, {event.longitude}</p>
-                  ) : null}
-                  {event.photoUrl ? (
-                    <a className="muted" href={event.photoUrl} target="_blank" rel="noreferrer">
-                      Lihat foto bukti
-                    </a>
-                  ) : null}
+                  <p className="muted">
+                    {dateTime(event.createdAt)} - {event.createdBy.name} (
+                    {event.createdBy.role})
+                  </p>
                 </li>
               ))}
             </ul>
