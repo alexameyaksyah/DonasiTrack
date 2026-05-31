@@ -179,11 +179,7 @@ export function LogisticsPanel() {
   }
 
   async function onCreateInventoryItem() {
-    if (!token) {
-      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
-
+    if (!newItemName.trim()) return;
     setIsCreatingItem(true);
 
     try {
