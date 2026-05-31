@@ -30,6 +30,8 @@ function emojiByItem(name: string) {
   if (key.includes("air")) return "💧";
   if (key.includes("p3k") || key.includes("kit")) return "🩹";
   if (key.includes("sembako") || key.includes("makanan")) return "📦";
+  if (key.includes("semen")) return "🏗️";
+  if (key.includes("pasir")) return "⏳";
   return "📦";
 }
 
@@ -42,12 +44,10 @@ function initial(name: string) {
 
 export function LogisticsPanel() {
   const [token] = useState(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-
+    if (typeof window === "undefined") return "";
     return localStorage.getItem(SESSION_TOKEN_KEY) || "";
   });
+
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -63,6 +63,9 @@ export function LogisticsPanel() {
   const [newItemQty, setNewItemQty] = useState(10);
   const [newItemWarehouse, setNewItemWarehouse] = useState("Gudang Pusat");
   const [isCreatingItem, setIsCreatingItem] = useState(false);
+
+  // Fitur baru untuk Tracking
+  const [lastTrackingCode, setLastTrackingCode] = useState("");
 
   function isCuid(value: string) {
     return /^c[^\s-]{8,}$/i.test(value);
