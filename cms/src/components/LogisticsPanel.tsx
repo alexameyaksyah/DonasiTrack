@@ -181,14 +181,10 @@ export function LogisticsPanel() {
   async function onCreateInventoryItem() {
     if (!newItemName.trim()) return;
     setIsCreatingItem(true);
-
     try {
       const response = await fetch(`${API_URL}/inventory`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(token),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders(token) },
         body: JSON.stringify({
           name: newItemName.trim(),
           quantity: Number(newItemQty),
@@ -196,21 +192,14 @@ export function LogisticsPanel() {
           unit: "pcs",
         }),
       });
-
-      const data = (await response.json()) as unknown;
-      if (!response.ok) {
-        setMessage(toErrorMessage(data, "Gagal menambah item stok"));
-        return;
+      if (response.ok) {
+        const created = await response.json();
+        setInventory((prev) => [created, ...prev]);
+        setNewItemName("");
+        setMessage(`Stok ${created.name} ditambahkan.`);
       }
-
-      const created = data as InventoryItem;
-      setInventory((prev) => [created, ...prev]);
-      setSelectedItemId(created.id);
-      setNewItemName("");
-      setNewItemQty(10);
-      setMessage(`Item stok ${created.name} berhasil ditambahkan.`);
     } catch {
-      setMessage("Gagal terhubung ke server.");
+      setMessage("Gagal menambah stok.");
     } finally {
       setIsCreatingItem(false);
     }
@@ -220,12 +209,25 @@ export function LogisticsPanel() {
     <section className="console-surface">
       <div className="logistics-header">
         <h2>Logistik & Alokasi</h2>
-        <button className="console-btn success" type="submit" form="logistics-allocation-form" disabled={isSubmitting || isLoadingData}>
+        <button
+          className="console-btn success"
+          type="submit"
+          form="logistics-allocation-form"
+          disabled={isSubmitting || isLoadingData}
+        >
           {isSubmitting ? "Menyimpan..." : "Simpan Alokasi"}
         </button>
       </div>
 
-      {message ? <p className="status-line">{message}</p> : null}
+      {/* BOX NOTIFIKASI TRACKING (Target Utama Hari Ini) */}
+      {lastTrackingCode && (
+        <div
+          className="status-card success"
+          style={{
+            marginBottom: 16,
+            padding: 16,
+            border: "1px solid #4ade80",
+            borderRadius: 8,
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
