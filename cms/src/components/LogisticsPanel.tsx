@@ -72,22 +72,13 @@ export function LogisticsPanel() {
   }
 
   function toErrorMessage(payload: unknown, fallback: string) {
-    if (!payload || typeof payload !== "object") {
-      return fallback;
-    }
-
-    const map = payload as { message?: string; errors?: Array<{ path?: Array<string | number>; message?: string }> };
-    if (map.message) {
-      return map.message;
-    }
-
-    const first = map.errors?.[0];
-    if (first) {
-      const path = first.path?.join(".") || "field";
-      return `${path}: ${first.message || "data tidak valid"}`;
-    }
-
-    return fallback;
+    if (!payload || typeof payload !== "object") return fallback;
+    const map = payload as {
+      message?: string;
+      errors?: Array<{ message?: string }>;
+    };
+    if (map.message) return map.message;
+    return map.errors?.[0]?.message || fallback;
   }
 
   const selectedItem = useMemo(() => inventory.find((item) => item.id === selectedItemId), [inventory, selectedItemId]);
