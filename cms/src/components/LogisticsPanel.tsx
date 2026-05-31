@@ -238,6 +238,17 @@ export function LogisticsPanel() {
           <Link
             href={`/tracking/${lastTrackingCode}`}
             target="_blank"
+            className="console-btn neutral"
+            style={{
+              marginTop: 8,
+              display: "inline-block",
+              textDecoration: "none",
+            }}
+          >
+            🔎 Lacak Pengiriman Sekarang
+          </Link>
+        </div>
+      )}
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
