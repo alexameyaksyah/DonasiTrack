@@ -28,6 +28,12 @@ export function AdminConsoleSidebar({ active }: AdminConsoleSidebarProps) {
           label="Lacak Bantuan"
           isActive={active === "tracking"}
         />
+        <SidebarItem
+          href="/profil"
+          icon="PR"
+          label="Profil"
+          isActive={active === "profile"}
+        />
       </nav>
     </aside>
   );
