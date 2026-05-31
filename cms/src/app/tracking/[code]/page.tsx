@@ -47,7 +47,11 @@ export default async function TrackingPage({
             <p className="badge">{data.status}</p>
             <h2 style={{ marginTop: 8 }}>{data.campaign.title}</h2>
             <p className="muted">Kode: {data.trackingCode}</p>
-            <p className="muted">Item: {data.item.name} ({data.item.quantity})</p>
+            <div
+              style={{
+                padding: "12px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
