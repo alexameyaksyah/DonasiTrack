@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminConsoleSidebar } from "../../../components/AdminConsoleSidebar";
 import { AdminOperationalFieldApp } from "../../../components/AdminOperationalFieldApp";
 import { useAdminGuard } from "../../../hooks/useAdminGuard";
@@ -39,7 +39,13 @@ function readSession(): { token: string; user: SessionUser | null; message: stri
 
 export default function AdminRelawanPage() {
   const { ready } = useAdminGuard();
-  const [session] = useState(() => readSession());
+  const [session, setSession] = useState(() => ({ token: "", user: null as SessionUser | null, message: "" }));
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setSession(readSession());
+    setMounted(true);
+  }, []);
 
   if (!ready) {
     return (
@@ -47,6 +53,18 @@ export default function AdminRelawanPage() {
         <section className="console-main">
           <section className="console-surface">
             <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
+  if (!mounted) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Memuat relawan...</p>
           </section>
         </section>
       </main>

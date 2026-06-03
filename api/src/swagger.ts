@@ -68,6 +68,49 @@ export const swaggerSpec = swaggerJsdoc({
             transferProofUrl: { type: "string", format: "uri" },
           },
         },
+        MidtransBankTransferRequest: {
+          type: "object",
+          required: ["campaignId", "amount"],
+          properties: {
+            campaignId: { type: "string", format: "cuid" },
+            amount: { type: "integer", minimum: 1, example: 10000 },
+            bank: { type: "string", enum: ["bca", "bni", "bri", "permata"], default: "bca" },
+          },
+        },
+        MidtransNotificationRequest: {
+          type: "object",
+          required: ["order_id", "status_code", "gross_amount", "signature_key", "transaction_status"],
+          properties: {
+            order_id: { type: "string", example: "donasi-clx..." },
+            status_code: { type: "string", example: "200" },
+            gross_amount: { type: "string", example: "10000.00" },
+            signature_key: {
+              type: "string",
+              description: "SHA512(order_id + status_code + gross_amount + MIDTRANS_SERVER_KEY)",
+            },
+            transaction_status: {
+              type: "string",
+              enum: ["capture", "settlement", "pending", "deny", "cancel", "expire", "failure", "refund"],
+              example: "settlement",
+            },
+            transaction_id: { type: "string" },
+            payment_type: { type: "string", example: "bank_transfer" },
+            fraud_status: { type: "string", example: "accept" },
+            settlement_time: { type: "string", example: "2026-06-03 15:00:00" },
+            expiry_time: { type: "string", example: "2026-06-04 15:00:00" },
+            va_numbers: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  bank: { type: "string", example: "bca" },
+                  va_number: { type: "string", example: "12345678901" },
+                },
+              },
+            },
+            permata_va_number: { type: "string" },
+          },
+        },
         VerificationUpdateRequest: {
           type: "object",
           required: ["status"],
@@ -130,6 +173,7 @@ export const swaggerSpec = swaggerJsdoc({
       { name: "Auth" },
       { name: "Campaigns" },
       { name: "Donations" },
+      { name: "Payments" },
       { name: "Admin" },
       { name: "Inventory" },
       { name: "Logistics" },
@@ -308,6 +352,84 @@ export const swaggerSpec = swaggerJsdoc({
           responses: {
             "200": { description: "List my donations" },
             "401": { description: "Unauthorized" },
+          },
+        },
+      },
+      "/payments/midtrans/bank-transfer": {
+        post: {
+          tags: ["Payments"],
+          summary: "Buat pembayaran Midtrans Bank Transfer / Virtual Account",
+          description: "Membuat donation MONEY dan transaksi Midtrans Core API. Gunakan JWT role DONOR.",
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/MidtransBankTransferRequest" },
+              },
+            },
+          },
+          responses: {
+            "201": { description: "Virtual account created" },
+            "400": { description: "Validation error" },
+            "401": { description: "Unauthorized" },
+            "403": { description: "Forbidden" },
+            "404": { description: "Campaign not found" },
+            "500": { description: "Midtrans config missing" },
+          },
+        },
+      },
+      "/payments/midtrans/notification": {
+        post: {
+          tags: ["Payments"],
+          summary: "Webhook Midtrans untuk update status pembayaran",
+          description:
+            "Endpoint publik yang dipanggil Midtrans. Untuk testing via Swagger, isi signature_key dengan SHA512(order_id + status_code + gross_amount + MIDTRANS_SERVER_KEY).",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/MidtransNotificationRequest" },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Notification processed" },
+            "403": { description: "Invalid signature" },
+            "404": { description: "Donation not found" },
+          },
+        },
+      },
+      "/payments/midtrans/{orderId}/sync": {
+        post: {
+          tags: ["Payments"],
+          summary: "Sync status pembayaran dari Midtrans Get Status API",
+          description: "Dipakai jika webhook belum masuk atau untuk cek ulang status transaksi.",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "orderId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": { description: "Payment status synced" },
+            "401": { description: "Unauthorized" },
+            "403": { description: "Forbidden" },
+            "404": { description: "Donation not found" },
+          },
+        },
+      },
+      "/payments/donations/{donationId}": {
+        get: {
+          tags: ["Payments"],
+          summary: "Detail status pembayaran berdasarkan donationId",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "donationId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": { description: "Donation payment detail" },
+            "401": { description: "Unauthorized" },
+            "403": { description: "Forbidden" },
+            "404": { description: "Donation not found" },
           },
         },
       },
