@@ -9,6 +9,7 @@ import { progressPercent, visualStatus, toForm } from "../lib/campaign-utils";
 import {
   Campaign,
   CampaignFormData,
+  CampaignStatus,
   FilterKey,
   SortBy,
   ToastKind,
@@ -504,7 +505,7 @@ export function CampaignManagementConsole() {
             <form className="form" onSubmit={saveCampaign}>
               <select
                 value={form.status || "PENDING"}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                onChange={(e) => setForm({ ...form, status: e.target.value as CampaignStatus })}
               >
                 <option value="PENDING">PENDING</option>
                 <option value="ACTIVE">ACTIVE</option>

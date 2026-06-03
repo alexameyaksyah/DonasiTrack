@@ -2,6 +2,7 @@
 
 import { FormEvent } from "react";
 import { useCampaignForm } from "../hooks/useCampaignForm";
+import { CampaignStatus } from "../types/campaign";
 
 // Komponen form untuk membuat kampanye baru, menggunakan hook useCampaignForm untuk logika bisnisnya
 export function CampaignForm() {
@@ -18,7 +19,7 @@ export function CampaignForm() {
       disasterType: String(formData.get("disasterType")),
       location: String(formData.get("location")),
       targetAmount: Number(formData.get("targetAmount")),
-      status: String(formData.get("status") || "PENDING"),
+      status: String(formData.get("status") || "PENDING") as CampaignStatus,
     };
 
     // Memanggil fungsi submitCampaign dan menunggu hasilnya untuk menentukan apakah form bisa di-reset
