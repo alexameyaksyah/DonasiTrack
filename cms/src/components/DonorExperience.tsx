@@ -23,13 +23,18 @@ type DonorExperienceProps = {
 
 type DonationType = "MONEY" | "GOODS";
 type BankTransferOption = "bca" | "bni" | "bri" | "permata";
+type PaymentMethodOption = BankTransferOption | "qris";
 
 type PaymentResult = {
   donationId: string;
   orderId: string;
   amount: number;
-  bank: BankTransferOption;
+  method: PaymentMethodOption;
+  paymentType: "bank_transfer" | "qris";
+  bank?: BankTransferOption | string;
   vaNumber?: string;
+  qrCodeUrl?: string;
+  qrString?: string;
   paymentStatus: string;
   expiryTime?: string;
 };
@@ -40,6 +45,18 @@ const MIDTRANS_SIMULATORS: Record<BankTransferOption, string> = {
   bri: "https://simulator.sandbox.midtrans.com/openapi/va/index",
   permata: "https://simulator.sandbox.midtrans.com/openapi/va/index",
 };
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethodOption, string> = {
+  bca: "BCA Virtual Account",
+  bni: "BNI Virtual Account",
+  bri: "BRI Virtual Account",
+  permata: "Permata Virtual Account",
+  qris: "QRIS",
+};
+
+function isBankTransfer(method?: string): method is BankTransferOption {
+  return method === "bca" || method === "bni" || method === "bri" || method === "permata";
+}
 
 export function DonorExperience({ authToken }: DonorExperienceProps) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -100,8 +117,8 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
           return;
         }
 
-        const bank = String(formData.get("bank") || "bca") as BankTransferOption;
-        const response = await fetch(`${API_URL}/payments/midtrans/bank-transfer`, {
+        const method = String(formData.get("paymentMethod") || "bca") as PaymentMethodOption;
+        const response = await fetch(`${API_URL}/payments/midtrans/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -110,7 +127,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
           body: JSON.stringify({
             campaignId: body.campaignId,
             amount: body.amount,
-            bank,
+            method,
           }),
         });
 
@@ -123,10 +140,15 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
 
         const payment = data as PaymentResult;
         setPaymentResult(payment);
-        setMessage("Virtual account Midtrans Sandbox berhasil dibuat.");
+        setMessage(
+          payment.paymentType === "qris"
+            ? "QRIS Midtrans Sandbox berhasil dibuat."
+            : "Virtual account Midtrans Sandbox berhasil dibuat.",
+        );
 
-        const simulatorWindow = window.open(MIDTRANS_SIMULATORS[bank], "_blank", "noopener,noreferrer");
-        if (!simulatorWindow) {
+        const simulatorWindow =
+          isBankTransfer(method) ? window.open(MIDTRANS_SIMULATORS[method], "_blank", "noopener,noreferrer") : null;
+        if (isBankTransfer(method) && !simulatorWindow) {
           setMessage("Virtual account dibuat. Klik tombol Buka Simulator Midtrans untuk melanjutkan pembayaran sandbox.");
         }
         return;
@@ -238,11 +260,12 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
           {donationType === "MONEY" ? (
             <>
               <input name="amount" type="number" min={1} placeholder="Nominal donasi" required />
-              <select name="bank" defaultValue="bca">
+              <select name="paymentMethod" defaultValue="bca">
                 <option value="bca">BCA Virtual Account</option>
                 <option value="bni">BNI Virtual Account</option>
                 <option value="bri">BRI Virtual Account</option>
                 <option value="permata">Permata Virtual Account</option>
+                <option value="qris">QRIS</option>
               </select>
             </>
           ) : (
@@ -264,8 +287,39 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
               <strong>{paymentResult.orderId}</strong>
             </div>
             <div>
-              <span className="payment-label">Virtual Account</span>
-              <strong>{paymentResult.vaNumber || "-"}</strong>
+              <span className="payment-label">Metode</span>
+              <strong>{PAYMENT_METHOD_LABELS[paymentResult.method]}</strong>
+            </div>
+            {paymentResult.paymentType === "qris" ? (
+              <div>
+                <span className="payment-label">QRIS</span>
+                {paymentResult.qrCodeUrl ? (
+                  // Midtrans returns a generated QR image URL that is best displayed directly.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={paymentResult.qrCodeUrl}
+                    alt="QRIS pembayaran Midtrans"
+                    style={{ width: 180, height: 180, objectFit: "contain", background: "#fff", padding: 8 }}
+                  />
+                ) : (
+                  <strong>{paymentResult.qrString || "-"}</strong>
+                )}
+              </div>
+            ) : (
+              <div>
+                <span className="payment-label">Virtual Account</span>
+                <strong>{paymentResult.vaNumber || "-"}</strong>
+              </div>
+            )}
+            {paymentResult.bank ? (
+              <div>
+                <span className="payment-label">Bank/Acquirer</span>
+                <strong>{paymentResult.bank.toUpperCase()}</strong>
+              </div>
+            ) : null}
+            <div>
+              <span className="payment-label">Tahap</span>
+              <strong>Konfirmasi Pembayaran</strong>
             </div>
             <div>
               <span className="payment-label">Nominal</span>
@@ -276,14 +330,16 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
               <strong>{paymentResult.paymentStatus}</strong>
             </div>
             <div className="payment-actions">
-              <a
-                className="btn info"
-                href={MIDTRANS_SIMULATORS[paymentResult.bank]}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Buka Simulator Midtrans
-              </a>
+              {isBankTransfer(paymentResult.method) ? (
+                <a
+                  className="btn info"
+                  href={MIDTRANS_SIMULATORS[paymentResult.method]}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Buka Simulator Midtrans
+                </a>
+              ) : null}
               <button className="btn neutral" type="button" onClick={syncPayment} disabled={isSyncingPayment}>
                 {isSyncingPayment ? "Mengecek..." : "Cek Status"}
               </button>

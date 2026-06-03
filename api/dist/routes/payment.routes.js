@@ -8,10 +8,12 @@ const zod_1 = require("zod");
 const env_1 = require("../config/env");
 const db_1 = require("../db");
 const auth_1 = require("../middleware/auth");
-const bankTransferSchema = zod_1.z.object({
+const paymentMethodSchema = zod_1.z.enum(["bca", "bni", "bri", "permata", "qris"]);
+const createPaymentSchema = zod_1.z.object({
     campaignId: zod_1.z.string().cuid(),
     amount: zod_1.z.number().int().positive(),
-    bank: zod_1.z.enum(["bca", "bni", "bri", "permata"]).default("bca"),
+    method: paymentMethodSchema.default("bca"),
+    bank: zod_1.z.enum(["bca", "bni", "bri", "permata"]).optional(),
 });
 const midtransNotificationSchema = zod_1.z.object({
     order_id: zod_1.z.string(),
@@ -57,6 +59,7 @@ function normalizeMidtransStatus(transactionStatus, fraudStatus) {
 function extractPaymentData(payload) {
     const paymentStatus = normalizeMidtransStatus(payload.transaction_status);
     const va = payload.va_numbers?.[0];
+    const qrCodeUrl = payload.actions?.find((action) => action.name === "generate-qr-code")?.url;
     const paidAt = payload.transaction_status === "settlement" && "settlement_time" in payload
         ? new Date(String(payload.settlement_time))
         : undefined;
@@ -67,8 +70,10 @@ function extractPaymentData(payload) {
         expiredAt: payload.expiry_time ? new Date(payload.expiry_time) : undefined,
         transactionId: payload.transaction_id,
         paymentType: payload.payment_type,
-        bank: va?.bank,
+        bank: va?.bank || payload.acquirer,
         vaNumber: va?.va_number || payload.permata_va_number,
+        qrCodeUrl,
+        qrString: payload.qr_string,
     };
 }
 async function applyPaymentStatus(orderId, rawPayload, data) {
@@ -98,9 +103,13 @@ async function applyPaymentStatus(orderId, rawPayload, data) {
                 midtransTransactionId: data.transactionId,
                 bank: data.bank,
                 vaNumber: data.vaNumber,
+                paymentPayload: {
+                    ...rawPayload,
+                    qrCodeUrl: data.qrCodeUrl,
+                    qrString: data.qrString,
+                },
                 paidAt: data.paidAt,
                 expiredAt: data.expiredAt,
-                paymentPayload: rawPayload,
                 verificationStatus: data.verificationStatus,
             },
         });
@@ -120,12 +129,13 @@ async function applyPaymentStatus(orderId, rawPayload, data) {
         include: { campaign: true },
     });
 }
-exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, auth_1.requireRole)(client_1.Role.DONOR), async (req, res, next) => {
+const createMidtransPayment = async (req, res, next) => {
     try {
         if (!requireMidtransConfig(res)) {
             return;
         }
-        const body = bankTransferSchema.parse(req.body);
+        const body = createPaymentSchema.parse(req.body);
+        const selectedBank = body.method === "qris" ? undefined : body.bank || body.method;
         const campaign = await db_1.prisma.campaign.findUnique({
             where: { id: body.campaignId },
             select: { id: true, title: true },
@@ -141,8 +151,8 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
                 amount: body.amount,
                 paymentProvider: "MIDTRANS",
                 paymentStatus: "creating",
-                paymentType: "bank_transfer",
-                bank: body.bank,
+                paymentType: body.method === "qris" ? "qris" : "bank_transfer",
+                bank: selectedBank,
             },
         });
         const orderId = `donasi-${donation.id}`;
@@ -150,6 +160,28 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
             where: { id: donation.id },
             data: { midtransOrderId: orderId },
         });
+        const midtransPayload = body.method === "qris"
+            ? {
+                payment_type: "qris",
+                transaction_details: {
+                    order_id: orderId,
+                    gross_amount: body.amount,
+                },
+                custom_field1: donation.id,
+                custom_field2: body.campaignId,
+            }
+            : {
+                payment_type: "bank_transfer",
+                transaction_details: {
+                    order_id: orderId,
+                    gross_amount: body.amount,
+                },
+                bank_transfer: {
+                    bank: selectedBank,
+                },
+                custom_field1: donation.id,
+                custom_field2: body.campaignId,
+            };
         const midtransResponse = await fetch(env_1.env.midtransChargeUrl, {
             method: "POST",
             headers: {
@@ -157,18 +189,7 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
                 Authorization: midtransAuthHeader(),
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                payment_type: "bank_transfer",
-                transaction_details: {
-                    order_id: orderId,
-                    gross_amount: body.amount,
-                },
-                bank_transfer: {
-                    bank: body.bank,
-                },
-                custom_field1: donation.id,
-                custom_field2: body.campaignId,
-            }),
+            body: JSON.stringify(midtransPayload),
         });
         const payment = (await midtransResponse.json());
         const paymentData = extractPaymentData(payment);
@@ -176,12 +197,16 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
             where: { id: donation.id },
             data: {
                 paymentStatus: paymentData.paymentStatus,
-                paymentType: paymentData.paymentType || "bank_transfer",
+                paymentType: paymentData.paymentType || (body.method === "qris" ? "qris" : "bank_transfer"),
                 midtransTransactionId: paymentData.transactionId,
-                bank: paymentData.bank || body.bank,
+                bank: paymentData.bank || selectedBank,
                 vaNumber: paymentData.vaNumber,
                 expiredAt: paymentData.expiredAt,
-                paymentPayload: payment,
+                paymentPayload: {
+                    ...payment,
+                    qrCodeUrl: paymentData.qrCodeUrl,
+                    qrString: paymentData.qrString,
+                },
             },
         });
         if (!midtransResponse.ok) {
@@ -196,8 +221,12 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
             donationId: donation.id,
             orderId,
             amount: body.amount,
-            bank: paymentData.bank || body.bank,
+            method: body.method,
+            paymentType: paymentData.paymentType || (body.method === "qris" ? "qris" : "bank_transfer"),
+            bank: paymentData.bank || selectedBank,
             vaNumber: paymentData.vaNumber,
+            qrCodeUrl: paymentData.qrCodeUrl,
+            qrString: paymentData.qrString,
             paymentStatus: paymentData.paymentStatus,
             expiryTime: payment.expiry_time,
             raw: payment,
@@ -206,6 +235,14 @@ exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, au
     catch (error) {
         return next(error);
     }
+};
+exports.paymentRouter.post("/midtrans/create", auth_1.requireAuth, (0, auth_1.requireRole)(client_1.Role.DONOR), createMidtransPayment);
+exports.paymentRouter.post("/midtrans/bank-transfer", auth_1.requireAuth, (0, auth_1.requireRole)(client_1.Role.DONOR), async (req, res, next) => {
+    req.body = {
+        ...req.body,
+        method: req.body?.bank || "bca",
+    };
+    return createMidtransPayment(req, res, next);
 });
 exports.paymentRouter.post("/midtrans/notification", async (req, res, next) => {
     try {
