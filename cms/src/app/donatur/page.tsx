@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DonorExperience } from "../../components/DonorExperience";
 
 type AuthUser = {
@@ -47,10 +47,14 @@ const EMPTY_SESSION: { token: string; user: AuthUser | null; message: string } =
 };
 
 export default function DonorPage() {
-  const [session, setSession] = useState(() => readDonorSession());
+  const [session, setSession] = useState(EMPTY_SESSION);
+  const [isMounted, setIsMounted] = useState(false);
   const [flashMessage, setFlashMessage] = useState("");
-  
-  
+
+  useEffect(() => {
+    setSession(readDonorSession());
+    setIsMounted(true);
+  }, []);
 
   function onLogout() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
@@ -85,7 +89,12 @@ export default function DonorPage() {
           <div className="console-user-pill">{session.user?.name ?? "Guest"}</div>
         </div>
 
-        {!session.token || !session.user ? (
+        {!isMounted ? (
+          <section className="console-surface">
+            <h2>Akses Donatur</h2>
+            <p className="console-muted">Memuat sesi donatur...</p>
+          </section>
+        ) : !session.token || !session.user ? (
           <section className="console-surface">
             <h2>Akses Donatur</h2>
             <p className="console-muted">{session.message || flashMessage || "Sesi tidak ditemukan."}</p>
