@@ -74,13 +74,6 @@ export default function DonorPage() {
             Tracking
           </Link>
         </nav>
-        <p className="console-caption">Akses</p>
-        <nav className="console-menu">
-          <Link href="/auth" className="console-link">
-            <span className="console-link-icon">AU</span>
-            Login / Daftar
-          </Link>
-        </nav>
       </aside>
 
       <section className="console-main">
