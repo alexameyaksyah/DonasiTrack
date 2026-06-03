@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AdminOperationalFieldApp } from "../../components/AdminOperationalFieldApp";
+import { AdminConsoleSidebar } from "../../../components/AdminConsoleSidebar";
+import { AdminOperationalFieldApp } from "../../../components/AdminOperationalFieldApp";
 
 type SessionUser = {
   id: string;
@@ -35,25 +36,12 @@ function readSession(): { token: string; user: SessionUser | null; message: stri
   }
 }
 
-export default function RelawanDashboardPage() {
+export default function AdminRelawanPage() {
   const [session] = useState(() => readSession());
 
   return (
     <main className="admin-shell fade-up">
-      <aside className="console-sidebar">
-        <div className="console-brand">DonasiTrack</div>
-        <p className="console-caption">Menu Relawan</p>
-        <nav className="console-menu">
-          <Link href="/relawan" className="console-link active">
-            <span className="console-link-icon">DB</span>
-            Dashboard
-          </Link>
-          <Link href="/tracking/demo" className="console-link">
-            <span className="console-link-icon">TR</span>
-            Tracking
-          </Link>
-        </nav>
-      </aside>
+      <AdminConsoleSidebar active="relawan" />
 
       <section className="console-main">
         <div className="console-topbar">

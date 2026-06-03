@@ -73,10 +73,6 @@ export default function DonorPage() {
             <span className="console-link-icon">TR</span>
             Tracking
           </Link>
-          <Link href="/relawan" className="console-link">
-            <span className="console-link-icon">RW</span>
-            Relawan
-          </Link>
         </nav>
         <p className="console-caption">Akses</p>
         <nav className="console-menu">
