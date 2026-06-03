@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
 
 type SessionUser = {
@@ -42,8 +43,15 @@ const EMPTY_SESSION: { token: string; user: SessionUser | null; message: string 
 };
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [session, setSession] = useState(() => readProfileSession());
   const [flashMessage, setFlashMessage] = useState("");
+
+  useEffect(() => {
+    if (session.user?.role === "DONOR") {
+      router.replace("/donatur");
+    }
+  }, [router, session.user?.role]);
 
 
   let initials = "PR";
@@ -61,6 +69,19 @@ export default function ProfilePage() {
     localStorage.removeItem(SESSION_USER_KEY);
     setSession(EMPTY_SESSION);
     setFlashMessage("Anda telah logout.");
+  }
+
+  if (session.user?.role === "DONOR") {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <h2>Akses Terbatas</h2>
+            <p className="console-muted">Mengalihkan ke dashboard donatur...</p>
+          </section>
+        </section>
+      </main>
+    );
   }
 
   return (

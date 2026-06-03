@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
 import { API_URL, authHeaders } from "@/lib/api";
 
@@ -31,11 +32,53 @@ interface ShipmentData {
   trackingEvents: TrackingEvent[];
 }
 
+type SessionUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "DONOR" | "ADMIN";
+};
+
+const SESSION_TOKEN_KEY = "donasi-track-session-token";
+const SESSION_USER_KEY = "donasi-track-session-user";
+
+function readTrackingSession(): { token: string; user: SessionUser | null } {
+  if (typeof window === "undefined") {
+    return { token: "", user: null };
+  }
+
+  const token = localStorage.getItem(SESSION_TOKEN_KEY) || "";
+  const userRaw = localStorage.getItem(SESSION_USER_KEY);
+
+  if (!token || !userRaw) {
+    return { token: "", user: null };
+  }
+
+  try {
+    return { token, user: JSON.parse(userRaw) as SessionUser };
+  } catch {
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_USER_KEY);
+    return { token: "", user: null };
+  }
+}
+
 export default function TrackingPage() {
+  const [session] = useState(() => readTrackingSession());
   const [code, setCode] = useState<string>("");
   const [data, setData] = useState<ShipmentData | null>(null); // State sudah punya tipe data
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+
+  const roleLabel = useMemo(() => {
+    if (session.user?.role === "ADMIN") {
+      return "Admin Mode";
+    }
+    if (session.user?.role === "DONOR") {
+      return "Donor Mode";
+    }
+    return "Tracking";
+  }, [session.user?.role]);
 
   const handleSearch = async () => {
     if (!code) return;
@@ -69,7 +112,31 @@ export default function TrackingPage() {
 
   return (
     <main className="admin-shell fade-up">
-      <AdminConsoleSidebar active="tracking" />
+      {session.user?.role === "ADMIN" ? (
+        <AdminConsoleSidebar active="tracking" />
+      ) : (
+        <aside className="console-sidebar">
+          <div className="console-brand">DonasiTrack</div>
+          <p className="console-caption">Menu Donatur</p>
+          <nav className="console-menu">
+            <Link href="/donatur" className="console-link">
+              <span className="console-link-icon">DB</span>
+              Donasi
+            </Link>
+            <Link href="/tracking" className="console-link active">
+              <span className="console-link-icon">TR</span>
+              Tracking
+            </Link>
+          </nav>
+          <p className="console-caption">Akses</p>
+          <nav className="console-menu">
+            <Link href="/auth" className="console-link">
+              <span className="console-link-icon">AU</span>
+              Login / Daftar
+            </Link>
+          </nav>
+        </aside>
+      )}
 
       <section className="console-main">
         <div className="console-topbar">
@@ -77,7 +144,7 @@ export default function TrackingPage() {
             <h1>Tracking Logistik</h1>
             <p>Pantau posisi dan status distribusi bantuan secara real-time.</p>
           </div>
-          <div className="console-user-pill">Admin Mode</div>
+          <div className="console-user-pill">{roleLabel}</div>
         </div>
 
         <section className="console-surface" style={{ marginBottom: "20px" }}>

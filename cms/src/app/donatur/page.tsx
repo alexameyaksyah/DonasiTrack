@@ -69,7 +69,7 @@ export default function DonorPage() {
             <span className="console-link-icon">DB</span>
             Dashboard
           </Link>
-          <Link href="/tracking/demo" className="console-link">
+          <Link href="/tracking" className="console-link">
             <span className="console-link-icon">TR</span>
             Tracking
           </Link>
