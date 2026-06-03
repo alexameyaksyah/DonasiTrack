@@ -77,7 +77,7 @@ export default function TrackingPage() {
     if (session.user?.role === "DONOR") {
       return "Donor Mode";
     }
-    return "Tracking";
+    return "Mode Tamu";
   }, [session.user?.role]);
 
   const handleSearch = async () => {

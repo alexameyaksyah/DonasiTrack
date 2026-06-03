@@ -7,6 +7,7 @@ import { DonationChart } from "../../components/DonationChart";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
 import { API_URL, authHeaders } from "../../lib/api";
 import { rupiah } from "../../lib/format";
+import { useAdminGuard } from "../../hooks/useAdminGuard";
 
 type DashboardStats = {
   totalDonationVerified: number;
@@ -61,6 +62,7 @@ function donationAmountLabel(item: DashboardStats["latestDonations"][number]) {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { ready } = useAdminGuard();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -138,6 +140,18 @@ export default function AdminDashboardPage() {
   const verifiedPct = stats?.donationStatusPercentages.verified ?? 0;
   const pendingPct = stats?.donationStatusPercentages.pending ?? 0;
   const rejectedPct = stats?.donationStatusPercentages.rejected ?? 0;
+
+  if (!ready) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="admin-shell fade-up">

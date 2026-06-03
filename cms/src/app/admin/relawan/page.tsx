@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AdminConsoleSidebar } from "../../../components/AdminConsoleSidebar";
 import { AdminOperationalFieldApp } from "../../../components/AdminOperationalFieldApp";
+import { useAdminGuard } from "../../../hooks/useAdminGuard";
 
 type SessionUser = {
   id: string;
@@ -37,7 +38,20 @@ function readSession(): { token: string; user: SessionUser | null; message: stri
 }
 
 export default function AdminRelawanPage() {
+  const { ready } = useAdminGuard();
   const [session] = useState(() => readSession());
+
+  if (!ready) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="admin-shell fade-up">
