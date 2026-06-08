@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
 import { API_URL, authHeaders } from "@/lib/api";
 
@@ -63,14 +63,27 @@ function readTrackingSession(): { token: string; user: SessionUser | null } {
   }
 }
 
+const EMPTY_SESSION = { token: "", user: null };
+
 export default function TrackingPage() {
-  const [session] = useState(() => readTrackingSession());
+  const [session, setSession] = useState(EMPTY_SESSION);
   const [code, setCode] = useState<string>("");
-  const [data, setData] = useState<ShipmentData | null>(null); // State sudah punya tipe data
+  const [data, setData] = useState<ShipmentData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [isReady, setIsReady] = useState(false);
+
+  // Read session from localStorage after mount
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      const sessionData = readTrackingSession();
+      setSession(sessionData);
+      setIsReady(true);
+    });
+  }, []);
 
   const roleLabel = useMemo(() => {
+    if (!isReady) return "Loading...";
     if (session.user?.role === "ADMIN") {
       return "Admin Mode";
     }
@@ -78,7 +91,7 @@ export default function TrackingPage() {
       return "Donor Mode";
     }
     return "Mode Tamu";
-  }, [session.user?.role]);
+  }, [isReady, session.user?.role]);
 
   const handleSearch = async () => {
     if (!code) return;

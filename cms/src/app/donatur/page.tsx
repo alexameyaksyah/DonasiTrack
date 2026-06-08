@@ -46,15 +46,91 @@ const EMPTY_SESSION: { token: string; user: AuthUser | null; message: string } =
   message: "",
 };
 
+type DonorStats = {
+  totalDonationAmount: number;
+  activeCampaigns: number;
+  peopleHelped: number;
+  monthlyIncrease: number;
+};
+
+type Donation = {
+  id: string;
+  campaignId: string;
+  amount?: number;
+  createdAt: string;
+  verificationStatus?: string;
+  campaign?: {
+    id: string;
+    title: string;
+    collectedAmount: number;
+    targetAmount: number;
+  };
+};
+
 export default function DonorPage() {
   const [session, setSession] = useState(EMPTY_SESSION);
-  const [isMounted, setIsMounted] = useState(false);
   const [flashMessage, setFlashMessage] = useState("");
+  const [stats, setStats] = useState<DonorStats | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const API_URL = "http://localhost:3000/api";
+
+  // Read session from localStorage after mount and mark as ready
+  useEffect(() => {
+    // Schedule state updates in a microtask to avoid cascade warnings
+    Promise.resolve().then(() => {
+      const sessionData = readDonorSession();
+      setSession(sessionData);
+      setIsReady(true);
+    });
+  }, []);
+
+  // Memoized function to fetch and update stats
+  const fetchStats = (token: string) => {
+    if (!token) return;
+    
+    fetch(`${API_URL}/donations/me`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((donations: Donation[]) => {
+        // Calculate stats from donations
+        const verifiedDonations = donations.filter(
+          (d) => d.verificationStatus === "VERIFIED" || d.verificationStatus === "verified"
+        );
+        
+        const totalAmount = verifiedDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
+        const uniqueCampaigns = new Set(verifiedDonations.map((d) => d.campaignId)).size;
+        
+        // Estimate people helped based on verified donations
+        const peopleEstimate = verifiedDonations.length;
+
+        setStats({
+          totalDonationAmount: totalAmount,
+          activeCampaigns: uniqueCampaigns,
+          peopleHelped: peopleEstimate,
+          monthlyIncrease: 0, // Calculate from last 30 days if needed
+        });
+      })
+      .catch(() => {
+        setStats(null);
+      });
+  };
 
   useEffect(() => {
-    setSession(readDonorSession());
-    setIsMounted(true);
-  }, []);
+    if (!isReady || !session.token) return;
+
+    // Initial fetch
+    fetchStats(session.token);
+
+    // Set up auto-refresh every 5 seconds
+    const interval = setInterval(() => {
+      fetchStats(session.token);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isReady, session.token]);
 
   function onLogout() {
     localStorage.removeItem(SESSION_TOKEN_KEY);
@@ -67,7 +143,7 @@ export default function DonorPage() {
     <main className="admin-shell fade-up">
       <aside className="console-sidebar">
         <div className="console-brand">DonasiTrack</div>
-        <p className="console-caption">Menu Donatur</p>
+        <p className="console-caption">Satu donasi dari hati</p>
         <nav className="console-menu">
           <Link href="/donatur" className="console-link active">
             <span className="console-link-icon">DB</span>
@@ -77,22 +153,45 @@ export default function DonorPage() {
             <span className="console-link-icon">TR</span>
             Tracking
           </Link>
+          <Link href="/donatur/kampanye" className="console-link">
+            <span className="console-link-icon">CP</span>
+            Kampanye
+          </Link>
+          <Link href="/donatur/riwayat" className="console-link">
+            <span className="console-link-icon">RY</span>
+            Riwayat
+          </Link>
+          <Link href="/donatur/pengaturan" className="console-link">
+            <span className="console-link-icon">PR</span>
+            Profil
+          </Link>
         </nav>
       </aside>
 
       <section className="console-main">
         <div className="console-topbar">
           <div>
-            <h1>User Dashboard</h1>
-            <p>Kelola donasi dan tracking bantuan secara realtime.</p>
+            <h1>Selamat datang kembali, {session.user?.name ?? "Guest"} 👋</h1>
+            <p>Kelola donasi dan tracking bantuan secara realtime</p>
           </div>
-          <div className="console-user-pill">{session.user?.name ?? "Guest"}</div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div className="console-user-pill">
+              {session.user?.name ?? "Guest"}
+            </div>
+            <button
+              onClick={onLogout}
+              className="console-btn danger"
+              style={{ marginBottom: 0 }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
-        {!isMounted ? (
+        {!isReady ? (
           <section className="console-surface">
-            <h2>Akses Donatur</h2>
-            <p className="console-muted">Memuat sesi donatur...</p>
+            <h2>Memuat...</h2>
+            <p className="console-muted">Memuat data profil Anda...</p>
           </section>
         ) : !session.token || !session.user ? (
           <section className="console-surface">
@@ -107,21 +206,27 @@ export default function DonorPage() {
           <>
             <section className="console-kpis" style={{ marginBottom: 16 }}>
               <article className="console-surface">
-                <p className="console-label">Nama Akun</p>
-                <p className="console-value" style={{ fontSize: "1.4rem" }}>{session.user.name}</p>
-                <p className="console-muted">{session.user.email}</p>
+                <p className="console-label">Total Donasi</p>
+                <p className="console-value" style={{ fontSize: "1.8rem" }}>
+                  Rp {(stats?.totalDonationAmount || 0).toLocaleString("id-ID")}
+                </p>
+                <p className="console-tag" style={{ color: "#10b981" }}>
+                  ↑ {stats?.monthlyIncrease || 0}% bulan ini
+                </p>
               </article>
               <article className="console-surface">
-                <p className="console-label">Role</p>
-                <p className="console-value" style={{ fontSize: "1.4rem" }}>{session.user.role}</p>
-                <p className="console-tag">Akses Donor Aktif</p>
+                <p className="console-label">Kampanye Didukung</p>
+                <p className="console-value" style={{ fontSize: "1.8rem" }}>
+                  {stats?.activeCampaigns || 0}
+                </p>
+                <p className="console-tag">Aktif</p>
               </article>
               <article className="console-surface">
-                <p className="console-label">Sesi</p>
-                <p className="console-value" style={{ fontSize: "1.4rem" }}>Online</p>
-                <button className="console-btn danger" style={{ marginTop: 10 }} onClick={onLogout}>
-                  Logout
-                </button>
+                <p className="console-label">Orang Terbantu</p>
+                <p className="console-value" style={{ fontSize: "1.8rem" }}>
+                  {stats?.peopleHelped || 0}
+                </p>
+                <p className="console-tag">Melalui donasimu</p>
               </article>
             </section>
 

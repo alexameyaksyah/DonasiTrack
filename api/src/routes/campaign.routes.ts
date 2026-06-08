@@ -78,6 +78,28 @@ campaignRouter.patch("/:id/close", requireAuth, requireRole(Role.ADMIN), async (
   }
 });
 
+campaignRouter.get("/:id", async (req, res, next) => {
+  try {
+    const id = String(req.params.id);
+    const campaign = await prisma.campaign.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { donations: true },
+        },
+      },
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Kampanye tidak ditemukan" });
+    }
+
+    return res.json(campaign);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 campaignRouter.get("/:id/donations", requireAuth, requireRole(Role.ADMIN), async (req, res, next) => {
   try {
     const id = String(req.params.id);

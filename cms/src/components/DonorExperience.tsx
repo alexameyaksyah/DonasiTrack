@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { API_URL, authHeaders } from "../lib/api";
 import { rupiah } from "../lib/format";
 
@@ -14,8 +15,6 @@ type Campaign = {
   collectedAmount: number;
   status: "PENDING" | "ACTIVE" | "INACTIVE";
 };
-
-const CACHE_KEY = "donasi-track-campaigns";
 
 type DonorExperienceProps = {
   authToken: string;
@@ -35,6 +34,7 @@ type PaymentResult = {
   vaNumber?: string;
   qrCodeUrl?: string;
   qrString?: string;
+  paymentUrl?: string;
   paymentStatus: string;
   expiryTime?: string;
 };
@@ -60,6 +60,7 @@ function isBankTransfer(method?: string): method is BankTransferOption {
 
 export function DonorExperience({ authToken }: DonorExperienceProps) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const [trackingCode, setTrackingCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,27 +70,15 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
 
   useEffect(() => {
-    try {
-      const cache = localStorage.getItem(CACHE_KEY);
-      if (cache) {
-        const cachedCampaigns = JSON.parse(cache) as Campaign[];
-        setCampaigns(cachedCampaigns);
-        setSelectedCampaignId((current) => current || cachedCampaigns[0]?.id || "");
-      }
-    } catch {
-      // ignore invalid cache and continue with network fetch
-    }
-
     fetch(`${API_URL}/campaigns`)
       .then((res) => res.json())
       .then((data: Campaign[]) => {
         const activeOnly = data.filter((campaign) => campaign.status === "ACTIVE");
         setCampaigns(activeOnly);
         setSelectedCampaignId((current) => current || activeOnly[0]?.id || "");
-        localStorage.setItem(CACHE_KEY, JSON.stringify(activeOnly));
       })
       .catch(() => {
-        setMessage("Mode cache aktif: menampilkan kampanye dari data lokal.");
+        setMessage("Gagal memuat kampanye dari server.");
       });
   }, []);
 
@@ -118,7 +107,8 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
         }
 
         const method = String(formData.get("paymentMethod") || "bca") as PaymentMethodOption;
-        const response = await fetch(`${API_URL}/payments/midtrans/create`, {
+        // Use Snap endpoint to create a Snap token for real Midtrans payment
+        const response = await fetch(`${API_URL}/payments/midtrans/snap`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -138,7 +128,7 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
           return;
         }
 
-        const payment = data as PaymentResult;
+        const payment = data as PaymentResult & { snapToken?: string; snapScriptUrl?: string; clientKey?: string };
         setPaymentResult(payment);
         setMessage(
           payment.paymentType === "qris"
@@ -146,11 +136,54 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
             : "Virtual account Midtrans Sandbox berhasil dibuat.",
         );
 
-        const simulatorWindow =
-          isBankTransfer(method) ? window.open(MIDTRANS_SIMULATORS[method], "_blank", "noopener,noreferrer") : null;
-        if (isBankTransfer(method) && !simulatorWindow) {
-          setMessage("Virtual account dibuat. Klik tombol Buka Simulator Midtrans untuk melanjutkan pembayaran sandbox.");
+        // If server returned a Snap token and script url, load snap.js and invoke
+        if ((payment as any).snapToken && (payment as any).snapScriptUrl) {
+          const token = (payment as any).snapToken as string;
+          const scriptSrc = (payment as any).snapScriptUrl as string;
+          // load snap script if not present
+          if (!document.querySelector(`script[src^="${scriptSrc.split("?")[0]}"]`)) {
+            const s = document.createElement("script");
+            s.src = scriptSrc;
+            s.async = true;
+            document.body.appendChild(s);
+            s.onload = () => {
+              // @ts-ignore
+              if ((window as any).snap) {
+                // @ts-ignore
+                (window as any).snap.pay(token, {
+                  onSuccess: () => setMessage("Pembayaran berhasil."),
+                  onPending: () => setMessage("Pembayaran menunggu konfirmasi."),
+                  onError: () => setMessage("Terjadi kesalahan saat pembayaran."),
+                });
+              }
+            };
+          } else {
+            // @ts-ignore
+            (window as any).snap.pay(token, {
+              onSuccess: () => setMessage("Pembayaran berhasil."),
+              onPending: () => setMessage("Pembayaran menunggu konfirmasi."),
+              onError: () => setMessage("Terjadi kesalahan saat pembayaran."),
+            });
+          }
+          return;
         }
+
+        // fallback: if backend provided paymentUrl (core API), redirect
+        if (payment.paymentUrl) {
+          window.location.href = payment.paymentUrl;
+          return;
+        }
+
+        // legacy fallback: open simulator for bank transfer
+        if (isBankTransfer(method)) {
+          const simulatorWindow = window.open(MIDTRANS_SIMULATORS[method], "_blank", "noopener,noreferrer");
+          if (!simulatorWindow) {
+            setMessage("Virtual account dibuat. Klik tombol Buka Simulator Midtrans untuk melanjutkan pembayaran sandbox.");
+          }
+          return;
+        }
+
+        router.push(`/donatur/payment?amount=${encodeURIComponent(payment.amount.toString())}&orderId=${encodeURIComponent(payment.orderId)}&method=${encodeURIComponent(payment.method)}`);
         return;
       }
 
@@ -165,6 +198,17 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
 
       if (!response.ok) {
         const data = await response.json();
+                if (payment.paymentUrl) {
+                  window.location.href = payment.paymentUrl;
+                  return;
+                }
+                if (isBankTransfer(method)) {
+                  const simulatorWindow = window.open(MIDTRANS_SIMULATORS[method], "_blank", "noopener,noreferrer");
+                  if (!simulatorWindow) {
+                    setMessage("Virtual account dibuat. Klik tombol Buka Simulator Midtrans untuk melanjutkan pembayaran sandbox.");
+                  }
+                  return;
+                }
         setMessage(data.message || "Donasi gagal diproses");
         return;
       }
@@ -220,142 +264,43 @@ export function DonorExperience({ authToken }: DonorExperienceProps) {
   return (
     <div className="grid">
       <div className="card">
-        <h3>Eksplorasi Kampanye</h3>
-        <p className="status-line">Data disimpan cache lokal agar tetap cepat di jaringan tidak stabil.</p>
-        <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
-          {campaigns.map((campaign) => (
-            <div className="panel" key={campaign.id}>
-              <strong>{campaign.title}</strong>
-              <p className="muted">{campaign.disasterType} - {campaign.location}</p>
-              <p className="muted">Terkumpul {campaign.collectedAmount} / {campaign.targetAmount}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="card">
-        <h3>Form Donasi</h3>
-        <form className="form" onSubmit={onDonation} style={{ marginTop: 8 }}>
-          <select
-            name="campaignId"
-            required
-            value={selectedCampaignId}
-            onChange={(event) => setSelectedCampaignId(event.target.value)}
-          >
-            <option value="" disabled>Pilih kampanye aktif</option>
-            {campaigns.map((campaign) => (
-              <option key={campaign.id} value={campaign.id}>
-                {campaign.title}
-              </option>
-            ))}
-          </select>
-          <select
-            name="type"
-            value={donationType}
-            onChange={(event) => setDonationType(event.target.value as DonationType)}
-          >
-            <option value="MONEY">Uang</option>
-            <option value="GOODS">Barang</option>
-          </select>
-          {donationType === "MONEY" ? (
-            <>
-              <input name="amount" type="number" min={1} placeholder="Nominal donasi" required />
-              <select name="paymentMethod" defaultValue="bca">
-                <option value="bca">BCA Virtual Account</option>
-                <option value="bni">BNI Virtual Account</option>
-                <option value="bri">BRI Virtual Account</option>
-                <option value="permata">Permata Virtual Account</option>
-                <option value="qris">QRIS</option>
-              </select>
-            </>
-          ) : (
-            <>
-              <input name="itemName" placeholder="Nama barang" required />
-              <input name="quantity" type="number" min={1} placeholder="Jumlah barang" required />
-              <input name="transferProofUrl" placeholder="URL foto barang" />
-            </>
-          )}
-          <button className="btn success" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Mengirim..." : donationType === "MONEY" ? "Bayar via Midtrans" : "Kirim Donasi"}
-          </button>
-        </form>
-        {message ? <p className="muted" style={{ marginTop: 8 }}>{message}</p> : null}
-        {paymentResult ? (
-          <div className="payment-summary">
-            <div>
-              <span className="payment-label">Order ID</span>
-              <strong>{paymentResult.orderId}</strong>
-            </div>
-            <div>
-              <span className="payment-label">Metode</span>
-              <strong>{PAYMENT_METHOD_LABELS[paymentResult.method]}</strong>
-            </div>
-            {paymentResult.paymentType === "qris" ? (
-              <div>
-                <span className="payment-label">QRIS</span>
-                {paymentResult.qrCodeUrl ? (
-                  // Midtrans returns a generated QR image URL that is best displayed directly.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={paymentResult.qrCodeUrl}
-                    alt="QRIS pembayaran Midtrans"
-                    style={{ width: 180, height: 180, objectFit: "contain", background: "#fff", padding: 8 }}
-                  />
-                ) : (
-                  <strong>{paymentResult.qrString || "-"}</strong>
-                )}
-              </div>
-            ) : (
-              <div>
-                <span className="payment-label">Virtual Account</span>
-                <strong>{paymentResult.vaNumber || "-"}</strong>
-              </div>
-            )}
-            {paymentResult.bank ? (
-              <div>
-                <span className="payment-label">Bank/Acquirer</span>
-                <strong>{paymentResult.bank.toUpperCase()}</strong>
-              </div>
-            ) : null}
-            <div>
-              <span className="payment-label">Tahap</span>
-              <strong>Konfirmasi Pembayaran</strong>
-            </div>
-            <div>
-              <span className="payment-label">Nominal</span>
-              <strong>{rupiah(paymentResult.amount)}</strong>
-            </div>
-            <div>
-              <span className="payment-label">Status</span>
-              <strong>{paymentResult.paymentStatus}</strong>
-            </div>
-            <div className="payment-actions">
-              {isBankTransfer(paymentResult.method) ? (
-                <a
-                  className="btn info"
-                  href={MIDTRANS_SIMULATORS[paymentResult.method]}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Buka Simulator Midtrans
-                </a>
-              ) : null}
-              <button className="btn neutral" type="button" onClick={syncPayment} disabled={isSyncingPayment}>
-                {isSyncingPayment ? "Mengecek..." : "Cek Status"}
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="card">
-        <h3>Tracking Bantuan</h3>
-        <p className="status-line">Masukkan kode tracking untuk melihat timeline bantuan.</p>
-        <div className="form" style={{ marginTop: 8 }}>
-          <input value={trackingCode} onChange={(event) => setTrackingCode(event.target.value)} placeholder="Contoh: DNT-123456-ABCD" />
-          <Link className="btn info" href={`/tracking/${trackingCode || "demo"}`}>
-            Lihat Timeline
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0 }}>Eksplorasi Kampanye</h3>
+          <Link href="/donatur/kampanye" className="see-all-link">
+            Lihat semua →
           </Link>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <div className="grid">
+            {campaigns.slice(0, 3).map((campaign) => {
+              const pct = campaign.targetAmount ? Math.min(100, Math.round((campaign.collectedAmount / campaign.targetAmount) * 100)) : 0;
+              const img = (campaign as any).photoUrl || `https://picsum.photos/seed/${encodeURIComponent(campaign.id)}/640/360`;
+              return (
+                <div className="campaign-card-panel" key={campaign.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="campaign-cover" src={img} alt={campaign.title} />
+                  <div className="campaign-body card">
+                    <h4 style={{ margin: 0 }}>{campaign.title}</h4>
+                    <p className="muted" style={{ marginTop: 6 }}>{campaign.disasterType} - {campaign.location}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, alignItems: 'center' }}>
+                      <small style={{ color: '#7b7b7b' }}>{rupiah(campaign.collectedAmount)}</small>
+                      <small className="muted">dari {rupiah(campaign.targetAmount)}</small>
+                    </div>
+                    <div className="progress-outer">
+                      <div className="progress-inner" style={{ width: `${pct}%` }} />
+                    </div>
+                    <Link
+                      href={`/donatur/kampanye/${campaign.id}`}
+                      className="donate-now"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      Donasi Sekarang
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

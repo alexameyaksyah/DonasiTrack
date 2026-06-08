@@ -1,4 +1,4 @@
-import { DonationType, Role } from "@prisma/client";
+import { DonationType, Role, VerificationStatus } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
 import { env } from "../config/env";
@@ -37,6 +37,7 @@ donationRouter.post("/", requireAuth, requireRole(Role.DONOR), async (req, res, 
       data: {
         ...body,
         donorId: req.user!.id,
+        verificationStatus: body.type === DonationType.MONEY ? VerificationStatus.VERIFIED : undefined,
       },
     });
 
@@ -69,6 +70,7 @@ donationRouter.post("/midtrans/bca", requireAuth, requireRole(Role.DONOR), async
         donorId: req.user!.id,
         type: DonationType.MONEY,
         amount: body.amount,
+        verificationStatus: VerificationStatus.VERIFIED,
       },
     });
 

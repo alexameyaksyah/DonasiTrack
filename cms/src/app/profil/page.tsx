@@ -44,14 +44,26 @@ const EMPTY_SESSION: { token: string; user: SessionUser | null; message: string 
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [session, setSession] = useState(() => readProfileSession());
+  const [session, setSession] = useState(EMPTY_SESSION);
   const [flashMessage, setFlashMessage] = useState("");
+  const [isReady, setIsReady] = useState(false);
+
+  // Read session from localStorage after mount
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      const sessionData = readProfileSession();
+      setSession(sessionData);
+      setIsReady(true);
+    });
+  }, []);
 
   useEffect(() => {
+    if (!isReady || !session.user) return;
+    
     if (session.user?.role === "DONOR") {
       router.replace("/donatur");
     }
-  }, [router, session.user?.role]);
+  }, [isReady, session.user, router]);
 
 
   let initials = "PR";
@@ -69,6 +81,19 @@ export default function ProfilePage() {
     localStorage.removeItem(SESSION_USER_KEY);
     setSession(EMPTY_SESSION);
     setFlashMessage("Anda telah logout.");
+  }
+
+  if (!isReady) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <h2>Memuat...</h2>
+            <p className="console-muted">Memuat profil Anda...</p>
+          </section>
+        </section>
+      </main>
+    );
   }
 
   if (session.user?.role === "DONOR") {

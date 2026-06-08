@@ -39,12 +39,14 @@ function readSession(): { token: string; user: SessionUser | null; message: stri
 
 export default function AdminRelawanPage() {
   const { ready } = useAdminGuard();
-  const [session, setSession] = useState(() => ({ token: "", user: null as SessionUser | null, message: "" }));
+  const [session, setSession] = useState({ token: "", user: null as SessionUser | null, message: "" });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setSession(readSession());
-    setMounted(true);
+    Promise.resolve().then(() => {
+      setSession(readSession());
+      setMounted(true);
+    });
   }, []);
 
   if (!ready) {

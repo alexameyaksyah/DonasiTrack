@@ -630,6 +630,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
+  // ignore: unused_element
   Future<void> _saveApiBaseOnly() async {
     await widget.session.saveApiBase(apiBase.text);
     if (!mounted) return;

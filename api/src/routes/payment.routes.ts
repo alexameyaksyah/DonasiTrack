@@ -115,6 +115,10 @@ function extractPaymentData(payload: MidtransChargeResponse): ParsedPaymentData 
   };
 }
 
+function getMidtransRedirectUrl(payload: MidtransChargeResponse) {
+  return payload.actions?.find((action) => action.url)?.url;
+}
+
 async function applyPaymentStatus(orderId: string, rawPayload: unknown, data: ParsedPaymentData) {
   const donation = await prisma.donation.findUnique({
     where: { midtransOrderId: orderId },
@@ -124,6 +128,7 @@ async function applyPaymentStatus(orderId: string, rawPayload: unknown, data: Pa
       amount: true,
       type: true,
       verificationStatus: true,
+      paidAt: true,
     },
   });
 
@@ -131,33 +136,41 @@ async function applyPaymentStatus(orderId: string, rawPayload: unknown, data: Pa
     return null;
   }
 
-  const shouldVerify =
-    data.verificationStatus === VerificationStatus.VERIFIED &&
-    donation.verificationStatus !== VerificationStatus.VERIFIED &&
+  // Update campaign collectedAmount when payment is settled for the first time
+  // (paidAt is being set and was null before)
+  const shouldUpdateCampaign =
+    data.paidAt &&
+    !donation.paidAt &&
     donation.type === DonationType.MONEY &&
     donation.amount;
 
   await prisma.$transaction(async (tx) => {
+    const updateData: any = {
+      paymentStatus: data.paymentStatus,
+      paymentType: data.paymentType,
+      midtransTransactionId: data.transactionId,
+      bank: data.bank,
+      vaNumber: data.vaNumber,
+      paymentPayload: {
+        ...(rawPayload as object),
+        qrCodeUrl: data.qrCodeUrl,
+        qrString: data.qrString,
+      },
+      paidAt: data.paidAt,
+      expiredAt: data.expiredAt,
+    };
+
+    // Only update verificationStatus if it's being set to VERIFIED
+    if (data.verificationStatus === VerificationStatus.VERIFIED) {
+      updateData.verificationStatus = data.verificationStatus;
+    }
+
     await tx.donation.update({
       where: { id: donation.id },
-      data: {
-        paymentStatus: data.paymentStatus,
-        paymentType: data.paymentType,
-        midtransTransactionId: data.transactionId,
-        bank: data.bank,
-        vaNumber: data.vaNumber,
-        paymentPayload: {
-          ...(rawPayload as object),
-          qrCodeUrl: data.qrCodeUrl,
-          qrString: data.qrString,
-        },
-        paidAt: data.paidAt,
-        expiredAt: data.expiredAt,
-        verificationStatus: data.verificationStatus,
-      },
+      data: updateData,
     });
 
-    if (shouldVerify) {
+    if (shouldUpdateCampaign) {
       await tx.campaign.update({
         where: { id: donation.campaignId },
         data: {
@@ -202,6 +215,7 @@ const createMidtransPayment: RequestHandler = async (req, res, next) => {
         paymentStatus: "creating",
         paymentType: body.method === "qris" ? "qris" : "bank_transfer",
         bank: selectedBank,
+        verificationStatus: VerificationStatus.VERIFIED,
       },
     });
 
@@ -286,6 +300,7 @@ const createMidtransPayment: RequestHandler = async (req, res, next) => {
       qrString: paymentData.qrString,
       paymentStatus: paymentData.paymentStatus,
       expiryTime: payment.expiry_time,
+      paymentUrl: getMidtransRedirectUrl(payment),
       raw: payment,
     });
   } catch (error) {
@@ -293,7 +308,84 @@ const createMidtransPayment: RequestHandler = async (req, res, next) => {
   }
 };
 
+const createMidtransSnap: RequestHandler = async (req, res, next) => {
+  try {
+    if (!requireMidtransConfig(res)) return;
+
+    const body = createPaymentSchema.parse(req.body);
+    const selectedBank = body.method === "qris" ? undefined : body.bank || body.method;
+
+    const campaign = await prisma.campaign.findUnique({ where: { id: body.campaignId }, select: { id: true, title: true } });
+    if (!campaign) return res.status(404).json({ message: "Campaign tidak ditemukan" });
+
+    const donation = await prisma.donation.create({
+      data: {
+        campaignId: body.campaignId,
+        donorId: req.user!.id,
+        type: DonationType.MONEY,
+        amount: body.amount,
+        paymentProvider: "MIDTRANS",
+        paymentStatus: "creating",
+        paymentType: body.method === "qris" ? "qris" : "bank_transfer",
+        bank: selectedBank,
+      },
+    });
+
+    const orderId = `donasi-${donation.id}`;
+    await prisma.donation.update({ where: { id: donation.id }, data: { midtransOrderId: orderId } });
+
+    const snapPayload = {
+      transaction_details: { order_id: orderId, gross_amount: body.amount },
+      item_details: [{ id: orderId, price: body.amount, quantity: 1, name: campaign.title }],
+      customer_details: {},
+      credit_card: { secure: true },
+    } as unknown;
+
+    const snapUrl = env.midtransIsProduction
+      ? "https://app.midtrans.com/snap/v1/transactions"
+      : "https://app.sandbox.midtrans.com/snap/v1/transactions";
+
+    const midtransResponse = await fetch(snapUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: midtransAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(snapPayload),
+    });
+
+    const snapRes = await midtransResponse.json();
+
+    if (!midtransResponse.ok) {
+      return res.status(midtransResponse.status).json({ message: "Gagal membuat transaksi Snap Midtrans", donationId: donation.id, orderId, raw: snapRes });
+    }
+
+    // update donation with any returned data
+    await prisma.donation.update({ where: { id: donation.id }, data: { paymentStatus: "pending", paymentPayload: snapRes } });
+
+    const scriptBase = env.midtransIsProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js";
+
+    return res.status(201).json({
+      donationId: donation.id,
+      orderId,
+      amount: body.amount,
+      snapToken: snapRes.token,
+      snapRedirectUrl: snapRes.redirect_url,
+      clientKey: env.midtransClientKey,
+      snapScriptUrl: `${scriptBase}?client-key=${env.midtransClientKey}`,
+      raw: snapRes,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+paymentRouter.post("/", requireAuth, createMidtransPayment);
+
 paymentRouter.post("/midtrans/create", requireAuth, requireRole(Role.DONOR), createMidtransPayment);
+
+paymentRouter.post("/midtrans/snap", requireAuth, requireRole(Role.DONOR), createMidtransSnap);
 
 paymentRouter.post("/midtrans/bank-transfer", requireAuth, requireRole(Role.DONOR), async (req, res, next) => {
   req.body = {
