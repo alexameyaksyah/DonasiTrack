@@ -7,6 +7,7 @@ import { DonationChart } from "../../components/DonationChart";
 import { AdminConsoleSidebar } from "../../components/AdminConsoleSidebar";
 import { API_URL, authHeaders } from "../../lib/api";
 import { rupiah } from "../../lib/format";
+import { useAdminGuard } from "../../hooks/useAdminGuard";
 
 type DashboardStats = {
   totalDonationVerified: number;
@@ -40,7 +41,7 @@ type DashboardStats = {
     title: string;
     collectedAmount: number;
     distributedAmount: number;
-    status: "OPEN" | "CLOSED";
+    status: "PENDING" | "ACTIVE" | "INACTIVE";
   }>;
 };
 
@@ -61,6 +62,7 @@ function donationAmountLabel(item: DashboardStats["latestDonations"][number]) {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { ready } = useAdminGuard();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,9 @@ export default function AdminDashboardPage() {
     [],
   );
 
-  const activeCampaigns = stats?.campaigns.filter((campaign) => campaign.status === "OPEN").length ?? 0;
+  const activeCampaigns =
+    stats?.campaigns.filter((campaign) => campaign.status === "ACTIVE")
+      .length ?? 0;
 
   const loadStats = useCallback(async () => {
     const token = localStorage.getItem(SESSION_TOKEN_KEY) || "";
@@ -136,6 +140,18 @@ export default function AdminDashboardPage() {
   const verifiedPct = stats?.donationStatusPercentages.verified ?? 0;
   const pendingPct = stats?.donationStatusPercentages.pending ?? 0;
   const rejectedPct = stats?.donationStatusPercentages.rejected ?? 0;
+
+  if (!ready) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="admin-shell fade-up">
@@ -247,8 +263,20 @@ export default function AdminDashboardPage() {
                         </div>
                       </td>
                       <td>
-                        <span className={`console-status ${campaign.status === "OPEN" ? "ok" : "pending"}`}>
-                          {campaign.status === "OPEN" ? "Active" : "Closed"}
+                        <span
+                          className={`console-status ${
+                            campaign.status === "ACTIVE"
+                              ? "ok"
+                              : campaign.status === "PENDING"
+                                ? "pending"
+                                : "closed"
+                          }`}
+                        >
+                          {campaign.status === "ACTIVE"
+                            ? "Active"
+                            : campaign.status === "PENDING"
+                              ? "Pending"
+                              : "Inactive"}
                         </span>
                       </td>
                     </tr>

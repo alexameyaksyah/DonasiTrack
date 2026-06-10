@@ -10,6 +10,7 @@ const campaignSchema = z.object({
   disasterType: z.string().min(3),
   location: z.string().min(3),
   targetAmount: z.number().int().positive(),
+  status: z.nativeEnum(CampaignStatus).optional(),
   endDate: z.string().datetime().optional(),
 });
 
@@ -68,10 +69,74 @@ campaignRouter.patch("/:id/close", requireAuth, requireRole(Role.ADMIN), async (
     const id = String(req.params.id);
     const campaign = await prisma.campaign.update({
       where: { id },
-      data: { status: CampaignStatus.CLOSED },
+      data: { status: CampaignStatus.INACTIVE },
     });
 
     return res.json(campaign);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+campaignRouter.get("/:id", async (req, res, next) => {
+  try {
+    const id = String(req.params.id);
+    const campaign = await prisma.campaign.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { donations: true },
+        },
+      },
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Kampanye tidak ditemukan" });
+    }
+
+    return res.json(campaign);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+campaignRouter.get("/:id/donations", requireAuth, requireRole(Role.ADMIN), async (req, res, next) => {
+  try {
+    const id = String(req.params.id);
+    const donations = await prisma.donation.findMany({
+      where: { campaignId: id },
+      include: {
+        donor: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    let totalMoney = 0;
+    const goodsMap = new Map<string, number>();
+
+    for (const donation of donations) {
+      if (donation.type === "MONEY" && donation.amount) {
+        totalMoney += donation.amount;
+      }
+      if (donation.type === "GOODS" && donation.itemName && donation.quantity) {
+        goodsMap.set(
+          donation.itemName,
+          (goodsMap.get(donation.itemName) ?? 0) + donation.quantity,
+        );
+      }
+    }
+
+    const goods = Array.from(goodsMap.entries()).map(([name, quantity]) => ({
+      name,
+      quantity,
+    }));
+
+    return res.json({
+      campaignId: id,
+      totalMoney,
+      goods,
+      donations,
+    });
   } catch (error) {
     return next(error);
   }

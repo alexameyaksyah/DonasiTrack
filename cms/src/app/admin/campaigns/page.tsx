@@ -1,7 +1,24 @@
+"use client";
+
 import { AdminConsoleSidebar } from "../../../components/AdminConsoleSidebar";
 import { CampaignManagementConsole } from "../../../components/CampaignManagementConsole";
+import { useAdminGuard } from "../../../hooks/useAdminGuard";
 
-export default async function AdminCampaignsPage() {
+export default function AdminCampaignsPage() {
+  const { ready } = useAdminGuard();
+
+  if (!ready) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="admin-shell fade-up">
       <AdminConsoleSidebar active="campaigns" />

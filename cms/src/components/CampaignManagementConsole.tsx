@@ -9,6 +9,7 @@ import { progressPercent, visualStatus, toForm } from "../lib/campaign-utils";
 import {
   Campaign,
   CampaignFormData,
+  CampaignStatus,
   FilterKey,
   SortBy,
   ToastKind,
@@ -41,7 +42,27 @@ export function CampaignManagementConsole() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Campaign | null>(null);
-  const [form, setForm] = useState<CampaignFormData>(toForm());
+  const [form, setForm] = useState<CampaignFormData & { status?: string }>(
+    toForm(),
+  );
+  const [detailCampaign, setDetailCampaign] = useState<Campaign | null>(null);
+  const [detailPayload, setDetailPayload] = useState<
+    | {
+        totalMoney: number;
+        goods: { name: string; quantity: number }[];
+        donations: Array<{
+          id: string;
+          type: string;
+          amount?: number | null;
+          itemName?: string | null;
+          quantity?: number | null;
+          createdAt: string;
+          donor: { name: string; email: string };
+        }>;
+      }
+    | null
+  >(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // --- MENGGUNAKAN CUSTOM HOOK (The Brain) ---
   const {
@@ -116,7 +137,7 @@ export function CampaignManagementConsole() {
       all: campaigns.length,
       active: campaigns.filter((c) => visualStatus(c) === "active").length,
       pending: campaigns.filter((c) => visualStatus(c) === "pending").length,
-      closed: campaigns.filter((c) => visualStatus(c) === "closed").length,
+      inactive: campaigns.filter((c) => visualStatus(c) === "inactive").length,
     }),
     [campaigns],
   );
@@ -201,17 +222,17 @@ export function CampaignManagementConsole() {
   async function bulkCloseSelected() {
     if (!token) return;
     const targets = campaigns.filter(
-      (c) => selectedIds.includes(c.id) && c.status === "OPEN",
+      (c) => selectedIds.includes(c.id) && c.status !== "INACTIVE",
     );
     if (targets.length === 0)
-      return notify("info", "Tidak ada kampanye OPEN yang bisa ditutup.");
+      return notify("info", "Tidak ada kampanye aktif/pending yang bisa dinonaktifkan.");
 
     setIsBulkClosing(true);
     try {
       const results = await Promise.allSettled(
         targets.map((c) => campaignService.closeCampaign(c.id, token)),
       );
-      notify("success", "Proses penutupan massal selesai.");
+      notify("success", "Proses nonaktifkan massal selesai.");
       await loadCampaigns();
       setSelectedIds([]);
     } finally {
@@ -235,6 +256,26 @@ export function CampaignManagementConsole() {
   }
 
   // --- RENDER ---
+  async function openCampaignDetail(campaign: Campaign) {
+    if (!token) return notify("error", "Token admin tidak ditemukan.");
+    setDetailCampaign(campaign);
+    setDetailPayload(null);
+    setDetailLoading(true);
+    try {
+      const payload = await campaignService.fetchCampaignDonations(
+        campaign.id,
+        token,
+      );
+      setDetailPayload(payload);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Gagal memuat detail donasi.";
+      notify("error", errorMessage);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
   return (
     <section className="console-surface">
       {/* TOOLBAR */}
@@ -254,13 +295,15 @@ export function CampaignManagementConsole() {
 
       {/* TABS */}
       <div className="campaign-tabs">
-        {(["all", "active", "pending", "closed"] as FilterKey[]).map((key) => (
+        {(["all", "active", "pending", "inactive"] as FilterKey[]).map((key) => (
           <button
             key={key}
             className={`campaign-tab ${filter === key ? "active" : ""}`}
             onClick={() => setFilter(key)}
           >
-            {key.charAt(0).toUpperCase() + key.slice(1)} ({counts[key]})
+            {key === "inactive"
+              ? "Inactive"
+              : key.charAt(0).toUpperCase() + key.slice(1)} ({counts[key]})
           </button>
         ))}
       </div>
@@ -302,7 +345,7 @@ export function CampaignManagementConsole() {
           onClick={bulkCloseSelected}
           disabled={selectedCount === 0 || isBulkClosing}
         >
-          {isBulkClosing ? "Closing..." : "Close Terpilih"}
+          {isBulkClosing ? "Memproses..." : "Nonaktifkan Terpilih"}
         </button>
         <button
           className="console-btn danger"
@@ -378,7 +421,13 @@ export function CampaignManagementConsole() {
                       </td>
                       <td>
                         <span
-                          className={`console-status ${status === "active" ? "ok" : status === "pending" ? "pending" : "closed"}`}
+                          className={`console-status ${
+                            status === "active"
+                              ? "ok"
+                              : status === "pending"
+                                ? "pending"
+                                : "closed"
+                          }`}
                         >
                           {status.toUpperCase()}
                         </span>
@@ -386,10 +435,16 @@ export function CampaignManagementConsole() {
                       <td>
                         <div className="campaign-actions">
                           <button
+                            className="console-btn neutral"
+                            onClick={() => openCampaignDetail(campaign)}
+                          >
+                            Detail
+                          </button>
+                          <button
                             className="console-btn info"
                             onClick={() => {
                               setEditing(campaign);
-                              setForm(toForm(campaign));
+                              setForm({ ...toForm(campaign), status: campaign.status });
                               setEditorOpen(true);
                             }}
                           >
@@ -448,6 +503,14 @@ export function CampaignManagementConsole() {
               </button>
             </div>
             <form className="form" onSubmit={saveCampaign}>
+              <select
+                value={form.status || "PENDING"}
+                onChange={(e) => setForm({ ...form, status: e.target.value as CampaignStatus })}
+              >
+                <option value="PENDING">PENDING</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
               <input
                 placeholder="Judul"
                 value={form.title}
@@ -490,6 +553,83 @@ export function CampaignManagementConsole() {
                 {isSaving ? "Menyimpan..." : "Simpan"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {detailCampaign && (
+        <div className="campaign-modal-backdrop">
+          <div className="campaign-modal">
+            <div className="campaign-toolbar">
+              <h3>Detail Donasi</h3>
+              <button
+                className="console-btn neutral"
+                onClick={() => setDetailCampaign(null)}
+              >
+                Tutup
+              </button>
+            </div>
+            <p className="console-muted" style={{ marginBottom: 12 }}>
+              {detailCampaign.title}
+            </p>
+            {detailLoading ? (
+              <p className="console-muted">Memuat detail donasi...</p>
+            ) : detailPayload ? (
+              <div className="form">
+                <div className="panel" style={{ marginBottom: 12 }}>
+                  <strong>Total Uang Tunai:</strong> {rupiah(detailPayload.totalMoney)}
+                </div>
+                <div className="panel" style={{ marginBottom: 12 }}>
+                  <strong>Barang Donasi:</strong>
+                  {detailPayload.goods.length === 0 ? (
+                    <p className="console-muted">Belum ada donasi barang.</p>
+                  ) : (
+                    <ul>
+                      {detailPayload.goods.map((item) => (
+                        <li key={item.name}>
+                          {item.name} - {item.quantity}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="panel">
+                  <strong>Daftar Donasi:</strong>
+                  {detailPayload.donations.length === 0 ? (
+                    <p className="console-muted">Belum ada donasi.</p>
+                  ) : (
+                    <div className="console-table-wrap" style={{ marginTop: 10 }}>
+                      <table className="console-table">
+                        <thead>
+                          <tr>
+                            <th>Donatur</th>
+                            <th>Tipe</th>
+                            <th>Detail</th>
+                            <th>Tanggal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {detailPayload.donations.map((donation) => (
+                            <tr key={donation.id}>
+                              <td>{donation.donor.name}</td>
+                              <td>{donation.type}</td>
+                              <td>
+                                {donation.type === "MONEY"
+                                  ? rupiah(donation.amount || 0)
+                                  : `${donation.itemName || "Barang"} (${donation.quantity || 0})`}
+                              </td>
+                              <td>{new Date(donation.createdAt).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="console-muted">Detail donasi tidak tersedia.</p>
+            )}
           </div>
         </div>
       )}

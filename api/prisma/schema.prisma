@@ -12,8 +12,9 @@ enum Role {
 }
 
 enum CampaignStatus {
-  OPEN
-  CLOSED
+  PENDING
+  ACTIVE
+  INACTIVE
 }
 
 enum DonationType {
@@ -62,7 +63,7 @@ model Campaign {
   targetAmount     Int
   collectedAmount  Int            @default(0)
   distributedAmount Int           @default(0)
-  status           CampaignStatus @default(OPEN)
+  status           CampaignStatus @default(PENDING)
   startDate        DateTime       @default(now())
   endDate          DateTime?
   createdById      String
@@ -84,6 +85,16 @@ model Donation {
   itemName          String?
   quantity          Int?
   transferProofUrl  String?
+  paymentProvider   String?
+  paymentStatus     String?
+  paymentType       String?
+  midtransOrderId   String?            @unique
+  midtransTransactionId String?
+  vaNumber          String?
+  bank              String?
+  paidAt            DateTime?
+  expiredAt         DateTime?
+  paymentPayload    Json?
   verificationStatus VerificationStatus @default(PENDING)
   verificationNote  String?
   verifiedById      String?

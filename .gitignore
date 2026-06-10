@@ -65,3 +65,14 @@ apps/mobile/android/build/
 apps/mobile/android/app/debug/
 apps/mobile/android/app/profile/
 apps/mobile/android/app/release/
+
+.dart_tool/
+user/.dart_tool/
+user/android/
+user/ios/
+pubspec.lock
+*.properties
+mobile/pubspec.lock
+user/.flutter-plugins-dependencies
+.gitignore
+

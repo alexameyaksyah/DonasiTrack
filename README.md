@@ -6,7 +6,7 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 
 - `api`: Backend REST API (Express + TypeScript + Prisma + PostgreSQL)
 - `cms`: Frontend Next.js (Admin SSR + Donatur + Operasional Admin)
-- `user`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
+- `mobile`: Frontend Flutter (Donatur + Operasional Admin + Tracking)
 - `packages/shared`: Ruang untuk shared package ke depan
 
 ## Fitur yang Sudah Diimplementasikan
@@ -41,8 +41,8 @@ Platform donasi bencana dengan tracking logistik end-to-end.
 
 ## Konfigurasi Environment
 
-### API (`apps/api/.env`)
-Copy dari `.env.example`:
+### API (`api/.env`)
+Copy dari `api/.env.example`:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/donasi_track?schema=public"
@@ -52,7 +52,9 @@ PORT=4000
 FCM_SERVER_KEY=""
 ```
 
-### Web (`apps/web/.env.local`)
+### Web (`cms/.env.local`)
+
+Copy dari `cms/.env.local.example`:
 
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:4000/api"
@@ -101,7 +103,7 @@ npm run dev:mobile
 Atau langsung dari folder Flutter:
 
 ```bash
-cd apps/mobile
+cd mobile
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000/api
 ```
 

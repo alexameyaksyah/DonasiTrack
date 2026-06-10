@@ -46,3 +46,11 @@ export async function closeCampaign(id: string, token: string) {
   });
   if (!res.ok) throw new Error("Gagal menutup kampanye");
 }
+
+export async function fetchCampaignDonations(id: string, token: string) {
+  const res = await fetch(`${API_URL}/campaigns/${id}/donations`, {
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error("Gagal mengambil detail donasi kampanye");
+  return res.json();
+}

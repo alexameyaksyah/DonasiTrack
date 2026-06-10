@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { API_URL, authHeaders } from "../lib/api";
+import Link from "next/link";
 
 const SESSION_TOKEN_KEY = "donasi-track-session-token";
 
@@ -29,6 +30,8 @@ function emojiByItem(name: string) {
   if (key.includes("air")) return "💧";
   if (key.includes("p3k") || key.includes("kit")) return "🩹";
   if (key.includes("sembako") || key.includes("makanan")) return "📦";
+  if (key.includes("semen")) return "🏗️";
+  if (key.includes("pasir")) return "⏳";
   return "📦";
 }
 
@@ -41,12 +44,10 @@ function initial(name: string) {
 
 export function LogisticsPanel() {
   const [token] = useState(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-
+    if (typeof window === "undefined") return "";
     return localStorage.getItem(SESSION_TOKEN_KEY) || "";
   });
+
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -63,36 +64,33 @@ export function LogisticsPanel() {
   const [newItemWarehouse, setNewItemWarehouse] = useState("Gudang Pusat");
   const [isCreatingItem, setIsCreatingItem] = useState(false);
 
+  // Fitur baru untuk Tracking
+  const [lastTrackingCode, setLastTrackingCode] = useState("");
+
   function isCuid(value: string) {
     return /^c[^\s-]{8,}$/i.test(value);
   }
 
   function toErrorMessage(payload: unknown, fallback: string) {
-    if (!payload || typeof payload !== "object") {
-      return fallback;
-    }
-
-    const map = payload as { message?: string; errors?: Array<{ path?: Array<string | number>; message?: string }> };
-    if (map.message) {
-      return map.message;
-    }
-
-    const first = map.errors?.[0];
-    if (first) {
-      const path = first.path?.join(".") || "field";
-      return `${path}: ${first.message || "data tidak valid"}`;
-    }
-
-    return fallback;
+    if (!payload || typeof payload !== "object") return fallback;
+    const map = payload as {
+      message?: string;
+      errors?: Array<{ message?: string }>;
+    };
+    if (map.message) return map.message;
+    return map.errors?.[0]?.message || fallback;
   }
 
-  const selectedItem = useMemo(() => inventory.find((item) => item.id === selectedItemId), [inventory, selectedItemId]);
+  const selectedItem = useMemo(
+    () => inventory.find((item) => item.id === selectedItemId),
+    [inventory, selectedItemId],
+  );
 
   useEffect(() => {
     async function loadData() {
       setIsLoadingData(true);
       if (!token) {
-        setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+        setMessage("Sesi admin tidak ditemukan.");
         setIsLoadingData(false);
         return;
       }
@@ -108,11 +106,6 @@ export function LogisticsPanel() {
         const campaignData = (await campaignRes.json()) as Campaign[];
         const operatorData = (await operatorRes.json()) as Operator[];
 
-        if (!inventoryRes.ok || !campaignRes.ok || !operatorRes.ok) {
-          setMessage("Gagal memuat data logistik. Coba refresh.");
-          return;
-        }
-
         setInventory(inventoryData);
         setCampaigns(campaignData);
         setOperators(operatorData);
@@ -125,45 +118,20 @@ export function LogisticsPanel() {
         setIsLoadingData(false);
       }
     }
-
     void loadData();
   }, [token]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    if (!token) {
-      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
-      setIsSubmitting(false);
-      return;
-    }
+    setMessage("");
 
-    if (!isCuid(campaignId)) {
-      setMessage("Kampanye belum valid. Silakan pilih kampanye yang tersedia.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!isCuid(selectedItemId)) {
-      setMessage("Item stok belum valid. Pilih item dari daftar stok gudang terlebih dulu.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!destinationLocation.trim()) {
-      setMessage("Lokasi distribusi wajib diisi.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!selectedItem || selectedItem.quantity <= 0) {
-      setMessage("Stok item tidak tersedia.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (quantity < 1 || quantity > selectedItem.quantity) {
-      setMessage(`Jumlah alokasi harus antara 1 sampai ${selectedItem.quantity}.`);
+    if (
+      !isCuid(campaignId) ||
+      !isCuid(selectedItemId) ||
+      !destinationLocation.trim()
+    ) {
+      setMessage("Pastikan semua data (Kampanye, Item, Lokasi) sudah terisi.");
       setIsSubmitting(false);
       return;
     }
@@ -180,31 +148,29 @@ export function LogisticsPanel() {
     try {
       const response = await fetch(`${API_URL}/logistics`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(token),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders(token) },
         body: JSON.stringify(body),
       });
 
-      const data = (await response.json()) as unknown;
+      const data = (await response.json()) as { trackingCode?: string };
+
       if (!response.ok) {
-        setMessage(toErrorMessage(data, "Gagal membuat alokasi logistik"));
+        setMessage(toErrorMessage(data, "Gagal membuat alokasi"));
         return;
       }
 
-      const created = data as { trackingCode?: string };
-      setMessage(`Alokasi dibuat. Tracking code: ${created.trackingCode || "-"}`);
+      // SIMPAN KODE TRACKING UNTUK UI
+      setLastTrackingCode(data.trackingCode || "");
+      setMessage(`Alokasi berhasil dibuat!`);
+
       setDestinationLocation("");
       setQuantity(1);
-      const inventoryRes = await fetch(`${API_URL}/inventory`, { headers: authHeaders(token) });
-      if (inventoryRes.ok) {
-        const inventoryData = (await inventoryRes.json()) as InventoryItem[];
-        setInventory(inventoryData);
-        if (!inventoryData.some((item) => item.id === selectedItemId)) {
-          setSelectedItemId(inventoryData[0]?.id || "");
-        }
-      }
+
+      // Refresh Stok
+      const inventoryRes = await fetch(`${API_URL}/inventory`, {
+        headers: authHeaders(token),
+      });
+      if (inventoryRes.ok) setInventory(await inventoryRes.json());
     } catch {
       setMessage("Gagal terhubung ke server.");
     } finally {
@@ -213,20 +179,12 @@ export function LogisticsPanel() {
   }
 
   async function onCreateInventoryItem() {
-    if (!token) {
-      setMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
-      return;
-    }
-
+    if (!newItemName.trim()) return;
     setIsCreatingItem(true);
-
     try {
       const response = await fetch(`${API_URL}/inventory`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(token),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders(token) },
         body: JSON.stringify({
           name: newItemName.trim(),
           quantity: Number(newItemQty),
@@ -234,21 +192,14 @@ export function LogisticsPanel() {
           unit: "pcs",
         }),
       });
-
-      const data = (await response.json()) as unknown;
-      if (!response.ok) {
-        setMessage(toErrorMessage(data, "Gagal menambah item stok"));
-        return;
+      if (response.ok) {
+        const created = await response.json();
+        setInventory((prev) => [created, ...prev]);
+        setNewItemName("");
+        setMessage(`Stok ${created.name} ditambahkan.`);
       }
-
-      const created = data as InventoryItem;
-      setInventory((prev) => [created, ...prev]);
-      setSelectedItemId(created.id);
-      setNewItemName("");
-      setNewItemQty(10);
-      setMessage(`Item stok ${created.name} berhasil ditambahkan.`);
     } catch {
-      setMessage("Gagal terhubung ke server.");
+      setMessage("Gagal menambah stok.");
     } finally {
       setIsCreatingItem(false);
     }
@@ -258,102 +209,155 @@ export function LogisticsPanel() {
     <section className="console-surface">
       <div className="logistics-header">
         <h2>Logistik & Alokasi</h2>
-        <button className="console-btn success" type="submit" form="logistics-allocation-form" disabled={isSubmitting || isLoadingData}>
+        <button
+          className="console-btn success"
+          type="submit"
+          form="logistics-allocation-form"
+          disabled={isSubmitting || isLoadingData}
+        >
           {isSubmitting ? "Menyimpan..." : "Simpan Alokasi"}
         </button>
       </div>
 
-      {message ? <p className="status-line">{message}</p> : null}
+      {/* BOX NOTIFIKASI TRACKING (Target Utama Hari Ini) */}
+      {lastTrackingCode && (
+        <div
+          className="status-card success"
+          style={{
+            marginBottom: 16,
+            padding: 16,
+            border: "1px solid #4ade80",
+            borderRadius: 8,
+            backgroundColor: "rgba(74, 222, 128, 0.1)",
+          }}
+        >
+          <p style={{ fontWeight: "bold", color: "#4ade80" }}>
+            ✓ Alokasi Berhasil Dicatat!
+          </p>
+          <p className="console-muted">Kode: {lastTrackingCode}</p>
+          <Link
+            href={`/tracking/${lastTrackingCode}`}
+            target="_blank"
+            className="console-btn neutral"
+            style={{
+              marginTop: 8,
+              display: "inline-block",
+              textDecoration: "none",
+            }}
+          >
+            🔎 Lacak Pengiriman Sekarang
+          </Link>
+        </div>
+      )}
+
+      {message && !lastTrackingCode ? (
+        <p className="status-line">{message}</p>
+      ) : null}
 
       {isLoadingData ? (
         <p className="console-muted">Memuat data logistik...</p>
       ) : (
-        <form id="logistics-allocation-form" onSubmit={onSubmit} className="logistics-board">
+        <form
+          id="logistics-allocation-form"
+          onSubmit={onSubmit}
+          className="logistics-board"
+        >
           <div className="logistics-column">
             <h3>Stok Gudang Pusat</h3>
             <div className="form" style={{ marginBottom: 10 }}>
               <input
                 placeholder="Nama item baru"
                 value={newItemName}
-                onChange={(event) => setNewItemName(event.target.value)}
-                minLength={2}
-                required
+                onChange={(e) => setNewItemName(e.target.value)}
               />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 8,
+                }}
+              >
                 <input
                   type="number"
-                  min={1}
                   value={newItemQty}
-                  onChange={(event) => setNewItemQty(Number(event.target.value))}
-                  required
+                  onChange={(e) => setNewItemQty(Number(e.target.value))}
                 />
                 <input
                   placeholder="Gudang"
                   value={newItemWarehouse}
-                  onChange={(event) => setNewItemWarehouse(event.target.value)}
-                  required
+                  onChange={(e) => setNewItemWarehouse(e.target.value)}
                 />
               </div>
-              <button className="console-btn neutral" type="button" onClick={onCreateInventoryItem} disabled={isCreatingItem}>
+              <button
+                className="console-btn neutral"
+                type="button"
+                onClick={onCreateInventoryItem}
+                disabled={isCreatingItem}
+              >
                 {isCreatingItem ? "Menambah..." : "Tambah Stok"}
               </button>
             </div>
+
             <div className="logistics-list">
-              {inventory.length === 0 ? <p className="console-muted">Belum ada stok. Tambahkan item terlebih dulu.</p> : null}
-              {inventory.map((item) => {
-                const active = selectedItemId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`logistics-card ${active ? "active" : ""}`}
-                    onClick={() => setSelectedItemId(item.id)}
-                  >
-                    <span className="logistics-icon">{emojiByItem(item.name)}</span>
-                    <span className="logistics-title-wrap">
-                      <strong>{item.name}</strong>
-                      <small>
-                        {item.quantity} {item.name.toLowerCase().includes("air") ? "galon" : "paket"}
-                      </small>
-                    </span>
-                    <span className="logistics-pill">Stok</span>
-                  </button>
-                );
-              })}
+              {inventory
+                .filter((item) => item.quantity > 0) // Filter stok kosong agar tidak membingungkan
+                .map((item) => {
+                  const active = selectedItemId === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`logistics-card ${active ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedItemId(item.id);
+                        setLastTrackingCode(""); // Reset tracking code lama jika pilih item baru
+                      }}
+                    >
+                      <span className="logistics-icon">
+                        {emojiByItem(item.name)}
+                      </span>
+                      <span className="logistics-title-wrap">
+                        <strong>{item.name}</strong>
+                        <small>{item.quantity} paket</small>
+                      </span>
+                      <span className="logistics-pill">Stok</span>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 
           <div className="logistics-column">
             <h3>Kurir / Relawan</h3>
             <div className="logistics-list">
-              {operators.map((operator) => {
-                const active = selectedOperatorId === operator.id;
-                return (
-                  <button
-                    key={operator.id}
-                    type="button"
-                    className={`logistics-card ${active ? "active" : ""}`}
-                    onClick={() => setSelectedOperatorId(operator.id)}
-                  >
-                    <span className="logistics-icon">{initial(operator.name)}</span>
-                    <span className="logistics-title-wrap">
-                      <strong>{operator.name}</strong>
-                      <small>{operator.email}</small>
-                    </span>
-                    <span className="logistics-pill ok">Kurir</span>
-                  </button>
-                );
-              })}
+              {operators.map((op) => (
+                <button
+                  key={op.id}
+                  type="button"
+                  className={`logistics-card ${selectedOperatorId === op.id ? "active" : ""}`}
+                  onClick={() => setSelectedOperatorId(op.id)}
+                >
+                  <span className="logistics-icon">{initial(op.name)}</span>
+                  <span className="logistics-title-wrap">
+                    <strong>{op.name}</strong>
+                    <small>{op.email}</small>
+                  </span>
+                  <span className="logistics-pill ok">Kurir</span>
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="logistics-config">
             <div className="form">
-              <select value={campaignId} onChange={(event) => setCampaignId(event.target.value)} required>
+              <select
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
+              >
                 <option value="">Pilih Kampanye</option>
-                {campaigns.map((campaign) => (
-                  <option key={campaign.id} value={campaign.id}>
-                    {campaign.title}
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
                   </option>
                 ))}
               </select>
@@ -362,18 +366,18 @@ export function LogisticsPanel() {
                 min={1}
                 max={selectedItem?.quantity || 1}
                 value={quantity}
-                onChange={(event) => setQuantity(Number(event.target.value))}
-                placeholder="Jumlah alokasi"
-                required
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                placeholder="Jumlah"
               />
               <input
                 value={destinationLocation}
-                onChange={(event) => setDestinationLocation(event.target.value)}
+                onChange={(e) => setDestinationLocation(e.target.value)}
                 placeholder="Lokasi distribusi"
-                required
               />
             </div>
-            <p className="console-muted">Drag item dari gudang ke sini untuk mengalokasikan (mode klik aktif).</p>
+            <p className="console-muted">
+              Klik item stok dan kurir, lalu tentukan jumlah dan lokasi tujuan.
+            </p>
           </div>
         </form>
       )}

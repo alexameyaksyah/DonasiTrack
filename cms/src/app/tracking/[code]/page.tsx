@@ -18,7 +18,11 @@ type TrackingData = {
   }>;
 };
 
-export default async function TrackingPage({ params }: { params: Promise<{ code: string }> }) {
+export default async function TrackingPage({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
   const { code } = await params;
   let data: TrackingData | null = null;
   let error = "";
@@ -26,7 +30,8 @@ export default async function TrackingPage({ params }: { params: Promise<{ code:
   try {
     data = await getJson<TrackingData>(`/tracking/${code}`);
   } catch (err) {
-    error = err instanceof Error ? err.message : "Data tracking tidak ditemukan";
+    error =
+      err instanceof Error ? err.message : "Data tracking tidak ditemukan";
   }
 
   return (
@@ -42,22 +47,36 @@ export default async function TrackingPage({ params }: { params: Promise<{ code:
             <p className="badge">{data.status}</p>
             <h2 style={{ marginTop: 8 }}>{data.campaign.title}</h2>
             <p className="muted">Kode: {data.trackingCode}</p>
-            <p className="muted">Item: {data.item.name} ({data.item.quantity})</p>
+            <div
+              style={{
+                padding: "12px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
+                borderLeft: "4px solid #4ade80",
+                margin: "12px 0",
+              }}
+            >
+              <p style={{ margin: 0 }}>
+                <strong>Detail Barang:</strong>
+              </p>
+              <p style={{ margin: 0, fontSize: "1.1em" }}>{data.item.name}</p>
+              <p className="muted" style={{ fontSize: "0.85em" }}>
+                Status Stok Gudang:{" "}
+                {data.item.quantity === 0
+                  ? "✅ Terdistribusi Penuh"
+                  : `${data.item.quantity} Tersisa`}
+              </p>
+            </div>
 
             <ul className="timeline" style={{ marginTop: 12 }}>
               {data.trackingEvents.map((event) => (
                 <li key={event.id}>
                   <strong>{event.status}</strong>
                   <p className="muted">{event.note || "Tanpa catatan"}</p>
-                  <p className="muted">{dateTime(event.createdAt)} - {event.createdBy.name} ({event.createdBy.role})</p>
-                  {event.latitude && event.longitude ? (
-                    <p className="muted">Koordinat: {event.latitude}, {event.longitude}</p>
-                  ) : null}
-                  {event.photoUrl ? (
-                    <a className="muted" href={event.photoUrl} target="_blank" rel="noreferrer">
-                      Lihat foto bukti
-                    </a>
-                  ) : null}
+                  <p className="muted">
+                    {dateTime(event.createdAt)} - {event.createdBy.name} (
+                    {event.createdBy.role})
+                  </p>
                 </li>
               ))}
             </ul>

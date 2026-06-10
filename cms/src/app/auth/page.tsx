@@ -49,6 +49,10 @@ export default function AuthPage() {
       });
 
       const data = (await response.json()) as { message?: string; token?: string; user?: AuthUser };
+      // Debug: log full response to help diagnose missing token/user
+      // (temporary - safe to remove after debugging)
+      // eslint-disable-next-line no-console
+      console.debug("/auth/login response:", data);
       if (!response.ok || !data.token || !data.user) {
         setMessage(data.message || "Login gagal");
         return;
@@ -82,6 +86,10 @@ export default function AuthPage() {
       });
 
       const data = (await response.json()) as { message?: string; token?: string; user?: AuthUser };
+      // Debug: log full response to help diagnose missing token/user
+      // (temporary - safe to remove after debugging)
+      // eslint-disable-next-line no-console
+      console.debug("/auth/register response:", data);
       if (!response.ok || !data.token || !data.user) {
         setMessage(data.message || "Registrasi gagal");
         return;

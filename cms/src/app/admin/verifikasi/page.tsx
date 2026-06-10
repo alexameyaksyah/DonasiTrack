@@ -1,7 +1,24 @@
+"use client";
+
 import { AdminConsoleSidebar } from "../../../components/AdminConsoleSidebar";
 import { VerificationPanel } from "../../../components/VerificationPanel";
+import { useAdminGuard } from "../../../hooks/useAdminGuard";
 
 export default function AdminVerificationPage() {
+  const { ready } = useAdminGuard();
+
+  if (!ready) {
+    return (
+      <main className="admin-shell fade-up">
+        <section className="console-main">
+          <section className="console-surface">
+            <p className="console-muted">Mengalihkan...</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="admin-shell fade-up">
       <AdminConsoleSidebar active="verification" />
