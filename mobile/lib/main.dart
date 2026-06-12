@@ -2411,6 +2411,7 @@ class AdminFormTab extends StatefulWidget {
   State<AdminFormTab> createState() => _AdminFormTabState();
 }
 
+// The state of AdminFormTab manages the input fields for shipment ID, recipient name, notes, the selected status, messages for the user, the URL of the uploaded photo proof, and the captured location. It includes methods to resolve the shipment ID from a tracking code, capture the user's location, pick and upload a photo as proof, and submit the tracking information to the API. If the submission fails (e.g., due to network issues), it queues the tracking data locally using SharedPreferences for later synchronization.
 class _AdminFormTabState extends State<AdminFormTab> {
   static const String trackingQueueKey = 'tracking_queue';
 
