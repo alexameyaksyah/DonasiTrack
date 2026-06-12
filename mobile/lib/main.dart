@@ -1003,6 +1003,7 @@ class DonorPage extends StatefulWidget {
   State<DonorPage> createState() => _DonorPageState();
 }
 
+// The state of DonorPage manages the list of campaigns, donation history, loading states, and messages. It includes methods to load campaigns (with caching), load donations, submit new donations, and open a bottom sheet for making a donation to a specific campaign.
 class _DonorPageState extends State<DonorPage> {
   static const String campaignCacheKey = 'campaign_cache';
   static const String donationQueueKey = 'donation_queue';
