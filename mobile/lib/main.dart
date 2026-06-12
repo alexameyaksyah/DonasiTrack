@@ -993,6 +993,7 @@ class _AuthPageState extends State<AuthPage> {
   }
 }
 
+// DonorPage is the main page for donor users, which displays a list of campaigns and the user's donation history. It includes functionality to load campaigns from the API (with caching), display donation history, and submit new donations through a bottom sheet form.
 class DonorPage extends StatefulWidget {
   const DonorPage({super.key, required this.session});
 
