@@ -192,6 +192,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
   }
 }
 
+// A standalone page for authentication, used when the user is not authenticated.
 class AuthStandalonePage extends StatelessWidget {
   const AuthStandalonePage({super.key, required this.session});
 
