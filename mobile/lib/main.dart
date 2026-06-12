@@ -289,6 +289,7 @@ class AppSession extends ChangeNotifier {
   }
 }
 
+// ApiClient provides methods to interact with the backend API, including authentication, fetching campaigns, making donations, tracking shipments, and uploading proof of delivery. It uses the Dio package for HTTP requests and includes error handling to provide feedback on failed operations.
 class ApiClient {
   ApiClient(this.session)
     : dio = Dio(
