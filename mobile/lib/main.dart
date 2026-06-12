@@ -420,6 +420,7 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
+// The state of HomeShell manages the currently selected tab index and any prefill data for the admin form when coming from the scanner or tasks tabs. It builds the UI with a bottom navigation bar that switches between different pages based on the user's role.
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
   String? adminPrefillCode;
