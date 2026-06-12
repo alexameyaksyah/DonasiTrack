@@ -1955,6 +1955,7 @@ class DonorProfileTab extends StatefulWidget {
   State<DonorProfileTab> createState() => _DonorProfileTabState();
 }
 
+// The state of DonorProfileTab manages the total donation amount, the total number of campaigns helped, and the loading state for the profile information. It includes a method to load the profile statistics from the API, which calculates the total donations and campaigns supported by the donor, and updates the UI accordingly.
 class _DonorProfileTabState extends State<DonorProfileTab> {
   int totalDonation = 0;
   int totalCampaignHelped = 0;
