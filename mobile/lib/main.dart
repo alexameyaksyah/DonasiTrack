@@ -2982,6 +2982,7 @@ class QrScannerPage extends StatefulWidget {
   State<QrScannerPage> createState() => _QrScannerPageState();
 }
 
+// The state of QrScannerPage manages a boolean flag to prevent multiple captures of QR codes. It builds a Scaffold with an AppBar and a MobileScanner widget as the body. The MobileScanner listens for barcode detections, and when a valid QR code is detected, it sets the captured flag to true and pops the page, returning the scanned code value to the previous page.
 class _QrScannerPageState extends State<QrScannerPage> {
   bool captured = false;
 
