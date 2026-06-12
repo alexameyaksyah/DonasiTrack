@@ -2317,6 +2317,7 @@ class AdminScannerTab extends StatefulWidget {
   State<AdminScannerTab> createState() => _AdminScannerTabState();
 }
 
+// The state of AdminScannerTab manages the message to be displayed to the user based on the scanning results. It includes a method to initiate the QR code scanning process, which navigates to a separate page for scanning and waits for the result. If a valid QR code is scanned, it updates the message and calls the provided callback function with the scanned code.
 class _AdminScannerTabState extends State<AdminScannerTab> {
   String message = '';
 
