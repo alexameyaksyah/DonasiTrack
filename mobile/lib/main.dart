@@ -125,6 +125,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
           );
         }),
       ),
+      // ignore: deprecated_member_use
       dividerColor: MoonPalette.thistle,
       textTheme: const TextTheme(
         titleLarge: TextStyle(
