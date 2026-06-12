@@ -1656,6 +1656,7 @@ class _DonorPageState extends State<DonorPage> {
   }
 }
 
+// DonorTrackingTab is a stateful widget that allows donors to track their donations using a tracking code. It includes a text field for entering the tracking code, a button to search for the tracking information, and displays the tracking events in a list format with visual indicators for each status.
 class DonorTrackingTab extends StatefulWidget {
   const DonorTrackingTab({super.key, required this.session});
 
