@@ -174,6 +174,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
               body: Center(child: CircularProgressIndicator()),
             );
           }
+          // Once the session is loaded, we listen to its changes to update the UI accordingly.
 
           return AnimatedBuilder(
             animation: session,
