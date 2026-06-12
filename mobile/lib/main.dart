@@ -2394,6 +2394,7 @@ class _AdminScannerTabState extends State<AdminScannerTab> {
   }
 }
 
+// AdminFormTab is a stateful widget that provides a form interface for volunteers to update the status of aid deliveries. It includes fields for entering the shipment ID or tracking code, recipient name, notes, and options to capture location and upload proof photos. The form data is submitted to the API to update the shipment status.
 class AdminFormTab extends StatefulWidget {
   const AdminFormTab({
     super.key,
