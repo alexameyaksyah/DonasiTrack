@@ -2851,6 +2851,7 @@ class _AdminTasksTabState extends State<AdminTasksTab> {
   }
 }
 
+// TrackingPage is a stateful widget that provides an interface for users to track the status of their aid deliveries using a tracking code. It includes a text field for entering the tracking code, a button to search for the tracking information, and displays the tracking details and timeline of events related to the aid delivery. The tracking information is fetched from the API based on the entered tracking code.
 class TrackingPage extends StatefulWidget {
   const TrackingPage({super.key, required this.session});
 
