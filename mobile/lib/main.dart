@@ -225,6 +225,7 @@ class AppSession extends ChangeNotifier {
     defaultValue: '',
   );
 
+  // effectiveApiBase determines the actual API base URL to use, prioritizing the user-configured value, then falling back to sensible defaults for web and mobile.
   String get effectiveApiBase {
     if (apiBaseUrl.trim().isNotEmpty) return apiBaseUrl.trim();
     if (kIsWeb) return 'http://localhost:4000/api';
