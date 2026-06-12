@@ -165,6 +165,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
           child: child,
         );
       },
+      // The home is determined by the authentication state, which is loaded asynchronously.
       home: FutureBuilder<void>(
         future: bootstrap,
         builder: (context, snapshot) {
