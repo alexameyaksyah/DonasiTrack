@@ -206,6 +206,7 @@ class AuthStandalonePage extends StatelessWidget {
   }
 }
 
+// AppSession manages the user's authentication state and related information, as well as the API base URL. It uses SharedPreferences to persist data across app launches and notifies listeners when changes occur.
 class AppSession extends ChangeNotifier {
   static const String _tokenKey = 'session_token';
   static const String _userIdKey = 'session_user_id';
