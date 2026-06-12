@@ -567,6 +567,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 }
 
+// AuthPage is a stateful widget that provides the UI and logic for both login and registration. It includes form fields for email, password, and name (for registration), as well as handling API interactions for authentication and displaying messages based on success or failure of operations.
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key, required this.session});
 
