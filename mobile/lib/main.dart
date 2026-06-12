@@ -9,12 +9,13 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MoonPalette {
-  static const Color lavender = Color(0xFF9985F3);
-  static const Color orchid = Color(0xFFC7B7FC);
-  static const Color thistle = Color(0xFFE2D3EF);
-  static const Color pearl = Color(0xFFF4ECFE);
-  static const Color ink = Color(0xFF2A1D56);
-  static const Color muted = Color(0xFF685B8D);
+  // Blood donation themed palette
+  static const Color lavender = Color(0xFFB00020); // primary deep red
+  static const Color orchid = Color(0xFFFF6F61); // warm accent
+  static const Color thistle = Color(0xFFF8D7DA); // light pink
+  static const Color pearl = Color(0xFFFFEBEE); // very light
+  static const Color ink = Color(0xFF2A0A0A); // dark maroon
+  static const Color muted = Color(0xFF7A3A3A); // muted maroon
 }
 
 void main() {
@@ -1448,13 +1449,17 @@ class _DonorPageState extends State<DonorPage> {
           ),
         ),
         const SizedBox(height: 16),
+
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: <Color>[Color(0xFF8B73EF), Color(0xFFA890F8)],
+              colors: <Color>[
+                Color(0xFF8B73EF),
+                Color(0xFFA890F8),
+              ],
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: <BoxShadow>[
@@ -1476,7 +1481,9 @@ class _DonorPageState extends State<DonorPage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+
               const SizedBox(height: 3),
+
               Text(
                 _rupiah(totalDonation),
                 style: const TextStyle(
@@ -1486,11 +1493,18 @@ class _DonorPageState extends State<DonorPage> {
                   height: 1,
                 ),
               ),
+
               const SizedBox(height: 4),
+
               Text(
                 '$totalCampaignHelped kampanye didukung',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
               ),
+
+              const SizedBox(height: 8),
             ],
           ),
         ),
