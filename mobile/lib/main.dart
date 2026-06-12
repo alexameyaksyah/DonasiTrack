@@ -1666,6 +1666,7 @@ class DonorTrackingTab extends StatefulWidget {
   State<DonorTrackingTab> createState() => _DonorTrackingTabState();
 }
 
+// The state of DonorTrackingTab manages the tracking code input, the payload of tracking information, messages for the user, and loading states. It includes methods to find tracking information based on the code, determine visual indicators for different tracking statuses, and build the UI to display the tracking events.
 class _DonorTrackingTabState extends State<DonorTrackingTab> {
   final TextEditingController code = TextEditingController();
   Map<String, dynamic>? payload;
