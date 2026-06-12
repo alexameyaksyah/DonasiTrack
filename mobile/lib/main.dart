@@ -2974,6 +2974,7 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 }
 
+// QrScannerPage is a stateful widget that provides a full-screen interface for scanning QR codes using the device's camera. It uses the MobileScanner package to access the camera and detect QR codes. When a QR code is detected, it captures the code value and returns it to the previous page through the Navigator.
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key});
 
