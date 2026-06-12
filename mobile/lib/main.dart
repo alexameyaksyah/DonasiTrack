@@ -577,6 +577,7 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
+// The state of AuthPage manages the form fields, loading state, and messages for both login and registration. It includes methods to handle login and registration logic, as well as toggling between the two modes and showing information about password reset (which is not implemented yet).
 class _AuthPageState extends State<AuthPage> {
   final TextEditingController loginEmail = TextEditingController();
   final TextEditingController loginPassword = TextEditingController();
