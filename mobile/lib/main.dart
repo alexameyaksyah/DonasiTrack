@@ -2302,6 +2302,7 @@ class AdminHeader extends StatelessWidget {
   }
 }
 
+// AdminScannerTab is a stateful widget that provides an interface for volunteers to scan QR codes of aid recipients. It includes a button to initiate the QR code scanning process, and displays messages based on the scanning results. The scanned code is passed back to the parent widget through a callback function.
 class AdminScannerTab extends StatefulWidget {
   const AdminScannerTab({
     super.key,
