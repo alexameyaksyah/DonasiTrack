@@ -410,6 +410,7 @@ class ApiClient {
   }
 }
 
+// HomeShell is the main page shown to authenticated users, which conditionally displays different tabs and content based on the user's role (donor or admin). It also handles interactions from the admin tabs to prefill data in the form tab when scanning codes or selecting shipments.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.session});
 
