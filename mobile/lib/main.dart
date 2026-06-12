@@ -111,7 +111,8 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         ),
-      ),
+      ), 
+      // ignore: deprecated_member_use
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white.withValues(alpha: 0.78),
         indicatorColor: MoonPalette.orchid.withValues(alpha: 0.64),
