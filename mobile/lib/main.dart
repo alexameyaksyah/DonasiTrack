@@ -2861,6 +2861,7 @@ class TrackingPage extends StatefulWidget {
   State<TrackingPage> createState() => _TrackingPageState();
 }
 
+// The state of TrackingPage manages the input field for the tracking code, the payload of tracking information retrieved from the API, and messages to be displayed to the user. It includes a method to fetch the tracking information based on the entered tracking code, and updates the UI accordingly. The build method displays the input field, search button, and if tracking information is available, it shows the status, campaign details, item details, and a timeline of events related to the aid delivery.
 class _TrackingPageState extends State<TrackingPage> {
   final TextEditingController code = TextEditingController();
   Map<String, dynamic>? payload;
