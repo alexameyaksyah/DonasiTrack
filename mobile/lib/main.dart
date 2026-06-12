@@ -1945,6 +1945,7 @@ class _DonorTrackingTabState extends State<DonorTrackingTab> {
   }
 }
 
+// DonorProfileTab is a stateful widget that displays the donor's profile information, including their name, email, total donations, and the number of campaigns they have supported. It also includes a method to load the donor's profile statistics from the API and display them in a visually appealing format.
 class DonorProfileTab extends StatefulWidget {
   const DonorProfileTab({super.key, required this.session});
 
