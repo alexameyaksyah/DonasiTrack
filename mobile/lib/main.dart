@@ -2210,6 +2210,7 @@ class _DonorProfileTabState extends State<DonorProfileTab> {
   }
 }
 
+// AdminHeader is a stateless widget that displays the header section for the admin interface. It includes the application name, user role, online status, and a logout button. It also displays the title and subtitle for the current admin page.
 class AdminHeader extends StatelessWidget {
   const AdminHeader({
     super.key,
