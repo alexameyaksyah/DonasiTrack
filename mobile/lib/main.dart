@@ -2723,6 +2723,7 @@ class AdminTasksTab extends StatefulWidget {
   State<AdminTasksTab> createState() => _AdminTasksTabState();
 }
 
+// The state of AdminTasksTab manages the future that loads the list of shipments assigned to the volunteer. It includes a method to fetch the shipments from the API, and helper methods to determine the color and label for each shipment status. The build method uses a FutureBuilder to display the list of shipments, showing loading indicators, error messages, or the shipment cards as appropriate.
 class _AdminTasksTabState extends State<AdminTasksTab> {
   late Future<List<Map<String, dynamic>>> futureShipments = _loadShipments();
 
