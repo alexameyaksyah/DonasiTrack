@@ -161,6 +161,13 @@ export default function TrackingPage() {
       const latestEvent = shipment.trackingEvents?.[0];
       const statusText = latestEvent?.status?.toLowerCase() || "";
 
+      const isDone =
+        statusText.includes("selesai") ||
+        statusText.includes("diterima") ||
+        statusText.includes("tiba");
+
+      return activeTab === "selesai" ? isDone : !isDone;
+    });
 
   return (
     <main className="admin-shell fade-up">
