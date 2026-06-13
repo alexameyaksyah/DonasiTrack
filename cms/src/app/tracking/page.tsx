@@ -236,6 +236,14 @@ export default function TrackingPage() {
               style={{
                 backgroundColor: "#991b1b",
                 color: "white",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                fontWeight: "600",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
             </button>
           </div>
         </section>
