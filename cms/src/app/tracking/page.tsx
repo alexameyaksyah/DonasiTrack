@@ -142,7 +142,7 @@ export default function TrackingPage() {
         );
       }
 
-      const result: ShipmentData = await res.json(); // Casting data ke interface
+      const result: ShipmentData = await res.json();
       setData(result);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -168,6 +168,7 @@ export default function TrackingPage() {
 
       return activeTab === "selesai" ? isDone : !isDone;
     });
+  }, [allShipments, activeTab]);
 
   return (
     <main className="admin-shell fade-up">
