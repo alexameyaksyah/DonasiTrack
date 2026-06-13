@@ -975,7 +975,7 @@ class _AuthPageState extends State<AuthPage> {
                                   padding: EdgeInsets.zero,
                                 ),
                                 child: Text(
-                                  onLogin ? 'Sign up' : 'Log in',
+                                  onLogin ? 'Sign up' : 'Log in', // The button text changes based on the current mode, prompting the user to switch to the other mode if needed. The styling emphasizes the action and provides a clear call to action for users who may need to create an account or return to the login screen.
                                   style: const TextStyle(
                                     color: MoonPalette.lavender,
                                     fontWeight: FontWeight.w800,
