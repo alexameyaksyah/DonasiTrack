@@ -256,6 +256,16 @@ export default function TrackingPage() {
               {loading ? "Mencari..." : "Cari Data"}
             </button>
           </div>
+
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#64748b",
+              marginTop: "10px",
+              paddingLeft: "4px",
+            }}
+          >
+            Punya kendala? Coba gunakan contoh kode:{" "}
         </section>
 
         <section className="console-surface" style={{ padding: "2rem" }}>
