@@ -456,6 +456,14 @@ export default function TrackingPage() {
                             alignItems: "center",
                           }}
                         >
+                          <span>Lokasi: {event.location}</span>
+                          <span style={{ color: "#cbd5e1" }}>|</span>
+                          <span>
+                            Oleh:{" "}
+                            <strong style={{ color: "#334155" }}>
+                              {event.createdBy?.name}
+                            </strong>
+                          </span>
                         </div>
                       </div>
                     </div>
