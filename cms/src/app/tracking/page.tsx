@@ -287,6 +287,17 @@ export default function TrackingPage() {
           </div>
         </section>
 
+        {/* SECTION UTAMA HASIL TIMELINE / DAFTAR TAB */}
+        <section
+          className="console-surface"
+          style={{
+            padding: "2rem",
+            borderRadius: "12px",
+            minHeight: "450px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {error && (
             <p
               style={{
