@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -13,9 +12,7 @@ async function main() {
     throw new Error("DATABASE_URL is required for seeding");
   }
 
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
-  });
+  const prisma = new PrismaClient();
 
   await prisma.trackingEvent.deleteMany();
   await prisma.aidShipment.deleteMany();

@@ -8,6 +8,14 @@ if (!connectionString) {
 	throw new Error("Missing DATABASE_URL in environment variables");
 }
 
-const adapter = new PrismaPg({ connectionString });
+let prisma: PrismaClient;
+if (connectionString.startsWith("file:")) {
+	// SQLite - provide datasource URL explicitly to PrismaClient
+	prisma = new PrismaClient({ datasources: { db: { url: connectionString } } });
+} else {
+	// Assume PostgreSQL - use pg adapter
+	const adapter = new PrismaPg({ connectionString });
+	prisma = new PrismaClient({ adapter });
+}
 
-export const prisma = new PrismaClient({ adapter });
+export { prisma };
