@@ -561,6 +561,21 @@ export default function TrackingPage() {
                     gap: "16px",
                   }}
                 >
+                  {filteredShipments.map((shipment) => {
+                    const latestEvent = shipment.trackingEvents?.[0];
+                    return (
+                      <div
+                        key={shipment.id}
+                        style={{
+                          border: "1px solid #e2e8f0",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          backgroundColor: "#f8fafc",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
           )}
         </section>
       </section>
