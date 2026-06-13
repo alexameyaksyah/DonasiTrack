@@ -287,8 +287,16 @@ export default function TrackingPage() {
           </div>
         </section>
 
-        <section className="console-surface" style={{ padding: "2rem" }}>
-          {error && <p style={{ color: "#ef4444" }}>❌ {error}</p>}
+          {error && (
+            <p
+              style={{
+                color: "#ef4444",
+                fontWeight: "500",
+                marginBottom: "15px",
+              }}
+            >
+              {error}
+            </p>
 
           {!data && !error && (
             <div style={{ textAlign: "center" }}>
