@@ -418,6 +418,11 @@ export default function TrackingPage() {
                           height: "12px",
                           borderRadius: "50%",
                           backgroundColor: index === 0 ? "#991b1b" : "#cbd5e1",
+                          border: index === 0 ? "4px solid #ffffff" : "none",
+                          boxShadow: index === 0 ? "0 0 0 4px #fca5a5" : "none",
+                          zIndex: 2,
+                        }}
+                      />
                         </div>
                         <div style={{ fontSize: "1rem", marginTop: "4px", color: index === 0 ? "#f8fafc" : "#94a3b8", fontWeight: index === 0 ? "bold" : "500" }}>
                           {event.status}
