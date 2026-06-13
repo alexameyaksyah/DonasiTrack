@@ -494,6 +494,28 @@ export default function TrackingPage() {
                   marginBottom: "25px",
                 }}
               >
+                <button
+                  onClick={() => setActiveTab("proses")}
+                  style={{
+                    flex: 1,
+                    padding: "14px 0",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: activeTab === "proses" ? "700" : "500",
+                    color: activeTab === "proses" ? "#991b1b" : "#64748b",
+                    borderBottom:
+                      activeTab === "proses"
+                        ? "3px solid #991b1b"
+                        : "3px solid transparent",
+                    marginBottom: "-2px",
+                    textAlign: "center",
+                    transition: "all 0.15s ease-in-out",
+                  }}
+                >
+                  Dalam Proses
+                </button>
           )}
         </section>
       </section>
