@@ -104,6 +104,9 @@ export default function TrackingPage() {
   const fetchAllShipments = async () => {
     setLoadingList(true);
     try {
+      const token = localStorage.getItem("donasi-track-session-token") || "";
+      const res = await fetch(`${API_URL}/tracking`, {
+        headers: authHeaders(token),
     setLoading(true);
     setError("");
     setData(null);
