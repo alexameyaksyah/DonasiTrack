@@ -155,6 +155,9 @@ export default function TrackingPage() {
     }
   };
 
+  // LOGIKA FILTER TAB
+  const filteredShipments = useMemo(() => {
+
   return (
     <main className="admin-shell fade-up">
       {session.user?.role === "ADMIN" ? (
