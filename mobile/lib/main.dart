@@ -345,7 +345,7 @@ class ApiClient {
       options: Options(headers: authHeader),
     );
   }
-
+  // myDonations fetches the donation history for the authenticated user, allowing them to see their past donations and their statuses. This method also requires authentication and returns a list of donations in a structured format.
   Future<List<Map<String, dynamic>>> myDonations() async {
     final Response<dynamic> response = await dio.get(
       '/donations/me',
