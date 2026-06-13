@@ -114,6 +114,12 @@ export default function TrackingPage() {
           setAllShipments(result);
         }
       }
+    } catch (err) {
+      console.error("Gagal memuat daftar tracking:", err);
+    } finally {
+      setLoadingList(false);
+    }
+  };
     setLoading(true);
     setError("");
     setData(null);
