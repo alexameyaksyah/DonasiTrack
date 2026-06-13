@@ -1106,7 +1106,7 @@ class _DonorPageState extends State<DonorPage> {
     );
     return 'https://picsum.photos/seed/$title-$disaster/800/360'; // If the campaign does not have a specific image URL, the method creates a unique placeholder image URL using the campaign's title and disaster type. It encodes these values to ensure they are safe for use in a URL and then constructs a URL for the Picsum Photos service, which will generate a random image based on the provided seed. This allows each campaign to have a visually distinct image even if no specific image is provided by the API.
   }
-
+  // The _campaignImageUrl method is a utility function that determines the appropriate image URL for a given campaign. It first checks if the campaign data includes an 'imageUrl' field that is a non-empty string. If such a URL exists, it returns that URL directly. If not, it constructs a placeholder image URL using the campaign's title and disaster type as seeds for the Picsum Photos service. This ensures that even campaigns without a specified image will have a unique and visually distinct placeholder image based on their content.
   Widget _buildCampaignSkeletonCard() {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
