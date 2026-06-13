@@ -157,6 +157,8 @@ export default function TrackingPage() {
 
   // LOGIKA FILTER TAB
   const filteredShipments = useMemo(() => {
+    return allShipments.filter((shipment) => {
+      const latestEvent = shipment.trackingEvents?.[0];
 
   return (
     <main className="admin-shell fade-up">
