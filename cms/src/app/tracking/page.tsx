@@ -100,9 +100,8 @@ export default function TrackingPage() {
     return "Mode Tamu";
   }, [isReady, session.user?.role]);
 
-  const handleSearch = async () => {
-    if (!code) return;
-    
+  // Ambil semua data tracking dari server
+  const fetchAllShipments = async () => {
     setLoading(true);
     setError("");
     setData(null);
