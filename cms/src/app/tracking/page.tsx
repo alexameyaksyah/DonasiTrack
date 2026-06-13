@@ -423,12 +423,39 @@ export default function TrackingPage() {
                           zIndex: 2,
                         }}
                       />
+                      <div style={{ paddingLeft: "8px" }}>
+                        <div
+                          style={{
+                            fontSize: "0.85rem",
+                            color: index === 0 ? "#991b1b" : "#64748b",
+                            fontWeight: index === 0 ? "bold" : "normal",
+                          }}
+                        >
+                          {new Date(event.createdAt).toLocaleString("id-ID", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
                         </div>
-                        <div style={{ fontSize: "1rem", marginTop: "4px", color: index === 0 ? "#f8fafc" : "#94a3b8", fontWeight: index === 0 ? "bold" : "500" }}>
+                        <div
+                          style={{
+                            fontSize: "1.05rem",
+                            marginTop: "4px",
+                            color: index === 0 ? "#0f172a" : "#475569",
+                            fontWeight: index === 0 ? "700" : "500",
+                          }}
+                        >
                           {event.status}
                         </div>
-                        <div style={{ fontSize: "0.85rem", color: "#475569", marginTop: "2px" }}>
-                          📍 {event.location} | Oleh: {event.createdBy?.name}
+                        <div
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginTop: "4px",
+                            display: "flex",
+                            gap: "4px",
+                            alignItems: "center",
+                          }}
+                        >
                         </div>
                       </div>
                     </div>
