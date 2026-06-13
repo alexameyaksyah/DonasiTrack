@@ -1075,7 +1075,7 @@ class _DonorPageState extends State<DonorPage> {
             .toList();
       }); // The _loadCampaigns method is responsible for fetching the list of campaigns from the API. It first checks if there is a cached version of the campaigns stored in SharedPreferences. If a cache exists, it loads the campaigns from there to provide a faster initial display. Then, it attempts to fetch the latest campaigns from the API. If the API call is successful, it updates the state with the fresh data and updates the cache. If there's an error during the API call, it retains the cached data and updates the message to inform the user that they are viewing cached data. Finally, it sets the loading state to false once the process is complete.
     }
-
+    // After loading from cache, it proceeds to fetch the latest campaigns from the API. If the API call is successful, it updates the state with the new campaigns and saves them to the cache. If the API call fails, it checks if there were any campaigns loaded from the cache and updates the message to indicate that cached data is being used. This ensures that users can still see campaign information even if there are issues with fetching fresh data from the server.
     try {
       final ApiClient api = ApiClient(widget.session);
       final List<Map<String, dynamic>> fresh = await api.campaigns();
