@@ -1336,7 +1336,7 @@ class _DonorPageState extends State<DonorPage> {
     quantityController.dispose();
     proofUrlController.dispose();
   }
-
+  // The _openDonateSheet method is responsible for displaying a bottom sheet form that allows the user to submit a new donation for a specific campaign. It initializes several TextEditingControllers to manage the input fields for the donation amount, item name, quantity, and proof URL. The form includes a dropdown to select the type of donation (money or goods) and conditionally shows relevant input fields based on the selected type. When the user submits the form, it constructs a donation body and calls the _submitDonation method to handle the submission. If the submission is successful, it closes the bottom sheet; otherwise, it allows for offline saving of the donation data if there's an error during submission. The form also includes loading state management to provide feedback while the donation is being processed.
   Future<void> _syncDonationQueue() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? existing = prefs.getString(donationQueueKey);
