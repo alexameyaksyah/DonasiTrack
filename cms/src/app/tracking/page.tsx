@@ -110,6 +110,10 @@ export default function TrackingPage() {
       });
       if (res.ok) {
         const result = await res.json();
+        if (Array.isArray(result)) {
+          setAllShipments(result);
+        }
+      }
     setLoading(true);
     setError("");
     setData(null);
