@@ -120,18 +120,26 @@ export default function TrackingPage() {
       setLoadingList(false);
     }
   };
+
+  // FUNGSI CARI DATA
+  const handleSearch = async (forcedCode?: string) => {
+    const targetCode = forcedCode || code;
+    if (!targetCode) return;
+
     setLoading(true);
     setError("");
     setData(null);
 
     try {
       const token = localStorage.getItem("donasi-track-session-token") || "";
-      const res = await fetch(`${API_URL}/tracking/${code}`, {
+      const res = await fetch(`${API_URL}/tracking/${targetCode}`, {
         headers: authHeaders(token),
       });
 
       if (!res.ok) {
-        throw new Error("Kode tracking tidak ditemukan atau server bermasalah.");
+        throw new Error(
+          "Kode tracking tidak ditemukan atau server bermasalah.",
+        );
       }
 
       const result: ShipmentData = await res.json(); // Casting data ke interface
