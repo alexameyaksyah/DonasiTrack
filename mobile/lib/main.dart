@@ -355,7 +355,7 @@ class ApiClient {
         .map((dynamic item) => Map<String, dynamic>.from(item as Map))
         .toList();
   }
-
+  // trackingByCode retrieves the current status and history of a shipment based on its tracking code. This allows users to track their donations or shipments in real-time, providing transparency and updates on the delivery process.
   Future<Map<String, dynamic>> trackingByCode(String code) async {
     final Response<dynamic> response = await dio.get('/tracking/$code');
     return Map<String, dynamic>.from(response.data as Map);
