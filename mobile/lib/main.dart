@@ -1344,7 +1344,7 @@ class _DonorPageState extends State<DonorPage> {
       setState(() => message = 'Queue kosong.');
       return;
     }
-
+    // The _syncDonationQueue method is designed to synchronize any donations that were saved locally in the queue due to previous submission failures (such as network issues). It retrieves the queued donations from SharedPreferences, attempts to resend each donation to the API, and keeps track of any donations that still fail to send. If all queued donations are successfully sent, it clears the queue and updates the message to indicate that all offline donations have been sent. If some donations still fail to send, it updates the queue with the remaining unsent donations and updates the message to inform the user about how many items are still in the offline queue. This method can be called when the app detects that connectivity has been restored or when the user manually triggers a sync.
     final ApiClient api = ApiClient(widget.session);
     final List<Map<String, dynamic>> queue =
         (jsonDecode(existing) as List<dynamic>)
