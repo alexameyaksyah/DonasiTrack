@@ -469,7 +469,9 @@ export default function TrackingPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="console-muted">Belum ada riwayat perjalanan.</p>
+                  <p style={{ color: "#64748b" }}>
+                    Belum ada riwayat perjalanan.
+                  </p>
                 )}
               </div>
             </div>
