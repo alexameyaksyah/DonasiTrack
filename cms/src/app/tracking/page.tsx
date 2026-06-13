@@ -383,15 +383,32 @@ export default function TrackingPage() {
                 </div>
               </div>
 
-              {/* Tampilan Timeline Ala Shopee */}
-              <div style={{ position: "relative", paddingLeft: "30px", marginTop: "20px" }}>
+              {/* Timeline */}
+              <div
+                style={{
+                  position: "relative",
+                  paddingLeft: "30px",
+                  marginTop: "20px",
+                }}
+              >
                 {data.trackingEvents && data.trackingEvents.length > 0 ? (
                   data.trackingEvents.map((event, index) => (
-                    <div key={event.id} style={{ position: "relative", marginBottom: "30px" }}>
-                      
-                      {/* Garis Vertikal */}
+                    <div
+                      key={event.id}
+                      style={{ position: "relative", marginBottom: "35px" }}
+                    >
                       {index !== data.trackingEvents.length - 1 && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: "-21px",
+                            top: "22px",
+                            bottom: "-35px",
+                            width: "2px",
                             backgroundColor: "#e2e8f0",
+                          }}
+                        />
+                      )}
                       <div
                         style={{
                           position: "absolute",
