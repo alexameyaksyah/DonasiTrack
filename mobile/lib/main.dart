@@ -9,13 +9,13 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MoonPalette {
-  // Blood donation themed palette
-  static const Color lavender = Color(0xFFB00020); // primary deep red
-  static const Color orchid = Color(0xFFFF6F61); // warm accent
-  static const Color thistle = Color(0xFFF8D7DA); // light pink
-  static const Color pearl = Color(0xFFFFEBEE); // very light
-  static const Color ink = Color(0xFF2A0A0A); // dark maroon
-  static const Color muted = Color(0xFF7A3A3A); // muted maroon
+  // Health themed palette (teal / green)
+  static const Color primary = Color(0xFF0F9D8E); // teal
+  static const Color accent = Color(0xFF48C6A9); // lighter green
+  static const Color thistle = Color(0xFFEAF7F1); // very light mint
+  static const Color pearl = Color(0xFFF3FFFB); // almost white mint
+  static const Color ink = Color(0xFF08363A); // dark teal / slate
+  static const Color muted = Color(0xFF4B6B66); // muted slate
 }
 
 void main() {
@@ -35,9 +35,9 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
 
   ThemeData _buildTheme() {
     final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: MoonPalette.lavender,
-      primary: MoonPalette.lavender,
-      secondary: MoonPalette.orchid,
+      seedColor: MoonPalette.primary,
+      primary: MoonPalette.primary,
+      secondary: MoonPalette.accent,
       surface: const Color(0xFFFDF9FF),
       onPrimary: Colors.white,
       onSecondary: MoonPalette.ink,
@@ -65,36 +65,36 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
         color: Colors.white.withValues(alpha: 0.76),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.25)),
+          side: BorderSide(color: MoonPalette.primary.withValues(alpha: 0.20)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.72),
+            fillColor: Colors.white.withValues(alpha: 0.72),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: MoonPalette.lavender.withValues(alpha: 0.22),
+            borderSide: BorderSide(
+            color: MoonPalette.primary.withValues(alpha: 0.22),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: MoonPalette.lavender.withValues(alpha: 0.22),
+            color: MoonPalette.primary.withValues(alpha: 0.22),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: MoonPalette.lavender, width: 1.4),
+          borderSide: const BorderSide(color: MoonPalette.primary, width: 1.4),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: MoonPalette.lavender,
+          style: FilledButton.styleFrom(
+          backgroundColor: MoonPalette.primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -104,9 +104,9 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
+          style: OutlinedButton.styleFrom(
           foregroundColor: MoonPalette.ink,
-          side: BorderSide(color: MoonPalette.lavender.withValues(alpha: 0.35)),
+          side: BorderSide(color: MoonPalette.primary.withValues(alpha: 0.30)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -116,7 +116,7 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
       // ignore: deprecated_member_use
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white.withValues(alpha: 0.78),
-        indicatorColor: MoonPalette.orchid.withValues(alpha: 0.64),
+        indicatorColor: MoonPalette.accent.withValues(alpha: 0.64),
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final bool selected = states.contains(WidgetState.selected);
@@ -157,10 +157,10 @@ class _DonasiTrackMobileAppState extends State<DonasiTrackMobileApp> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                Color(0xFFF8F1FF),
-                MoonPalette.pearl,
-                Color(0xFFE7DBFF),
-              ],
+                  Color(0xFFEFFAF1),
+                  MoonPalette.pearl,
+                  Color(0xFFE6F7FF),
+                ],
             ),
           ),
           child: child,
@@ -502,11 +502,11 @@ class _HomeShellState extends State<HomeShell> {
                 color: Colors.white.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: MoonPalette.lavender.withValues(alpha: 0.28),
+                  color: MoonPalette.primary.withValues(alpha: 0.28),
                 ),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: MoonPalette.lavender.withValues(alpha: 0.18),
+                    color: MoonPalette.primary.withValues(alpha: 0.18),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -528,8 +528,8 @@ class _HomeShellState extends State<HomeShell> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(11),
-                          color: selected
-                              ? MoonPalette.orchid.withValues(alpha: 0.52)
+                            color: selected
+                              ? MoonPalette.accent.withValues(alpha: 0.52)
                               : Colors.transparent,
                         ),
                         child: Column(
@@ -774,7 +774,7 @@ class _AuthPageState extends State<AuthPage> {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: <Color>[Color(0xFFF8F2FF), Color(0xFFF0E9FC)],
+                        colors: <Color>[Color(0xFFF9FFFB), Color(0xFFEFFAF1)],
                       ),
                       boxShadow: <BoxShadow>[
                         BoxShadow(
@@ -903,14 +903,14 @@ class _AuthPageState extends State<AuthPage> {
                               const SizedBox(height: 2),
                               DecoratedBox(
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: <Color>[
-                                      Color(0xFF7D66E8),
-                                      MoonPalette.lavender,
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
+                                        gradient: const LinearGradient(
+                                          colors: <Color>[
+                                            Color(0xFF48C6A9),
+                                            MoonPalette.primary,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
                                 child: FilledButton(
                                   onPressed: loading
                                       ? null
@@ -1457,13 +1457,13 @@ class _DonorPageState extends State<DonorPage> {
 
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-          decoration: BoxDecoration(
+            decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                Color(0xFF8B73EF),
-                Color(0xFFA890F8),
+                Color(0xFF48C6A9),
+                Color(0xFF2A9D8F),
               ],
             ),
             borderRadius: BorderRadius.circular(14),
