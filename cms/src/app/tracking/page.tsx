@@ -334,6 +334,8 @@ export default function TrackingPage() {
               >
                 Kembali ke Daftar Paket
               </button>
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid #e2e8f0",
                 <div>
                   <h3 style={{ color: "#3b82f6", margin: "0 0 5px 0" }}>{data.trackingCode}</h3>
                   <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>{data.item?.name || "Paket Bantuan"}</p>
