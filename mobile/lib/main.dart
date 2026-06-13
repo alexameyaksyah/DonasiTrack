@@ -1192,7 +1192,7 @@ class _DonorPageState extends State<DonorPage> {
       queue.add(body);
       await prefs.setString(donationQueueKey, jsonEncode(queue));
       setState(
-        () => message = 'Offline: donasi disimpan lokal untuk disinkronkan.',
+        () => message = 'Offline: donasi disimpan lokal untuk disinkronkan.', //
       );
     } finally {
       if (mounted) setState(() => loading = false);
