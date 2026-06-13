@@ -1095,7 +1095,7 @@ class _DonorPageState extends State<DonorPage> {
   String _campaignImageUrl(Map<String, dynamic> campaign) {
     final String? fromApi = campaign['imageUrl']?.toString();
     if (fromApi != null && fromApi.isNotEmpty) {
-      return fromApi;
+      return fromApi; // The _campaignImageUrl method generates a URL for the campaign's image. It first checks if the campaign data includes an 'imageUrl' field that is a non-empty string. If such a URL exists, it returns that URL directly. If not, it constructs a placeholder image URL using the campaign's title and disaster type as seeds for the Picsum Photos service. This ensures that even campaigns without a specified image will have a unique and visually distinct placeholder image based on their content.
     }
 
     final String title = Uri.encodeComponent(
