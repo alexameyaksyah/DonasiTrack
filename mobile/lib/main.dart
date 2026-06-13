@@ -1164,7 +1164,7 @@ class _DonorPageState extends State<DonorPage> {
       ),
     );
   }
-
+  // The _buildCampaignSkeletonCard method creates a placeholder card widget that mimics the layout of a campaign card while the actual campaign data is being loaded. It uses various containers with different sizes and colors to represent where the campaign image, title, description, progress bar, and donate button would be. This provides a visual indication to users that content is loading and helps maintain a consistent layout during the loading state.
   Future<void> _submitDonation(Map<String, dynamic> body) async {
     if (!widget.session.isAuthenticated) {
       setState(() => message = 'Login sebagai DONOR dulu.');
