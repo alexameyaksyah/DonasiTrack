@@ -539,6 +539,28 @@ export default function TrackingPage() {
                   Selesai
                 </button>
               </div>
+
+              {/* Konten List Paket Bantuan */}
+              {loadingList ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "200px",
+                  }}
+                >
+                  <p style={{ color: "#64748b" }}>Memuat daftar logistik...</p>
+                </div>
+              ) : filteredShipments.length > 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                  }}
+                >
           )}
         </section>
       </section>
