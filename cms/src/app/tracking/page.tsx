@@ -352,20 +352,7 @@ export default function TrackingPage() {
                       
                       {/* Garis Vertikal */}
                       {index !== data.trackingEvents.length - 1 && (
-                        <div style={{ position: "absolute", left: "-21px", top: "20px", bottom: "-30px", width: "2px", backgroundColor: "#334155" }} />
-                      )}
-
-                      {/* Titik Indikator */}
-                      <div style={{
-                        position: "absolute", left: "-26px", top: "5px", width: "12px", height: "12px", borderRadius: "50%",
-                        backgroundColor: index === 0 ? "#3b82f6" : "#475569",
-                        border: index === 0 ? "4px solid #1e293b" : "none",
-                        zIndex: 2
-                      }} />
-
-                      <div>
-                        <div style={{ fontSize: "0.85rem", color: index === 0 ? "#3b82f6" : "#64748b", fontWeight: index === 0 ? "bold" : "normal" }}>
-                          {new Date(event.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                            backgroundColor: "#e2e8f0",
                         </div>
                         <div style={{ fontSize: "1rem", marginTop: "4px", color: index === 0 ? "#f8fafc" : "#94a3b8", fontWeight: index === 0 ? "bold" : "500" }}>
                           {event.status}
