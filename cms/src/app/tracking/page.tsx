@@ -216,6 +216,9 @@ export default function TrackingPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               style={{
+                flex: 1,
+                padding: "12px 16px",
+                borderRadius: "8px",
                 backgroundColor: "#ffffff",
                 border: "1px solid #cbd5e1",
                 color: "#0f172a",
