@@ -1048,7 +1048,7 @@ class _DonorPageState extends State<DonorPage> {
   int _asInt(dynamic value) {
     if (value is int) return value;
     if (value is num) return value.toInt();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+    return int.tryParse(value?.toString() ?? '') ?? 0; // The _asInt method is a utility function that attempts to convert a dynamic value into an integer. It handles cases where the value might already be an int, a num (which can be a double), or a string that can be parsed into an integer. If the conversion fails, it returns 0 as a default. This method is useful for ensuring that values representing amounts or quantities are consistently treated as integers throughout the code, especially when dealing with data from APIs that might have varying formats.
   }
 
   Future<void> _loadDonations() async {
