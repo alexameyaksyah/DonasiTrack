@@ -200,7 +200,15 @@ export default function TrackingPage() {
           <div className="console-user-pill">{roleLabel}</div>
         </div>
 
-        <section className="console-surface" style={{ marginBottom: "20px" }}>
+        {/* SECTION PENCARIAN */}
+        <section
+          className="console-surface"
+          style={{
+            marginBottom: "20px",
+            padding: "20px",
+            borderRadius: "12px",
+          }}
+        >
           <div style={{ display: "flex", gap: "12px" }}>
             <input
               type="text"
