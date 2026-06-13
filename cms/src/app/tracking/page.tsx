@@ -516,6 +516,29 @@ export default function TrackingPage() {
                 >
                   Dalam Proses
                 </button>
+                <button
+                  onClick={() => setActiveTab("selesai")}
+                  style={{
+                    flex: 1,
+                    padding: "14px 0",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    fontWeight: activeTab === "selesai" ? "700" : "500",
+                    color: activeTab === "selesai" ? "#991b1b" : "#64748b",
+                    borderBottom:
+                      activeTab === "selesai"
+                        ? "3px solid #991b1b"
+                        : "3px solid transparent",
+                    marginBottom: "-2px",
+                    textAlign: "center",
+                    transition: "all 0.15s ease-in-out",
+                  }}
+                >
+                  Selesai
+                </button>
+              </div>
           )}
         </section>
       </section>
