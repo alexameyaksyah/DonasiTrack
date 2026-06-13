@@ -337,7 +337,7 @@ class ApiClient {
         .map((dynamic item) => Map<String, dynamic>.from(item as Map))
         .toList();
   }
-
+  // The donate method submits a new donation to the API, including the campaign ID and any additional details required by the backend. It uses the authenticated session to ensure that only logged-in users can make donations.
   Future<void> donate(Map<String, dynamic> body) async {
     await dio.post(
       '/donations',
