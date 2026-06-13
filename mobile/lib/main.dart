@@ -706,6 +706,11 @@ class _AuthPageState extends State<AuthPage> {
       setState(() => message = 'Password minimal 6 karakter.');
       return;
     }
+    final RegExp _emailRe = RegExp(r"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+    if (!_emailRe.hasMatch(registerEmail.text.trim())) {
+      setState(() => message = 'Email tidak valid.');
+      return;
+    }
 
     setState(() {
       loading = true;
