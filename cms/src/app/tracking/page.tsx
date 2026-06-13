@@ -475,6 +475,25 @@ export default function TrackingPage() {
                 )}
               </div>
             </div>
+          ) : (
+            // KONDISI B: DASHBOARD TAB MANAGEMENT (OPSI 2: FULL WIDTH SPLIT)
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                width: "100%",
+              }}
+            >
+              {/* Header Tab: Dibagi rata lebar masing-masing 50% (flex: 1) */}
+              <div
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  borderBottom: "2px solid #e2e8f0",
+                  marginBottom: "25px",
+                }}
+              >
           )}
         </section>
       </section>
