@@ -370,7 +370,7 @@ class ApiClient {
         .map((dynamic item) => Map<String, dynamic>.from(item as Map))
         .toList();
   }
-
+  // updateShipmentStatus allows logistics personnel to update the status of a shipment, including adding notes, location data, and proof of delivery photos. This method ensures that the shipment's progress is accurately reflected in the system and provides necessary information for both the logistics team and the donors.
   Future<void> updateShipmentStatus({
     required String shipmentId,
     required String status,
