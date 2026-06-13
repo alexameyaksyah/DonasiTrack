@@ -1272,7 +1272,7 @@ class _DonorPageState extends State<DonorPage> {
                       controller: quantityController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Jumlah barang',
+                        labelText: 'Jumlah barang', // The quantity field is relevant for goods donations, allowing the user to specify how many items they are donating. This field is conditionally used based on the selected donation type, and the form provides a clear label to indicate its purpose.
                       ),
                     ),
                     const SizedBox(height: 8),
