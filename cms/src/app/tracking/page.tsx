@@ -297,18 +297,32 @@ export default function TrackingPage() {
             >
               {error}
             </p>
-
-          {!data && !error && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📦</div>
-              <h2 style={{ marginBottom: "8px" }}>Siap Melacak</h2>
-              <p className="console-muted">Masukkan nomor resi untuk melihat riwayat perjalanan barang.</p>
-            </div>
           )}
 
-          {data && (
-            <div style={{ textAlign: "left" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", backgroundColor: "#0f172a", padding: "15px", borderRadius: "10px", marginBottom: "25px" }}>
+          {/* KONDISI A: DETAIL TIMELINE PAKET */}
+          {data ? (
+            <div style={{ textAlign: "left", width: "100%" }}>
+              <button
+                onClick={() => {
+                  setData(null);
+                  setCode("");
+                }}
+                style={{
+                  backgroundColor: "transparent",
+                  border: "1px solid #cbd5e1",
+                  color: "#475569",
+                  padding: "6px 14px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                Kembali ke Daftar Paket
+              </button>
                 <div>
                   <h3 style={{ color: "#3b82f6", margin: "0 0 5px 0" }}>{data.trackingCode}</h3>
                   <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>{data.item?.name || "Paket Bantuan"}</p>
