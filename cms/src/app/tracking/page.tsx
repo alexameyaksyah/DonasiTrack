@@ -209,6 +209,7 @@ export default function TrackingPage() {
               onChange={(e) => setCode(e.target.value)}
               style={{
                 backgroundColor: "#ffffff",
+                color: "#0f172a",
             />
             <button 
               onClick={handleSearch}
