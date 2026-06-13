@@ -20,6 +20,16 @@ function genId() {
   return `${Date.now().toString(36)}${Math.floor(Math.random() * 10000).toString(36)}`;
 }
 
+// Seed an admin account for testing
+(async () => {
+  const adminEmail = "admin@donasitrack.id";
+  const adminPassword = "donasi123";
+  const id = genId();
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
+  users.set(id, { id, name: "Admin DonasiTrack", email: adminEmail, passwordHash, role: "ADMIN" });
+  console.log(`Mock admin created: ${adminEmail} / ${adminPassword}`);
+})();
+
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.post("/api/auth/register", async (req, res) => {
