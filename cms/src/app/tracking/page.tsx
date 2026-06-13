@@ -76,6 +76,8 @@ export default function TrackingPage() {
   // STATE MANAGEMENT
   const [activeTab, setActiveTab] = useState<"proses" | "selesai">("proses");
   const [allShipments, setAllShipments] = useState<ShipmentData[]>([]);
+  const [loadingList, setLoadingList] = useState<boolean>(false);
+
   useEffect(() => {
     Promise.resolve().then(() => {
       const sessionData = readTrackingSession();
