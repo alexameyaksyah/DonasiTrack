@@ -211,6 +211,12 @@ export default function TrackingPage() {
                 backgroundColor: "#ffffff",
                 border: "1px solid #cbd5e1",
                 color: "#0f172a",
+                outline: "none",
+                fontSize: "1rem",
+                transition: "all 0.2s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "#991b1b")}
+              onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
             />
             <button 
               onClick={handleSearch}
