@@ -326,7 +326,7 @@ class ApiClient {
   }) async {
     final Response<dynamic> response = await dio.post(
       '/auth/register',
-      data: {'name': name, 'email': email, 'password': password},
+      data: {'name': name, 'email': email, 'password': password}, // The register endpoint is assumed to be similar to login in terms of response structure, returning user info and token on success.
     );
     return Map<String, dynamic>.from(response.data as Map);
   }
