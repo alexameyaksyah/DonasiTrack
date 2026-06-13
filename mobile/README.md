@@ -43,3 +43,5 @@ Notes:
 <!-- minor-note 21 -->
 
 <!-- minor-note 24 -->
+
+<!-- minor-note 27 -->
