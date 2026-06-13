@@ -1181,7 +1181,7 @@ class _DonorPageState extends State<DonorPage> {
       await api.donate(body);
       await _loadDonations();
       setState(
-        () => message = 'Donasi terkirim dan menunggu verifikasi admin.',
+        () => message = 'Donasi terkirim dan menunggu verifikasi admin.', // The _submitDonation method handles the submission of a new donation. It first checks if the user is authenticated, and if not, it updates the message to prompt the user to log in as a donor. If the user is authenticated, it sets the loading state to true and clears any existing messages. It then attempts to send the donation data to the API. If the submission is successful, it reloads the donation history to reflect the new donation and updates the message to inform the user that their donation has been sent and is awaiting admin verification. If there's an error during submission (such as network issues), it catches the exception and instead saves the donation data locally in a queue within SharedPreferences. This allows for offline support, where donations can be stored locally and synchronized with the server once connectivity is restored. Finally, it ensures that the loading state is set back to false after the process is complete.
       );
     } catch (_) {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
