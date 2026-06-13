@@ -1073,7 +1073,7 @@ class _DonorPageState extends State<DonorPage> {
         campaigns = decoded
             .map((dynamic item) => Map<String, dynamic>.from(item as Map))
             .toList();
-      });
+      }); // The _loadCampaigns method is responsible for fetching the list of campaigns from the API. It first checks if there is a cached version of the campaigns stored in SharedPreferences. If a cache exists, it loads the campaigns from there to provide a faster initial display. Then, it attempts to fetch the latest campaigns from the API. If the API call is successful, it updates the state with the fresh data and updates the cache. If there's an error during the API call, it retains the cached data and updates the message to inform the user that they are viewing cached data. Finally, it sets the loading state to false once the process is complete.
     }
 
     try {
