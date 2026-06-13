@@ -159,6 +159,8 @@ export default function TrackingPage() {
   const filteredShipments = useMemo(() => {
     return allShipments.filter((shipment) => {
       const latestEvent = shipment.trackingEvents?.[0];
+      const statusText = latestEvent?.status?.toLowerCase() || "";
+
 
   return (
     <main className="admin-shell fade-up">
