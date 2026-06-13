@@ -1033,7 +1033,7 @@ class _DonorPageState extends State<DonorPage> {
   String _rupiah(int value) {
     final String reversed = value.toString().split('').reversed.join();
     final String grouped = reversed.replaceAllMapped(RegExp(r'.{1,3}'), (
-      Match match,
+      Match match, 
     ) {
       return '${match.group(0)}.';
     });
@@ -1042,7 +1042,7 @@ class _DonorPageState extends State<DonorPage> {
         .reversed
         .join()
         .replaceFirst(RegExp(r'^\.'), '');
-    return 'Rp $normalized';
+    return 'Rp $normalized'; // The _rupiah method formats an integer value into a string representation of Indonesian Rupiah currency. It reverses the number, groups digits in sets of three, and then reverses it back to create the standard currency format with dots as thousand separators. The final string is prefixed with "Rp " to indicate the currency. This method is used to display donation amounts in a user-friendly format on the donor page.
   }
 
   int _asInt(dynamic value) {
