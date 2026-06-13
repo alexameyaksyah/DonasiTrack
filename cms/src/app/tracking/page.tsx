@@ -334,13 +334,52 @@ export default function TrackingPage() {
               >
                 Kembali ke Daftar Paket
               </button>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
                   backgroundColor: "#f8fafc",
+                  padding: "20px",
+                  borderRadius: "10px",
+                  marginBottom: "30px",
                   border: "1px solid #e2e8f0",
+                }}
+              >
                 <div>
                   <h3
                     style={{
                       color: "#991b1b",
+                      margin: "0 0 6px 0",
+                      fontSize: "1.25rem",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {data.trackingCode}
+                  </h3>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "1.1rem",
+                      fontWeight: "bold",
                       color: "#0f172a",
+                    }}
+                  >
+                    {data.item?.name || "Paket Bantuan"}
+                  </p>
+                  <p
+                    style={{
+                      margin: "4px 0 0 0",
+                      color: "#64748b",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    Tujuan:{" "}
+                    <span style={{ color: "#334155", fontWeight: "500" }}>
+                      {data.destinationLocation}
+                    </span>
+                  </p>
                 </div>
               </div>
 
