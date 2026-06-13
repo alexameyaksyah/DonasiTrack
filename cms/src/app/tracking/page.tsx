@@ -102,6 +102,8 @@ export default function TrackingPage() {
 
   // Ambil semua data tracking dari server
   const fetchAllShipments = async () => {
+    setLoadingList(true);
+    try {
     setLoading(true);
     setError("");
     setData(null);
