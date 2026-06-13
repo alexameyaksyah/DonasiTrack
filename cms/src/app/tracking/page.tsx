@@ -392,6 +392,13 @@ export default function TrackingPage() {
                       {/* Garis Vertikal */}
                       {index !== data.trackingEvents.length - 1 && (
                             backgroundColor: "#e2e8f0",
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: "-26px",
+                          top: "5px",
+                          width: "12px",
+                          height: "12px",
                           borderRadius: "50%",
                           backgroundColor: index === 0 ? "#991b1b" : "#cbd5e1",
                         </div>
