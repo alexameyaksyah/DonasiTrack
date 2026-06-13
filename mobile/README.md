@@ -27,3 +27,5 @@ Notes:
 - Android emulator uses `http://10.0.2.2:4000/api`.
 - iOS simulator, desktop, or web can use `http://localhost:4000/api`.
 - Physical devices should use your machine's LAN IP.
+
+<!-- minor-note 3 -->
