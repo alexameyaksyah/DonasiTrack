@@ -29,3 +29,5 @@ Notes:
 - Physical devices should use your machine's LAN IP.
 
 <!-- minor-note 3 -->
+
+<!-- minor-note 6 -->
