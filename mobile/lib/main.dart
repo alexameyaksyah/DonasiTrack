@@ -1104,7 +1104,7 @@ class _DonorPageState extends State<DonorPage> {
     final String disaster = Uri.encodeComponent(
       campaign['disasterType']?.toString() ?? 'bencana',
     );
-    return 'https://picsum.photos/seed/$title-$disaster/800/360';
+    return 'https://picsum.photos/seed/$title-$disaster/800/360'; // If the campaign does not have a specific image URL, the method creates a unique placeholder image URL using the campaign's title and disaster type. It encodes these values to ensure they are safe for use in a URL and then constructs a URL for the Picsum Photos service, which will generate a random image based on the provided seed. This allows each campaign to have a visually distinct image even if no specific image is provided by the API.
   }
 
   Widget _buildCampaignSkeletonCard() {
