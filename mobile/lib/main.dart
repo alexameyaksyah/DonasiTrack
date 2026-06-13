@@ -716,7 +716,7 @@ class _AuthPageState extends State<AuthPage> {
       loading = true;
       message = '';
     });
-
+    // The registration process is similar to login, but it also includes saving the API base URL before making the request. On successful registration, it saves the session and updates the message accordingly. Error handling is included to provide feedback on what went wrong during registration.
     try {
       await widget.session.saveApiBase(apiBase.text);
       final ApiClient api = ApiClient(widget.session);
