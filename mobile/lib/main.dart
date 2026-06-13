@@ -360,7 +360,7 @@ class ApiClient {
     final Response<dynamic> response = await dio.get('/tracking/$code');
     return Map<String, dynamic>.from(response.data as Map);
   }
-
+  // myOperationalShipments fetches the list of shipments that the authenticated user (in this case, an admin or logistics personnel) is responsible for managing. This allows them to see their assigned tasks and update shipment statuses accordingly.
   Future<List<Map<String, dynamic>>> myOperationalShipments() async {
     final Response<dynamic> response = await dio.get(
       '/logistics/mine',
