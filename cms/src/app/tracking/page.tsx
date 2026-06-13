@@ -244,6 +244,16 @@ export default function TrackingPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
+                transition: "background-color 0.2s",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#7f1d1d")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "#991b1b")
+              }
+            >
+              {loading ? "Mencari..." : "Cari Data"}
             </button>
           </div>
         </section>
