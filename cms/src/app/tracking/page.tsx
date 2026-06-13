@@ -73,7 +73,8 @@ export default function TrackingPage() {
   const [error, setError] = useState<string>("");
   const [isReady, setIsReady] = useState(false);
 
-  // Read session from localStorage after mount
+  // STATE MANAGEMENT
+  const [activeTab, setActiveTab] = useState<"proses" | "selesai">("proses");
   useEffect(() => {
     Promise.resolve().then(() => {
       const sessionData = readTrackingSession();
