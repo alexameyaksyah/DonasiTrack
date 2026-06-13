@@ -1192,7 +1192,7 @@ class _DonorPageState extends State<DonorPage> {
       queue.add(body);
       await prefs.setString(donationQueueKey, jsonEncode(queue));
       setState(
-        () => message = 'Offline: donasi disimpan lokal untuk disinkronkan.', //
+        () => message = 'Offline: donasi disimpan lokal untuk disinkronkan.', // If there's an error during the donation submission (such as network issues), the method catches the exception and instead saves the donation data locally in a queue within SharedPreferences. This allows for offline support, where donations can be stored locally and synchronized with the server once connectivity is restored. The message is updated to inform the user that their donation has been saved locally and will be synchronized later.
       );
     } finally {
       if (mounted) setState(() => loading = false);
