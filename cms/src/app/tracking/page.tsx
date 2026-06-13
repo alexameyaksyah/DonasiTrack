@@ -229,12 +229,13 @@ export default function TrackingPage() {
               onFocus={(e) => (e.target.style.borderColor = "#991b1b")}
               onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
             />
-            <button 
-              onClick={handleSearch}
-              className="console-btn info"
+            <button
+              onClick={() => handleSearch()}
+              className="console-btn"
               disabled={loading}
-            >
-              {loading ? "Mencari..." : "Cari Data 🔎"}
+              style={{
+                backgroundColor: "#991b1b",
+                color: "white",
             </button>
           </div>
         </section>
