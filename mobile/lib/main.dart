@@ -1374,7 +1374,7 @@ class _DonorPageState extends State<DonorPage> {
     final int totalDonation = donations
         .where(
           (Map<String, dynamic> donation) =>
-              donation['verificationStatus']?.toString() == 'VERIFIED',
+              donation['verificationStatus']?.toString() == 'VERIFIED', // The totalDonation variable calculates the total amount of donations made by the user that have been verified by the admin. It filters the donation history to include only those donations where the 'verificationStatus' is 'VERIFIED', then maps each donation to its 'amount' field (converted to an integer using the _asInt method) and sums them up to get the total donation amount. This value is used to display the total amount of verified donations on the donor page, giving users a clear overview of their contribution history.
         )
         .fold<int>(
           0,
