@@ -107,6 +107,9 @@ export default function TrackingPage() {
       const token = localStorage.getItem("donasi-track-session-token") || "";
       const res = await fetch(`${API_URL}/tracking`, {
         headers: authHeaders(token),
+      });
+      if (res.ok) {
+        const result = await res.json();
     setLoading(true);
     setError("");
     setData(null);
