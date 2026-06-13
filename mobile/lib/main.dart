@@ -1056,7 +1056,7 @@ class _DonorPageState extends State<DonorPage> {
 
     try {
       final ApiClient api = ApiClient(widget.session);
-      final List<Map<String, dynamic>> history = await api.myDonations();
+      final List<Map<String, dynamic>> history = await api.myDonations(); // The _loadDonations method fetches the authenticated user's donation history from the API. It checks if the user is authenticated before making the request. If successful, it updates the state with the retrieved donation history. If there's an error (such as the endpoint not being available), it catches the exception and allows for a graceful fallback without crashing the app. This method is called during initialization to populate the donation history on the donor page.
       if (!mounted) return;
       setState(() => donations = history);
     } catch (_) {
