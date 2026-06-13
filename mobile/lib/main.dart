@@ -391,7 +391,7 @@ class ApiClient {
       options: Options(headers: authHeader),
     );
   }
-
+  // uploadProof handles the uploading of proof of delivery photos to the server. It takes an XFile (which can come from the image picker or camera), converts it to a MultipartFile, and sends it to the API. The server is expected to return a URL for the uploaded photo, which can then be associated with a shipment status update.
   Future<String> uploadProof(XFile file) async {
     final MultipartFile multipart = kIsWeb
         ? MultipartFile.fromBytes(await file.readAsBytes(), filename: file.name)
