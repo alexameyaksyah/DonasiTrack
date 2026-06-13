@@ -612,7 +612,7 @@ class _AuthPageState extends State<AuthPage> {
   String _nameFromEmail(String email) {
     final String localPart = email.split('@').first.trim();
     if (localPart.isEmpty) return 'Donatur';
-    final String clean = localPart.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ');
+    final String clean = localPart.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' '); // Replace non-alphanumeric characters with space
     final List<String> words = clean
         .split(' ')
         .where((String part) => part.trim().isNotEmpty)
