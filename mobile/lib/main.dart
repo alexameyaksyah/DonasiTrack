@@ -1279,7 +1279,7 @@ class _DonorPageState extends State<DonorPage> {
                     TextField(
                       controller: proofUrlController,
                       decoration: const InputDecoration(
-                        labelText: 'URL bukti transfer/foto',
+                        labelText: 'URL bukti transfer/foto', // The proof URL field allows the user to provide a link to a proof of transfer or a photo related to their donation. This can be useful for the verification process, especially for money donations, where proof of payment may be required. The form includes this field to give donors the option to submit additional information that can assist in the verification and processing of their donation.
                       ),
                     ),
                     const SizedBox(height: 12),
