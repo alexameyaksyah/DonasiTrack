@@ -1319,7 +1319,7 @@ class _DonorPageState extends State<DonorPage> {
                               Navigator.pop(context);
                             },
                       child: Text(
-                        localLoading ? 'Mengirim...' : 'Kirim Donasi',
+                        localLoading ? 'Mengirim...' : 'Kirim Donasi', // The submit button in the donation form is responsible for gathering the input data from the form fields, constructing a donation body, and calling the _submitDonation method to handle the submission. It also manages a local loading state to provide feedback to the user while the donation is being processed. If the submission is successful, it closes the bottom sheet; otherwise, it allows for offline saving of the donation data if there's an error during submission. The button's text changes to indicate when the donation is being sent, enhancing the user experience by providing clear feedback on the action being performed.
                       ),
                     ),
                   ],
