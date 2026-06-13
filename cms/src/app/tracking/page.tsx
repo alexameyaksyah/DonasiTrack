@@ -576,6 +576,127 @@ export default function TrackingPage() {
                           alignItems: "center",
                         }}
                       >
+                        <div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              alignItems: "center",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            <span
+                              style={{ fontWeight: "700", color: "#991b1b" }}
+                            >
+                              {shipment.trackingCode}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                padding: "2px 8px",
+                                borderRadius: "20px",
+                                fontWeight: "600",
+                                backgroundColor:
+                                  activeTab === "selesai"
+                                    ? "#dcfce7"
+                                    : "#ffedd5",
+                                color:
+                                  activeTab === "selesai"
+                                    ? "#16a34a"
+                                    : "#ea580c",
+                              }}
+                            >
+                              {latestEvent
+                                ? latestEvent.status
+                                : "Menunggu Konfirmasi"}
+                            </span>
+                          </div>
+                          <h4
+                            style={{
+                              margin: "4px 0",
+                              fontSize: "1.05rem",
+                              color: "#0f172a",
+                            }}
+                          >
+                            {shipment.item?.name || "Paket Bantuan"} (
+                            {shipment.quantity} Paket)
+                          </h4>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "0.85rem",
+                              color: "#64748b",
+                            }}
+                          >
+                            Tujuan: {shipment.destinationLocation}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setCode(shipment.trackingCode);
+                            handleSearch(shipment.trackingCode);
+                          }}
+                          style={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #991b1b",
+                            color: "#991b1b",
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontWeight: "600",
+                            fontSize: "0.9rem",
+                            transition: "all 0.2s",
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "#991b1b";
+                            e.currentTarget.style.color = "white";
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = "#ffffff";
+                            e.currentTarget.style.color = "#991b1b";
+                          }}
+                        >
+                          Lacak Paket
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                    padding: "2rem 0",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3
+                    style={{
+                      color: "#475569",
+                      marginBottom: "6px",
+                      fontWeight: "700",
+                    }}
+                  >
+                    Belum Ada Riwayat
+                  </h3>
+                  <p
+                    style={{
+                      color: "#94a3b8",
+                      margin: 0,
+                      maxWidth: "320px",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    Tidak ada pengiriman logistik yang tergolong dalam tab ini.
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </section>
       </section>
