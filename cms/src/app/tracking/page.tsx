@@ -266,6 +266,25 @@ export default function TrackingPage() {
             }}
           >
             Punya kendala? Coba gunakan contoh kode:{" "}
+            <span
+              style={{
+                color: "#991b1b",
+                fontWeight: "bold",
+                cursor: "pointer",
+                textDecoration: "underline",
+                backgroundColor: "#f8fafc",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                border: "1px dashed #f3f4f6",
+              }}
+              onClick={() => {
+                setCode("DNT-277066-34DZ");
+                handleSearch("DNT-277066-34DZ");
+              }}
+            >
+              DNT-277066-34DZ
+            </span>
+          </div>
         </section>
 
         <section className="console-surface" style={{ padding: "2rem" }}>
