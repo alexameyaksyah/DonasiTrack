@@ -78,11 +78,14 @@ export default function TrackingPage() {
   const [allShipments, setAllShipments] = useState<ShipmentData[]>([]);
   const [loadingList, setLoadingList] = useState<boolean>(false);
 
+  // Read session & fetch list on mount
   useEffect(() => {
     Promise.resolve().then(() => {
       const sessionData = readTrackingSession();
       setSession(sessionData);
       setIsReady(true);
+
+      fetchAllShipments();
     });
   }, []);
 
