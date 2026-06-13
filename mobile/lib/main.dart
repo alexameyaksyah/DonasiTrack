@@ -16,6 +16,8 @@ class MoonPalette {
   static const Color pearl = Color(0xFFF3FFFB); // almost white mint
   static const Color ink = Color(0xFF08363A); // dark teal / slate
   static const Color muted = Color(0xFF4B6B66); // muted slate
+  static const Color lavender = Color(0xFFB6A7FF); // soft lavender accent
+  static const Color orchid = Color(0xFF9A6DEB); // deeper orchid accent
 }
 
 void main() {
